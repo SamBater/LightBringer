@@ -1,50 +1,58 @@
-#include <glad/glad.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
-// settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
-int main()
+int w = 800, h = 800;
+void processInput(GLFWwindow *window, unsigned char data[])
 {
-	// glfw: initialize and configure
-	// ------------------------------
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef __APPLE__
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); //uncomment this statement to fix compilation on OS X
-#endif
-	// glfw window creation
-	// --------------------
-	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
-	if (window == NULL)
-	{
-		std::cout << "Failed to create GLFW window" << std::endl;
-		glfwTerminate();
-		return -1;
-	}
-	glfwMakeContextCurrent(window);
-	// glad: load all OpenGL function pointers
-	// ---------------------------------------
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
-		return -1;
-	}
-	// render loop
-	// -----------
-	while (!glfwWindowShouldClose(window))
-	{
-		glClearColor(1.0f, 0.5f, 0.0f, 0.5f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		// glfw: swap buffers and poll IO events (keyspressed/released, mouse moved etc.)
-		// ---------------------------------------------------
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	}
-	// glfw: terminate, clearing all previously allocated GLFWresources.
-	//---------------------------------------------------------------
-	glfwTerminate();
-	return 0;
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        for (int y = 0; y < w; y++)
+            for (int x = 0; x < h; x++)
+            {
+                int pixel = w * y * 3 + x * 3;
+                data[pixel] += 0x10;
+                data[pixel + 1] += 0x10;
+                data[pixel + 2] += 0x10;
+            }
+    }
+}
+int main(int argc, const char **argv)
+{
+    GLFWwindow *window;
+
+    if (!glfwInit())
+    {
+        printf("Couldn't init GLFW\n");
+        return 1;
+    }
+
+    window = glfwCreateWindow(w, h, "Hello World", NULL, NULL);
+    if (!window)
+    {
+        printf("Couldn't open window\n");
+        return 1;
+    }
+
+    unsigned char *data = new unsigned char[w * h * 3];
+    for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++)
+        {
+            int pixel = w * y * 3 + x * 3;
+            auto color = x > y ? 0xff : 0xcc;
+            data[pixel] = 0x40;
+            data[pixel + 1] = 0x2f;
+            data[pixel + 2] = 0x1f;
+        }
+
+    glfwMakeContextCurrent(window);
+    while (!glfwWindowShouldClose(window))
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        processInput(window, data);
+        glDrawPixels(w, h, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glfwSwapBuffers(window);
+        glfwWaitEvents();
+    }
+    return 0;
 }
