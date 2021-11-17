@@ -12,6 +12,8 @@ namespace YYLB
         float aspect_ratio;
         float l, r, t, b, n, f;
         friend class YYLB::Transformer;
+        Vec3f look_at; //看的朝向
+        Vec3f up;      //向上方向
 
     public:
         Camera(const float x, const float y,

@@ -53,5 +53,6 @@
     "chrono": "cpp",
     "ratio": "cpp"
   },
-  "cmake.configureOnOpen": false
+  "cmake.configureOnOpen": false,
+  "editor.mouseWheelZoom": true
 }

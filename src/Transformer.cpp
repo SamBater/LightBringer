@@ -1,5 +1,5 @@
 #include <Core/Transformer.h>
-
+#include <math/Common.h>
 namespace YYLB
 {
     void Transformer::set_model_to_world(Vec3f &world_pos)
@@ -7,11 +7,31 @@ namespace YYLB
         set_identyti(m_m2w);
         translate(m_m2w, world_pos);
     }
-    void Transformer::set_world_to_view(const Vec3f &cam_pos)
+
+    void Transformer::set_world_to_view(Camera *cam)
     {
         set_identyti(m_w2v);
+        auto &cam_pos = cam->getPos();
         for (int i = 0; i < 3; i++)
             m_w2v[i][3] = -cam_pos[i][0];
+
+        auto &g = cam->look_at = {0, 0, -1};
+        auto &t = cam->up = {0, 1, 0};
+        auto gxt = cross_product_3d(g, t);
+        auto ng = g * 1.0f;
+        Matrix4f m_rv;
+        set_zero(m_rv);
+        m_rv[0][0] = gxt.x();
+        m_rv[0][1] = gxt.y();
+        m_rv[0][2] = gxt.z();
+        m_rv[1][0] = t.x();
+        m_rv[1][1] = t.y();
+        m_rv[1][2] = t.z();
+        m_rv[2][0] = ng.x();
+        m_rv[2][1] = ng.y();
+        m_rv[2][2] = ng.z();
+
+        m_w2v *= m_rv;
     }
 
     void Transformer::set_view_to_project(Camera *cam)

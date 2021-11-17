@@ -1,59 +1,34 @@
 {
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
+            "label": "cmake build active file",
             "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
+            "command": "make -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Debug ..",
+            //"args":[".."],
+            //"args":["--build . --config Debug --target all -- -j 4"],
+            //"args":["-G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Debug .."],
+            //"args":[".. -DCMAKE_BUILD_TYPE=Debug"],
             "group": {
                 "kind": "build",
                 "isDefault": true
-            },
-            "windows": {
-                "command": "powershell",
-                "args": [
-                    "-c",
-                    "make dir=13_model_view_projection" // 调式之前设置目录
-                ]
-            },
-            "linux": {
-                "command": "bash",
-                "args": ["-c", "make"]
-            },
-            "osx": {
-                "command": "bash",
-                "args": ["-c", "make"]
             }
         },
         {
-            "label": "build & run",
+            "label": "Make",
             "type": "shell",
-            "windows": {
-                "command": "powershell",
-                "args": ["-c", "'mingw32-make run'"]
+            "options": {
+                "cwd": "${workspaceFolder}/build"
             },
-            "linux": {
-                "command": "bash",
-                "args": ["-c", "'make run'"]
-            },
-            "osx": {
-                "command": "bash",
-                "args": ["-c", "'make run'"]
-            }
-        },
-        {
-            "label": "clean",
-            "type": "shell",
-            "windows": {
-                "command": "powershell",
-                "args": ["-c", "'mingw32-make clean'"]
-            },
-            "linux": {
-                "command": "bash",
-                "args": ["-c", "'make clean'"]
-            },
-            "osx": {
-                "command": "bash",
-                "args": ["-c", "'make clean'"]
+            "command": "make",
+            "group": {
+                "kind": "build",
+                "isDefault": true
             }
         }
     ]

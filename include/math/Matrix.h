@@ -16,7 +16,7 @@ namespace YYLB
             for (int r = 0; r < R && r >= C; r++)
                 data[r][r] = 1;
         }
-        Matrix(std::initializer_list<T> list) : Matrix()
+        Matrix(std::initializer_list<T> &&list) : Matrix()
         {
             auto c = list.begin();
             for (int i = 0; i < R; i++)
@@ -172,10 +172,17 @@ namespace YYLB
     template <int R, int C>
     const Matrix<float, R, C> scale_matrix(int scaleCoef);
 
-    template <typename T>
-    T cross_product(const Matrix<T, 2, 1> &lhs, const Matrix<T, 2, 1> &rhs)
+    inline float cross_product(const Vec2f &lhs, const Vec2f &rhs)
     {
         return lhs.x() * rhs.y() - lhs.y() * rhs.x();
+    }
+
+    inline Vec3f cross_product_3d(Vec3f &lhs, Vec3f &rhs)
+    {
+        return Vec3f{
+            lhs.y() * rhs.z() - lhs.z() * rhs.y(),
+            lhs.z() * rhs.x() - lhs.x() * rhs.z(),
+            lhs.x() * rhs.y() - lhs.y() * rhs.x()};
     }
 
     template <typename T, int R, int C>
@@ -192,13 +199,24 @@ namespace YYLB
         return out;
     }
 
+    //平移
     Matrix4f translation_matrix4x4(const float tx, const float ty, const float tz);
     Matrix4f translation_matrix4x4(const Vec4f &vec);
     void translate(Matrix4f &mat, const Vec3f &offset);
     void translate(Matrix3f &mat, const Vec3f &offset);
+
+    //缩放
     Matrix4f scale_matrix4x4(const float sx, const float sy, const float sz, const float sw);
 
+    //旋转
+    Matrix4f rotation_z_matrix4f(float theta);
+
+    Matrix4f rotation_y_matrix4f(float theta);
+
+    Matrix4f rotation_x_matrix4f(float theta);
+
     void set_identyti(Matrix4f &mat);
+
     void set_zero(Matrix4f &mat);
 
 }
