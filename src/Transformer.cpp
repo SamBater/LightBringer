@@ -46,8 +46,9 @@ namespace YYLB
         m_p2s[1][1] = m_p2s[1][3] = h / 2;
     }
 
-    Vec4f Transformer::vertex_output(Vec3f &local_pos, Vec3f &world_pos)
+    Vec4f Transformer::vertex_output(Vertex &vt, Vec3f &world_pos)
     {
+        auto local_pos = vt.position;
         set_model_to_world(world_pos);
         auto mvp = m_v2p * m_w2v * m_m2w;
         Vec4f local_pos_h{local_pos.x(), local_pos.y(), local_pos.z(), 1};

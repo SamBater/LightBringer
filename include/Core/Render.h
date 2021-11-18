@@ -1,4 +1,5 @@
-#pragma once
+#ifndef YYLB_RENDER_H
+#define YYLB_RENDER_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -13,6 +14,8 @@
 #include <vector>
 #include <chrono>
 #include <Core/Transformer.h>
+#include <Core/Texture.h>
+#include <math/Vertex.h>
 namespace YYLB
 {
     class Render
@@ -36,6 +39,14 @@ namespace YYLB
                 pixels[pixel] = r;
                 pixels[pixel + 1] = g;
                 pixels[pixel + 2] = b;
+            }
+
+            inline void set_color(int &x, int &y, RGB &rgb)
+            {
+                int pixel = w * y * 3 + x * 3;
+                pixels[pixel] = rgb.x();
+                pixels[pixel + 1] = rgb.y();
+                pixels[pixel + 2] = rgb.z();
             }
 
             inline void set_depth(int &x, int &y, const float &d)
@@ -74,3 +85,4 @@ namespace YYLB
         void start();
     };
 }
+#endif

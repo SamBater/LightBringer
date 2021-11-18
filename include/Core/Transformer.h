@@ -2,6 +2,7 @@
 #define YYLB_TRANSFORMER_H
 #include <math/Matrix.h>
 #include <Core/Camera.h>
+#include <math/Vertex.h>
 namespace YYLB
 {
     //负责坐标转换,并输出相应
@@ -25,7 +26,7 @@ namespace YYLB
         void set_projection_to_screen(int &w, int &h);
 
         //转换输出
-        Vec4f vertex_output(Vec3f &local_pos, Vec3f &world_pos);
+        Vec4f vertex_output(Vertex &vt, Vec3f &world_pos);
     };
 
 }

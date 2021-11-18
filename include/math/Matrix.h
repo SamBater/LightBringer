@@ -163,6 +163,8 @@ namespace YYLB
     typedef Matrix<float, 2, 1> Vec2f;
     typedef Matrix<float, 3, 1> Vec3f;
     typedef Matrix<float, 4, 1> Vec4f;
+    typedef Matrix<unsigned char, 3, 1> RGB;
+    typedef Matrix<unsigned char, 4, 1> RGBA;
     typedef Matrix<int, 4, 1> Vec4i;
     typedef Matrix<float, 4, 4> Matrix4f;
     typedef Matrix<float, 3, 3> Matrix3f;

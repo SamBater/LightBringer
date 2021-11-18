@@ -7,7 +7,7 @@
 CXX = g++
 
 # define any compile-time flags
-CXXFLAGS	:= -std=c++17 -w -Wextra  -O4
+CXXFLAGS	:= -std=c++17 -w -Wextra -g
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
 #   their path using -Lpath, something like:
@@ -25,7 +25,7 @@ INCLUDE	:= include
 
 # define lib directory
 LIB		:= lib
-LIBRARIES	:= -lglad -lglfw3dll -lopengl32
+LIBRARIES	:= -lglfw3dll -lopengl32
 
 ifeq ($(OS),Windows_NT)
 MAIN	:= main.exe

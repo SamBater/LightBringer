@@ -28,6 +28,16 @@ namespace YYLB
         return min(min(a, b), c);
     }
 
+    template <typename T>
+    T &clamp(T val, const T min, const T max)
+    {
+        if (val > max)
+            val = max;
+        if (val < min)
+            val = min;
+        return val;
+    }
+
     inline float theta_to_degree(float theta)
     {
         return theta / 180 * PI;

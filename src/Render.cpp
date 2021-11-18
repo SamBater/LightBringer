@@ -1,11 +1,14 @@
 #include <Core/Render.h>
-
 namespace YYLB
 {
+    std::vector<Mesh> world;
     void Render::processInput()
     {
+        static float z = -10;
         if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
         {
+            z += 1;
+            world[0].setPos(0, 0, z);
         }
     }
 
@@ -19,11 +22,11 @@ namespace YYLB
             for (auto &t : triangles)
             {
 
-                Vec4f vertex_ss[3] =
-                    {
-                        transformer->vertex_output(t.v3d_local[0], world_pos),
-                        transformer->vertex_output(t.v3d_local[1], world_pos),
-                        transformer->vertex_output(t.v3d_local[2], world_pos)};
+                Vec4f vertex_ss[3];
+                for (int i = 0; i < 3; i++)
+                {
+                    vertex_ss[i] = transformer->vertex_output(t.vts[i], world_pos);
+                }
 
                 //设置三角形,准备光栅化
                 t.ready_to_raser(vertex_ss);
@@ -32,39 +35,35 @@ namespace YYLB
         }
     }
 
-    template <typename T>
-    T &clamp(T val, const T min, const T max)
-    {
-        if (val > max)
-            val = max;
-        if (val < min)
-            val = min;
-        return val;
-    }
-
+    YYLB::Texture tex("img/uv.jpg");
     void Render::render(YYLB::Triangle &t)
     {
-        //包围盒AABB
-        const YYLB::BoundingBox *aabb = t.bounding_box();
-        int topY = aabb->top;
-        int botY = aabb->bot;
-        int rightX = aabb->right;
-        int leftX = aabb->left;
 
+        const YYLB::BoundingBox *bb = t.bounding_box();
         Vec3f cof;
+        RGB color;
         // #pragma omp parallel for num_threads(2)
-        for (int y = botY; y < topY; y++)
-            for (int x = leftX; x < rightX; x++)
+        for (int y = bb->bot; y < bb->top; y++)
+            for (int x = bb->left; x < bb->right; x++)
             {
                 int pixel = y * w + x;
+                //三角形测试
                 if (YYLB::Triangle::inside(x + 0.5f, y + 0.5f, t, cof))
                 {
-                    float depth = t.v2d[0].z() * cof.x() + t.v2d[1].z() * cof.y() + t.v2d[2].z() * cof.z();
-                    unsigned char r = cof.x() * 255, g = cof.y() * 255, b = cof.z() * 255;
+                    float depth = t.interapoted_depth(cof);
+                    //深度测试
                     if (depth - frame_buffer->depth[pixel] > YYLB::eps)
                     {
+                        //unsigned char r = cof.x() * 255, g = cof.y() * 255, b = cof.z() * 255;
+                        float u = 1, v = 1;
+
+                        //纹理采样
+                        t.interapoted_uv(cof, u, v);
+                        tex.tex2d(u, v, color);
+
+                        //TODO:扩展为片段着色器
                         frame_buffer->set_depth(x, y, depth);
-                        frame_buffer->set_color(x, y, r, g, b);
+                        frame_buffer->set_color(x, y, color);
                     }
                 }
             }
@@ -77,40 +76,53 @@ namespace YYLB
 
         //准备物体
 
-        std::vector<YYLB::Triangle> ts{
-            YYLB::Triangle({-1, 1, 1}, {-1, -1, 1}, {1, -1, 1}, {0xff, 0, 0}),
-            YYLB::Triangle({-1, 1, 1}, {1, 1, 1}, {1, -1, 1}, {0xff, 0, 0}),
-            YYLB::Triangle({-1, -1, -1}, {-1, -1, 1}, {1, -1, 1}, {0xcc, 0xff, 0xff}),
-            YYLB::Triangle({-1, -1, -1}, {1, -1, 1}, {1, -1, -1}, {0xcc, 0xff, 0xff}),
-            YYLB::Triangle({-1, 1, 1}, {-1, -1, 1}, {-1, -1, -1}, {0, 0, 0xff}),
-            YYLB::Triangle({-1, 1, 1}, {-1, 1, -1}, {-1, -1, -1}, {0, 0, 0xff}),
-            YYLB::Triangle({1, 1, 1}, {1, -1, 1}, {1, -1, -1}, {0xff, 0xff, 0}),
-            YYLB::Triangle({1, 1, 1}, {1, 1, -1}, {1, -1, -1}, {0xff, 0xff, 0}),
-            YYLB::Triangle({-1, 1, -1}, {-1, 1, 1}, {1, 1, 1}, {0xff, 0, 0xff}),
-            YYLB::Triangle({-1, 1, -1}, {1, 1, -1}, {1, 1, 1}, {0xff, 0, 0xff}),
-            YYLB::Triangle({-1, 1, -1}, {-1, -1, -1}, {1, -1, -1}, {0xff, 0xff, 0xff}),
-            YYLB::Triangle({-1, 1, -1}, {1, 1, -1}, {1, -1, -1}, {0xff, 0xff, 0xff})};
+        float p[] = {1, -1};
+        std::vector<YYLB::Vertex> vts;
+        for (int x = 0; x < 2; x++)
+        {
+            for (int y = 0; y < 2; y++)
+            {
+                for (int z = 0; z < 2; z++)
+                {
+                    vts.push_back(YYLB::Vertex({p[x], p[y], p[z]}, {0.f, 0.f}));
+                }
+            }
+        }
+
+        std::vector<YYLB::Triangle> ts;
+
+        auto foo = [&](int v1, int v2, int v3)
+        {
+            ts.push_back(YYLB::Triangle(vts[v1], vts[v2], vts[v3]));
+        };
+        vts[4].set_uv(0.f, 0.f);
+        vts[6].set_uv(0.f, 0.125f);
+        vts[2].set_uv(0.125f, 0.125f);
+        vts[0].set_uv(0.125f, 0.f);
+        foo(4, 6, 2);
+        foo(4, 0, 2);
+
         YYLB::Mesh m1(1, 5, -10, std::move(ts));
-        std::vector<Mesh> world;
+
         world.push_back(std::move(m1));
 
         auto start = std::chrono::high_resolution_clock::now();
         int cnt = 0;
 
-        Vec4f pos{0, 0, -15};
-        // auto rot = rotation_y_matrix4f(PI / 6);
-        // pos = rot * pos;
-        while (!glfwWindowShouldClose(window) && cnt < 120)
+        Vec4f pos{0, 0, -11};
+
+        while (!glfwWindowShouldClose(window))
         {
             world[0].setPos(pos.x(), pos.y(), pos.z());
-
+            processInput();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             frame_buffer->clear();
-            //processInput();
+
             render(world);
             glDrawPixels(w, h, GL_RGB, GL_UNSIGNED_BYTE, frame_buffer->pixels);
 
             glfwSwapBuffers(window);
+            glfwPollEvents();
             cnt++;
         }
 
