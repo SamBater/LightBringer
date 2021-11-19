@@ -74,6 +74,7 @@ namespace YYLB
         Camera *cam;
         Transformer *transformer;
         FrameBuffer *frame_buffer;
+        std::vector<Mesh> world;
         void processInput();
         void render(YYLB::Triangle &t);
         void render(std::vector<YYLB::Mesh> &ts);

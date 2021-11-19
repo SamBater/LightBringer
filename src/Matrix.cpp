@@ -59,6 +59,7 @@ namespace YYLB
     Matrix4f rotation_z_matrix4f(float theta_z)
     {
         Matrix4f rot;
+        set_identyti(rot);
         rot[0][0] = rot[1][1] = std::cos(theta_z);
         rot[0][1] = std::sin(theta_z);
         rot[1][0] = -rot[0][1];
@@ -68,6 +69,7 @@ namespace YYLB
     Matrix4f rotation_y_matrix4f(float theta)
     {
         Matrix4f rot;
+        set_identyti(rot);
         rot[0][0] = rot[2][2] = std::cos(theta);
         rot[0][2] = std::sin(theta);
         rot[2][0] = -rot[0][2];
@@ -77,6 +79,7 @@ namespace YYLB
     Matrix4f rotation_x_matrix4f(float theta)
     {
         Matrix4f rot;
+        set_identyti(rot);
         rot[2][2] = rot[1][1] = std::cos(theta);
         rot[1][2] = std::sin(theta);
         rot[2][1] = -rot[1][2];

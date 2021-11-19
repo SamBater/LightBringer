@@ -30,6 +30,10 @@ namespace YYLB
         {
             uv = {u, v};
         }
+        inline void set_normal(Vec3f &n)
+        {
+            normal = n;
+        }
     };
 }
 #endif

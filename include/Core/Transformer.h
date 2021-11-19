@@ -26,7 +26,8 @@ namespace YYLB
         void set_projection_to_screen(int &w, int &h);
 
         //转换输出
-        Vec4f vertex_output(Vertex &vt, Vec3f &world_pos);
+        //return : 是否需要裁剪
+        bool vertex_output(Vertex &vt, Vec3f &world_pos, Vec4f &out_ss_pos);
     };
 
 }
