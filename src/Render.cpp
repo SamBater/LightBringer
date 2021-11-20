@@ -8,13 +8,15 @@ namespace YYLB
         int dx = glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS    ? -1
                  : glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS ? 1
                                                                     : 0;
-        int dy = glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS     ? 1
+        int dz = glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS     ? 1
                  : glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS ? -1
                                                                    : 0;
-        if (dx || dy)
+        int dy = glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS ? 1 : 0;
+        dy = glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS ? -1 : dy;
+        if (dx || dz || dy)
         {
             auto pos = cam->getPos();
-            cam->setPos(pos.x() + dx * move_speed, pos.y(), pos.z() + dy * move_speed);
+            cam->setPos(pos.x() + dx * move_speed, pos.y() + dy * move_speed, pos.z() + dz * move_speed);
             transformer->set_world_to_view(cam);
             transformer->set_view_to_project(cam);
         }
@@ -63,7 +65,7 @@ namespace YYLB
                 //三角形测试
                 if (YYLB::Triangle::inside(x + 0.5f, y + 0.5f, t, cof))
                 {
-                    float depth = t.interapoted_depth(cof);
+                    float depth = t.interpolated_depth(cof);
                     //深度测试
                     if (depth - frame_buffer->depth[pixel] > YYLB::eps)
                     {
@@ -71,7 +73,7 @@ namespace YYLB
                         float u = 1, v = 1;
 
                         //纹理采样
-                        t.interapoted_uv(cof, u, v);
+                        t.interpolated_uv(cof, u, v);
                         tex.tex2d(u, v, color);
                         //color = {255.f * cof.x(), 255.f * cof.y(), 255.f * cof.z()};
 
@@ -130,7 +132,7 @@ namespace YYLB
         foo(7, 6, 2);
         foo(7, 3, 2);
 
-        YYLB::Mesh m1(0, 1, -3, std::move(ts));
+        YYLB::Mesh m1(2.5, 1, -7, std::move(ts));
         char *str = new char[256];
         int cnt = 0;
         world.push_back(std::move(m1));

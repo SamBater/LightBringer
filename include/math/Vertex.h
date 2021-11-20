@@ -14,6 +14,7 @@ namespace YYLB
         Vec3f normal;   //法线
         friend YYLB::Transformer;
         friend YYLB::Triangle;
+        float inv;
 
     public:
         Vertex(Vec3f &&position, Vec2f &&uv);

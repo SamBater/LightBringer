@@ -25,13 +25,18 @@ void Triangle::ready_to_raser(Vec4f pos_screen_space[])
     bb.left = YYLB::min3(vts[0].sx(), vts[1].sx(), vts[2].sx());
 }
 
-float Triangle::interapoted_depth(Vec3f &cof)
+float Triangle::interpolated_depth(Vec3f &cof)
 {
-    return cof.x() * vts[0].sz() + cof.y() * vts[1].sz() + cof.z() * vts[2].sz();
+    float s = 1 / (cof.x() * vts[0].inv + cof.y() * vts[1].inv + cof.z() * vts[2].inv);
+    return (cof.x() * vts[0].sz() +
+            cof.y() * vts[1].sz() +
+            cof.z() * vts[2].sz()) *
+           s;
 }
 
-void Triangle::interapoted_uv(Vec3f &cof, float &u_out, float &v_out)
+void Triangle::interpolated_uv(Vec3f &cof, float &u, float &v)
 {
-    u_out = cof.x() * vts[0].u() + cof.y() * vts[1].u() + cof.z() * vts[2].u();
-    v_out = cof.x() * vts[0].v() + cof.y() * vts[1].v() + cof.z() * vts[2].v();
+    float s = 1 / (cof.x() * vts[0].inv + cof.y() * vts[1].inv + cof.z() * vts[2].inv);
+    u = s * (cof.x() * vts[0].u() + cof.y() * vts[1].u() + cof.z() * vts[2].u());
+    v = s * (cof.x() * vts[0].v() + cof.y() * vts[1].v() + cof.z() * vts[2].v());
 }

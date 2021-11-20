@@ -53,7 +53,6 @@ namespace YYLB
         Matrix4f mvp = m_v2p * m_w2v * m_m2w;
         Vec4f local_pos_h{local_pos.x(), local_pos.y(), local_pos.z(), 1};
         Vec4f ccv_pos = mvp * local_pos_h;
-
         //裁剪
         if (ccv_pos.x() >= ccv_pos.w())
             return false;
@@ -63,10 +62,13 @@ namespace YYLB
             return false;
         if (ccv_pos.y() <= -ccv_pos.w())
             return false;
-        // if (ccv_pos.z() <= -ccv_pos.w() || ccv_pos.z() >= ccv_pos.w())
+        // if (ccv_pos.z() <= -ccv_pos.w() || ccv_pos.z() >= 1)
         //     return false;
-
-        ccv_pos /= ccv_pos.w();
+        float w = ccv_pos.w();
+        float z = ccv_pos.z();
+        ccv_pos /= w;
+        vt.set_uv(vt.u() / w, vt.v() / w);
+        vt.inv = 1.0f / w;
 
         out_ss_pos = m_p2s * ccv_pos;
         return true;
