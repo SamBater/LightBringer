@@ -18,21 +18,19 @@ Vec3f SimpleShader::fragment_shading(Triangle& t,Light* l)
     Vec3f l_dir;
 
     auto sun = static_cast<ParalleLight*>(l);
-    // if(sun!= nullptr)
-    // {
-        l_dir = sun->dir;
-    // }
-    // else
-    // {
+    if(sun!= nullptr)
+    {
+        l_dir = sun->dir * -1.0f;
+    }
+    else
+    {
         l_dir = l->getPos() - position_world;
-        l_dir.normalized();
-    // }
+    }
     
-    // l_dir.normalized();
-    
+    l_dir.normalized();
     float nxl= dot_product(l_dir,normal);
 
-    l->light_intense = 4.f;
+    l->light_intense = 3.f;
     l->light_color = Vec3f{1,1,1};
 
     float distance = l_dir.scalar();
@@ -44,8 +42,8 @@ Vec3f SimpleShader::fragment_shading(Triangle& t,Light* l)
 
     
    
-    // Vec3f diffuse = l->light_color * std::max(0.f,nxl) * l->light_intense * abt  ;
-    Vec3f diffuse = l->light_color * (nxl + 1.f) * 0.5f * l->light_intense * abt;
-    Vec3f ambient = {0.0f,0.0f,0.0f};
-    return diffuse + ambient;
+    Vec3f diffuse = l->light_color * std::max(0.f,nxl) * l->light_intense * abt  ;
+    // Vec3f diffuse = l->light_color * (nxl + 1.f) * 0.5f * l->light_intense * abt;
+    Vec3f ambient = {0.f,0.f,0.f};
+    return diffuse + ambient ;
 }

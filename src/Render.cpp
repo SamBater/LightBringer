@@ -81,7 +81,7 @@ namespace YYLB
                     //深度测试
                     if (depth - frame_buffer->depth[pixel] > YYLB::eps)
                     {
-                        color = shader->fragment_shading(t,&lights[0]);
+                        color = shader->fragment_shading(t,lights[0]);
                         frame_buffer->set_depth(x, y, depth);
                         frame_buffer->set_color(x, y, color);
                     }
@@ -155,12 +155,15 @@ namespace YYLB
         Vertex({-1,-1,1},{0,0.f,1.f},{0.f,0.5f})  ));
         
 
-        YYLB::ParalleLight sun;
-        sun.setPos(10.5f,1.f,10.5f);
-        sun.dir = Vec3f{-0.15f,0.25f,0};
+        YYLB::ParalleLight* sun = new ParalleLight();
+        //sun->setPos(5.0f, 10.f,-6.f);
+        sun->dir = Vec3f{0.f,0.f,-1.f};
         lights.push_back(sun);
 
-        YYLB::Mesh m1(2.5f, 1.0f, -4.f, std::move(ts));
+        YYLB::Light* point_light = new Light();
+        point_light->setPos(2.5f,2.5f,-10);
+
+        YYLB::Mesh m1(0.f, 0.0f, -6.f, std::move(ts));
         auto t = new Texture("Img/uv.jpg");
         m1.shader = new SimpleShader(t);
         char *str = new char[256];
@@ -169,12 +172,13 @@ namespace YYLB
         auto start = std::chrono::high_resolution_clock::now();
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> delta_time = end - start;
+        world[0].rotate(YYLB::PI / 4);
         while (!glfwWindowShouldClose(window))
         {
             processInput(delta_time.count());
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             frame_buffer->clear();
-
+        
             render(world);
             glDrawPixels(w, h, GL_RGB, GL_UNSIGNED_BYTE, frame_buffer->pixels);
 
@@ -199,6 +203,8 @@ namespace YYLB
             return;
         }
 
+
+
         window = glfwCreateWindow(w, h,title, NULL, NULL);
         if (!window)
         {
@@ -211,8 +217,8 @@ namespace YYLB
         frame_buffer = new FrameBuffer(w, h);
 
         //设置渲染状态
-        Vec3f camPos = {2.5f,1.f,1.f};
-        cam = new Camera(camPos.x(), camPos.y(),camPos.z(), PI / 2, w * 1.f / h, 2.f, -400.f);
+        Vec3f camPos = {0.f,0.f,1.f};
+        cam = new Camera(camPos.x(), camPos.y(),camPos.z(), PI / 3, w * 1.f / h, 0.8f, 1000.f);
         transformer = new Transformer();
         transformer->set_world_to_view(cam);
         transformer->set_view_to_project(cam);

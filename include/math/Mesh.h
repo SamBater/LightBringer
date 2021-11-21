@@ -29,12 +29,12 @@ namespace YYLB
                 for(Vertex& v : t.vts)
                 {
                     Vec4f pos_h = {v.x(),v.y(),v.z(),1}; 
-                    // Vec4f normal_h = {v.normal.x(),v.normal.y(),v.normal.z()};
+                    Vec4f normal_h = {v.normal.x(),v.normal.y(),v.normal.z(),0};
                     auto pos = rot * pos_h; 
-                    // auto n = rot * normal_h;
-                    // auto normal = Vec3f{n.x(),n.y(),n.z()};
+                    auto n = rot * normal_h;
+                    auto normal = Vec3f{n.x(),n.y(),n.z()};
                     v.set_pos(pos.x(),pos.y(), pos.z());
-                    // v.set_normal(normal);
+                    v.set_normal(normal);
                 }
             }
         }

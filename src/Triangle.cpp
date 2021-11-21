@@ -54,11 +54,12 @@ Vec3f Triangle::interpolated_world_position()
 {
     Vec3f pos;
     pos = (vts[0].position_world * cof.x() , vts[1].position_world * cof.y(),vts[2].position_world * cof.y());
+    return pos;
 }
 
 Vec3f Triangle::interpolated_world_normal()
 {
     Vec3f normal;
-    normal = (vts[0].normal * cof.x() , vts[1].normal * cof.y() , vts[2].normal * cof.z() );
+    normal =  (vts[0].normal * cof.x() , vts[1].normal * cof.y() , vts[2].normal * cof.z() ) ;
     return normal;
 }

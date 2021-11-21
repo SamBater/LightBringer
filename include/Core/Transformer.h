@@ -8,13 +8,13 @@ namespace YYLB
     //负责坐标转换,并输出相应
     struct Transformer
     {
-        Matrix4f m_m2w; //模型变化矩阵
-        Matrix4f m_w2v; //视图变换矩阵
-        Matrix4f m_v2p; //透视投影变换矩阵
-        Matrix4f m_p2s; //视口变换矩阵
+        Matrix4f world; //模型变化矩阵
+        Matrix4f view; //视图变换矩阵
+        Matrix4f projection; //透视投影变换矩阵
+        Matrix4f view_port; //视口变换矩阵
 
         //物体移动时重新计算
-        void set_model_to_world(Vec3f &world_pos);
+        void set_matrix_world(Vec3f &world_pos);
 
         //相机位置改变时重新计算
         void set_world_to_view(Camera *cam);

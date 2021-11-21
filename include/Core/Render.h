@@ -89,7 +89,7 @@ namespace YYLB
         Transformer *transformer;
         FrameBuffer *frame_buffer;
         std::vector<Mesh> world;
-        std::vector<Light> lights;
+        std::vector<Light*> lights;
         void processInput(double&& delta_time);
         void render(YYLB::Triangle &t);
         void render(std::vector<YYLB::Mesh> &ts);
