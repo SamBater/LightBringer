@@ -48,6 +48,7 @@ namespace YYLB
     bool Transformer::vertex_output(Vertex &vt, Vec3f &world_pos, Vec4f &out_ss_pos)
     {
         auto local_pos = vt.position;
+        vt.position_world = vt.position + world_pos;
         set_model_to_world(world_pos);
         //auto rot = rotation_z_matrix4f(YYLB::PI / 6);
         Matrix4f mvp = m_v2p * m_w2v * m_m2w;

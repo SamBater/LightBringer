@@ -1,5 +1,6 @@
 #ifndef YYLB_MATRIX
 #define YYLB_MATRIX
+#include <cmath>
 #include <vector>
 #include <iostream>
 namespace YYLB
@@ -49,7 +50,7 @@ namespace YYLB
         inline const T &w() const { return data[0][3]; }
         const T *operator[](const int index) const { return data[index]; }
         T *operator[](const int index) { return data[index]; }
-        Matrix<T, R, C> operator+(const Matrix<T, R, C> &rhs)
+        Matrix<T, R, C> operator+(const Matrix<T, R, C> &rhs) const
         {
             Matrix<T, R, C> result;
             for (int r = 0; r < R; r++)
@@ -61,7 +62,7 @@ namespace YYLB
             }
             return result;
         }
-        Matrix<T, R, C> operator-(const Matrix<T, R, C> &rhs)
+        Matrix<T, R, C> operator-(const Matrix<T, R, C> &rhs) const
         {
             Matrix<T, R, C> result;
             for (int r = 0; r < R; r++)
@@ -73,7 +74,7 @@ namespace YYLB
             }
             return result;
         }
-        Matrix<T, R, C> operator*(float val)
+        Matrix<T, R, C> operator*(float val) const
         {
             Matrix<T, R, C> result;
             for (int r = 0; r < R; r++)
@@ -87,7 +88,7 @@ namespace YYLB
         }
 
         template <int S>
-        Matrix<T, C, S> operator*(Matrix<T, C, S> &Vec)
+        Matrix<T, C, S> operator*(Matrix<T, C, S> &Vec) const
         {
             Matrix<T, C, S> result;
             for (int r = 0; r < C; r++)
@@ -158,6 +159,11 @@ namespace YYLB
             }
             return scalar;
         }
+
+        void normalized()
+        {
+            (*this) /= std::sqrt(this->scalar());
+        }
     };
     typedef Matrix<int, 2, 1> Vec2i;
     typedef Matrix<float, 2, 1> Vec2f;
@@ -173,6 +179,15 @@ namespace YYLB
 
     template <int R, int C>
     const Matrix<float, R, C> scale_matrix(int scaleCoef);
+
+
+    inline float dot_product(const Vec3f& lhs,const Vec3f& rhs)
+    {
+        float sum = 0;
+        for(int i = 0 ; i < 3 ; i++)
+            sum += lhs[0][i] * rhs[0][i];
+        return sum;
+    }
 
     inline float cross_product(const Vec2f &lhs, const Vec2f &rhs)
     {
@@ -220,6 +235,7 @@ namespace YYLB
     void set_identyti(Matrix4f &mat);
 
     void set_zero(Matrix4f &mat);
+    
 
 }
 #endif

@@ -1,5 +1,6 @@
 #ifndef YBT_MATH_TRIANGLE
 #define YBT_MATH_TRIANGLE
+#include "math/Matrix.h"
 #include <math/Matrix.h>
 #include <math/Common.h>
 #include <Core/Actor.h>
@@ -17,19 +18,24 @@ namespace YYLB
     private:
         BoundingBox bb;
         float area;
-
+        Vec3f cof;
     public:
         YYLB::Vertex vts[3];
         Triangle() = default;
+        
         Triangle(Vertex &vt1, Vertex &vt2, Vertex &vt3);
+        Triangle(Vertex &&vt1, Vertex &&vt2, Vertex &&vt3) : vts{vt1,vt2,vt3}{}
         inline const BoundingBox *bounding_box()
         {
             return &bb;
         }
         void ready_to_raser(Vec4f pos_screen_space[]);
-        float interpolated_depth(Vec3f &cof);
-        void interpolated_uv(Vec3f &cof, float &u, float &v);
-        inline static bool inside(float x, float y, YYLB::Triangle &t, Vec3f &cof)
+        float interpolated_depth();
+        void interpolated_uv(float &u, float &v);
+        void interpolated_color(Vec3f& color);
+        Vec3f interpolated_world_position();
+        Vec3f interpolated_world_normal();
+        inline static bool inside(float x, float y, YYLB::Triangle &t)
         {
             float i = 1.0f;
             float a = det(x, t.vts[1].sx(), t.vts[2].sx(),
@@ -41,9 +47,9 @@ namespace YYLB
                           t.vts[0].sy(), y, t.vts[2].sy(),
                           i, i, i) /
                       t.area;
-            cof.x() = a;
-            cof.y() = b;
-            cof.z() = 1 - a - b;
+            t.cof.x() = a;
+            t.cof.y() = b;
+            t.cof.z() = 1 - a - b;
             return a >= 0 && b >= 0 && a + b <= 1.0f;
         }
     };

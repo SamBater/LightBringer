@@ -66,6 +66,7 @@ namespace YYLB
         return rot;
     }
 
+    //绕y轴旋转theta
     Matrix4f rotation_y_matrix4f(float theta)
     {
         Matrix4f rot;
@@ -81,7 +82,8 @@ namespace YYLB
         Matrix4f rot;
         set_identyti(rot);
         rot[2][2] = rot[1][1] = std::cos(theta);
-        rot[1][2] = std::sin(theta);
+        rot[1][2] = -std::sin(theta);
         rot[2][1] = -rot[1][2];
+        return rot;
     }
 }

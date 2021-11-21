@@ -1,5 +1,6 @@
 #ifndef YBT_MATH_COMMON
 #define YBT_MATH_COMMON
+#include "math/Matrix.h"
 namespace YYLB
 {
     const float PI = 3.1415926f;
@@ -45,6 +46,7 @@ namespace YYLB
 
     inline float det(Matrix4f &mat)
     {
+        return 0;
     }
 
     inline float det(float &a11, float &a12, float &a13,

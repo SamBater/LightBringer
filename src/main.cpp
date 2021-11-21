@@ -1,3 +1,5 @@
+#include "math/Common.h"
+#include "math/Matrix.h"
 #include <Core/Render.h>
 int main(int argc, const char **argv)
 {

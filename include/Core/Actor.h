@@ -5,18 +5,17 @@ namespace YYLB
 {
     class Actor
     {
-    protected:
-        YYLB::Vec3f world_pos;
-
+        
     public:
-        Actor(Vec3f &list) : world_pos(list) {}
-        Actor(const float x = 0, const float y = 0, const float z = 0) : world_pos{x, y, z} {}
-        inline const Vec3f &getPos() const { return world_pos; }
-        inline void setPos(float x, float y, float z)
+        YYLB::Vec3f position_world;
+        Actor(Vec3f &list) : position_world(list) {}
+        Actor(const float x = 0, const float y = 0, const float z = 0) : position_world{x, y, z} {}
+        inline const Vec3f &getPos() const { return position_world; }
+        virtual void setPos(float x, float y, float z)
         {
-            world_pos.x() = x;
-            world_pos.y() = y;
-            world_pos.z() = z;
+            position_world.x() = x;
+            position_world.y() = y;
+            position_world.z() = z;
         }
     };
 }

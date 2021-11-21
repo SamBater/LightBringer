@@ -1,3 +1,4 @@
+#include "math/Triangle.h"
 #include <math/Triangle.h>
 
 using namespace YYLB;
@@ -25,7 +26,7 @@ void Triangle::ready_to_raser(Vec4f pos_screen_space[])
     bb.left = YYLB::min3(vts[0].sx(), vts[1].sx(), vts[2].sx());
 }
 
-float Triangle::interpolated_depth(Vec3f &cof)
+float Triangle::interpolated_depth()
 {
     float s = 1 / (cof.x() * vts[0].inv + cof.y() * vts[1].inv + cof.z() * vts[2].inv);
     return (cof.x() * vts[0].sz() +
@@ -34,9 +35,30 @@ float Triangle::interpolated_depth(Vec3f &cof)
            s;
 }
 
-void Triangle::interpolated_uv(Vec3f &cof, float &u, float &v)
+void Triangle::interpolated_uv(float &u, float &v)
 {
     float s = 1 / (cof.x() * vts[0].inv + cof.y() * vts[1].inv + cof.z() * vts[2].inv);
     u = s * (cof.x() * vts[0].u() + cof.y() * vts[1].u() + cof.z() * vts[2].u());
     v = s * (cof.x() * vts[0].v() + cof.y() * vts[1].v() + cof.z() * vts[2].v());
+}
+
+void Triangle::interpolated_color(Vec3f& color)
+{
+    float s = 1 / (cof.x() * vts[0].inv + cof.y() * vts[1].inv + cof.z() * vts[2].inv);
+    color = (vts[0].color * cof.x() , vts[1].color * cof.y() , vts[2].color * cof.z() ) ;
+}
+
+
+
+Vec3f Triangle::interpolated_world_position()
+{
+    Vec3f pos;
+    pos = (vts[0].position_world * cof.x() , vts[1].position_world * cof.y(),vts[2].position_world * cof.y());
+}
+
+Vec3f Triangle::interpolated_world_normal()
+{
+    Vec3f normal;
+    normal = (vts[0].normal * cof.x() , vts[1].normal * cof.y() , vts[2].normal * cof.z() );
+    return normal;
 }

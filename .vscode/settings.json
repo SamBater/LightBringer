@@ -51,7 +51,9 @@
     "cinttypes": "cpp",
     "typeinfo": "cpp",
     "chrono": "cpp",
-    "ratio": "cpp"
+    "ratio": "cpp",
+    "compare": "cpp",
+    "concepts": "cpp"
   },
   "cmake.configureOnOpen": false,
   "editor.mouseWheelZoom": true

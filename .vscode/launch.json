@@ -14,7 +14,7 @@
             "cwd": "${workspaceFolder}/build/",
             "environment": [],
             "externalConsole": false,
-            "MIMode": "gdb",
+            "MIMode":"gdb",
             // "setupCommands": [
             //     {
             //     "description": "Enable pretty-printing for gdb",
@@ -22,7 +22,7 @@
             //     "ignoreFailures": true
             //     }
             // ],
-            // "preLaunchTask": "Make"
+            //"preLaunchTask": "make"
 
         }
     ]

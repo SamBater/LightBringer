@@ -1,21 +1,37 @@
+#include "Core/Light.h"
+#include "Core/ParallelLight.h"
+#include "Core/Texture.h"
+#include "GLFW/glfw3.h"
+#include "math/Common.h"
+#include "math/Matrix.h"
+#include "math/Vertex.h"
 #include <Core/Render.h>
 namespace YYLB
 {
 
-    void Render::processInput()
+    void Render::processInput(double&& delta_time)
     {
-        static float move_speed = 0.1f;
-        int dx = glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS    ? -1
-                 : glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS ? 1
+        double move_speed = 10.0 * delta_time;
+        double rot_speed = YYLB::PI / 6 * delta_time;
+        int dx = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS    ? -1
+                 : glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ? 1
                                                                     : 0;
-        int dz = glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS     ? 1
-                 : glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS ? -1
+        int dz = glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS     ? 1
+                 : glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS ? -1
                                                                    : 0;
         int dy = glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS ? 1 : 0;
         dy = glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS ? -1 : dy;
+
+        
+        int ty = glfwGetKey(window,GLFW_KEY_LEFT) == GLFW_PRESS ? 1 : 0;
+        ty = glfwGetKey(window,GLFW_KEY_RIGHT) ? -1 : ty;
+        auto pos = cam->getPos();
+        if(ty)
+        {   
+            world[0].rotate(rot_speed * ty);
+        }    
         if (dx || dz || dy)
         {
-            auto pos = cam->getPos();
             cam->setPos(pos.x() + dx * move_speed, pos.y() + dy * move_speed, pos.z() + dz * move_speed);
             transformer->set_world_to_view(cam);
             transformer->set_view_to_project(cam);
@@ -49,35 +65,23 @@ namespace YYLB
         }
     }
 
-    YYLB::Texture tex("img/uv.jpg");
     void Render::render(YYLB::Triangle &t)
     {
-
+        auto shader = world[0].shader;
         const YYLB::BoundingBox *bb = t.bounding_box();
-        Vec3f cof;
-        RGB color = {255, 255, 255};
-        unsigned char i = 255;
-        // #pragma omp parallel for num_threads(2)
+        Vec3f color = {0.5, 0.5, 0.5};
         for (int y = bb->bot; y < bb->top; y++)
             for (int x = bb->left; x < bb->right; x++)
             {
                 int pixel = y * w + x;
                 //三角形测试
-                if (YYLB::Triangle::inside(x + 0.5f, y + 0.5f, t, cof))
+                if (YYLB::Triangle::inside(x + 0.5f, y + 0.5f, t))
                 {
-                    float depth = t.interpolated_depth(cof);
+                    float depth = t.interpolated_depth();
                     //深度测试
                     if (depth - frame_buffer->depth[pixel] > YYLB::eps)
                     {
-                        //unsigned char r = cof.x() * 255, g = cof.y() * 255, b = cof.z() * 255;
-                        float u = 1, v = 1;
-
-                        //纹理采样
-                        t.interpolated_uv(cof, u, v);
-                        tex.tex2d(u, v, color);
-                        //color = {255.f * cof.x(), 255.f * cof.y(), 255.f * cof.z()};
-
-                        //TODO:扩展为片段着色器
+                        color = shader->fragment_shading(t,&lights[0]);
                         frame_buffer->set_depth(x, y, depth);
                         frame_buffer->set_color(x, y, color);
                     }
@@ -92,56 +96,82 @@ namespace YYLB
 
         //准备物体
 
-        float p[] = {1, -1};
-        std::vector<YYLB::Vertex> vts;
-        for (int x = 0; x < 2; x++)
-        {
-            for (int y = 0; y < 2; y++)
-            {
-                for (int z = 0; z < 2; z++)
-                {
-                    vts.push_back(YYLB::Vertex({p[x], p[y], p[z]}, {0.f, 0.f}));
-                }
-            }
-        }
+        using YYLB::Triangle;
+        using YYLB::Vertex;
+        std::vector<Triangle> ts;
 
-        std::vector<YYLB::Triangle> ts;
+        //底面
+        ts.push_back(Triangle(Vertex({-1,-1,-1},{0.f,-1,0.f},{0.f,0.f}),
+                              Vertex({-1,-1,1},{0.f,-1,0},{0,0.5f}),
+                              Vertex({1,-1,1},{0,-1,0},{0.5f,0.5f})  ));
 
-        auto foo = [&](int &&v1, int &&v2, int &&v3)
-        {
-            ts.push_back(YYLB::Triangle(vts[v1], vts[v2], vts[v3]));
-        };
-        vts[4].set_uv(0.f, 0.f);
-        vts[6].set_uv(0.f, 0.125f);
-        vts[2].set_uv(0.125f, 0.125f);
-        vts[0].set_uv(0.125f, 0.f);
-        vts[1].set_uv(0.25f, 0.0f);
-        vts[3].set_uv(0.25f, 0.125f);
-        vts[5].set_uv(0.375f, 0.0f);
-        vts[7].set_uv(0.375f, 0.125f);
-        foo(4, 6, 2);
-        foo(4, 0, 2);
-        foo(0, 2, 3);
-        foo(0, 1, 3);
-        foo(5, 7, 3);
-        foo(5, 1, 3);
-        foo(4, 6, 7);
-        foo(4, 5, 7);
-        foo(5, 4, 0);
-        foo(5, 1, 0);
-        foo(7, 6, 2);
-        foo(7, 3, 2);
+        ts.push_back(Triangle(Vertex({-1,-1,-1},{0.f,-1,0.f},{0.f,0.f}),
+        Vertex({1,-1,-1},{0.f,-1,0},{0.5f,0.f}),
+        Vertex({1,-1,1},{0,-1,0},{0.5f,0.5f})  ));
 
-        YYLB::Mesh m1(2.5, 1, -7, std::move(ts));
+        //顶面
+                ts.push_back(Triangle(Vertex({-1,1,-1},{0.f,1,0.f},{0.f,0.f}),
+                              Vertex({-1,1,1},{0.f,1,0},{0,0.5f}),
+                              Vertex({1,1,1},{0,1,0},{0.5f,0.5f})  ));
+
+        ts.push_back(Triangle(Vertex({-1,1,-1},{0.f,1,0.f},{0.f,0.f}),
+        Vertex({1,1,-1},{0.f,1,0},{0.5f,0.f}),
+        Vertex({1,1,1},{0,1,0},{0.5f,0.5f})  ));
+
+        //右面
+        ts.push_back(Triangle(Vertex({1,1,1},{1.f,0.f,0.f},{0.f,0.f}),
+        Vertex({1,1,-1},{1.f,0,0},{0.5f,0.f}),
+        Vertex({1,-1,1},{1.f,0,0},{0.f,0.5f})  ));
+
+        ts.push_back(Triangle(Vertex({1,-1,-1},{1.f,0.f,0.f},{0.5f,0.5f}),
+        Vertex({1,1,-1},{1.f,0,0},{0.5f,0.f}),
+        Vertex({1,-1,1},{1,0,0},{0.f,0.5f})  ));
+
+        //左面
+        ts.push_back(Triangle(Vertex({-1,1,1},{-1.f,0.f,0.f},{0.f,0.f}),
+        Vertex({-1,1,-1},{-1.f,0,0},{0.5f,0.f}),
+        Vertex({-1,-1,1},{-1.f,0,0},{0.f,0.5f})  ));
+
+        ts.push_back(Triangle(Vertex({-1,-1,-1},{-1.f,0.f,0.f},{0.5f,0.5f}),
+        Vertex({-1,1,-1},{-1.f,0,0},{0.5f,0.f}),
+        Vertex({-1,-1,1},{-1,0,0},{0.f,0.5f})  ));
+
+
+        //背面
+                    ts.push_back(Triangle(Vertex({-1,1,-1},{0.f,0.f,-1.f},{0.f,0.f}),
+        Vertex({1,1,-1},{0.f,0,-1.f},{0.5f,0.f}),
+        Vertex({-1,-1,-1},{0,0.f,-1.f},{0.f,0.5f})  ));
+
+        ts.push_back(Triangle(Vertex({1,-1,-1},{0.f,0.f,-1.f},{0.5f,0.5f}),
+        Vertex({1,1,-1},{0.f,0,-1.f},{0.5f,0.f}),
+        Vertex({-1,-1,-1},{0,0.f,-1.f},{0.f,0.5f})  ));
+
+        ts.push_back(Triangle(Vertex({-1,1,1},{0.f,0.f,1.f},{0.f,0.f}),
+        Vertex({1,1,1},{0.f,0,1.f},{0.5f,0.f}),
+        Vertex({-1,-1,1},{0,0.f,1.f},{0.f,0.5f})  ));
+
+        ts.push_back(Triangle(Vertex({1,-1,1},{0.f,0.f,1.f},{0.5f,0.5f}),
+        Vertex({1,1,1},{0.f,0,1.f},{0.5f,0.f}),
+        Vertex({-1,-1,1},{0,0.f,1.f},{0.f,0.5f})  ));
+        
+
+        YYLB::ParalleLight sun;
+        sun.setPos(10.5f,1.f,10.5f);
+        sun.dir = Vec3f{-0.15f,0.25f,0};
+        lights.push_back(sun);
+
+        YYLB::Mesh m1(2.5f, 1.0f, -4.f, std::move(ts));
+        auto t = new Texture("Img/uv.jpg");
+        m1.shader = new SimpleShader(t);
         char *str = new char[256];
-        int cnt = 0;
+
         world.push_back(std::move(m1));
         auto start = std::chrono::high_resolution_clock::now();
         auto end = std::chrono::high_resolution_clock::now();
-
+        std::chrono::duration<double> delta_time = end - start;
         while (!glfwWindowShouldClose(window))
         {
-            processInput();
+            processInput(delta_time.count());
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             frame_buffer->clear();
 
@@ -150,16 +180,13 @@ namespace YYLB
 
             glfwSwapBuffers(window);
             glfwPollEvents();
-
-            cnt++;
-            if (cnt % 10 == 0)
-            {
-                end = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double> duration = end - start;
-                start = std::chrono::high_resolution_clock::now();
-                sprintf(str, "fps:%.1lf", 10.0 / duration.count());
-                glfwSetWindowTitle(window, str);
-            }
+            
+            end = std::chrono::high_resolution_clock::now(); 
+            delta_time = end - start;
+            start = std::chrono::high_resolution_clock::now();
+            sprintf(str, "%s delta_time:%.3lf",title,delta_time.count());
+            glfwSetWindowTitle(window, str);
+            
         }
     }
 
@@ -172,7 +199,7 @@ namespace YYLB
             return;
         }
 
-        window = glfwCreateWindow(w, h, "Light Bringer - Made By YBT", NULL, NULL);
+        window = glfwCreateWindow(w, h,title, NULL, NULL);
         if (!window)
         {
             printf("Couldn't open window\n");
@@ -184,7 +211,8 @@ namespace YYLB
         frame_buffer = new FrameBuffer(w, h);
 
         //设置渲染状态
-        cam = new Camera(1, 1, 2.f, PI / 2, w * 1.f / h, 2.f, -400.f);
+        Vec3f camPos = {2.5f,1.f,1.f};
+        cam = new Camera(camPos.x(), camPos.y(),camPos.z(), PI / 2, w * 1.f / h, 2.f, -400.f);
         transformer = new Transformer();
         transformer->set_world_to_view(cam);
         transformer->set_view_to_project(cam);
