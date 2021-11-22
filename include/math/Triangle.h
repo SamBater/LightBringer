@@ -17,8 +17,10 @@ namespace YYLB
     private:
         BoundingBox bb;
         float area;
-        Vec3f cof;
+        
     public:
+
+        Vec3f cof;
         YYLB::Vertex vts[3];
         Triangle() = default;
         

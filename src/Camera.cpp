@@ -10,6 +10,5 @@ namespace YYLB
         r = aspect_ratio * t;
         l = -r;
         b = -t;
-        //printf("%f %f %f %f\n", t, r, l, b);
     }
 }

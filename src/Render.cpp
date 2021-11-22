@@ -46,6 +46,7 @@ namespace YYLB
                 for (int i = 0; i < 3 && !need_clip; i++)
                 {
                     need_clip = !transformer->vertex_output(t.vts[i], world_pos, vertex_ss[i]);
+                    t.vts[i].color = mesh.shader->shading(t.vts[i],lights[0]);
                 }
 
                 if (need_clip)
@@ -91,7 +92,7 @@ namespace YYLB
 
         using YYLB::Triangle;
         using YYLB::Vertex;       
-        YYLB::ParalleLight *sun = new ParalleLight(1.1f, Vec3f{1, 1, 1}, Vec3f{0.33f, -0.33, -0.33f});
+        YYLB::ParalleLight *sun = new ParalleLight(1.1f, Vec3f{1, 0, 1}, Vec3f{0.23f, -0.44, -0.22f});
         lights.push_back(sun);
 
         YYLB::PointLight *point_light = new YYLB::PointLight(5.1f, Vec3f{1, 1, 1});
@@ -99,6 +100,7 @@ namespace YYLB
         lights.push_back(point_light);
 
         YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("sphere.obj"));
+        // YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("cube.obj"));
         auto t = new Texture("Img/uv.jpg");
         m1.shader = new SimpleShader(t);
         char *str = new char[256];
@@ -107,7 +109,6 @@ namespace YYLB
         auto start = std::chrono::high_resolution_clock::now();
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> delta_time = end - start;
-        world[0].rotate(YYLB::PI / 4);
         while (!glfwWindowShouldClose(window))
         {
             processInput(delta_time.count());
