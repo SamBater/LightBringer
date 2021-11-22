@@ -1,9 +1,8 @@
 #ifndef YBT_MATH_TRIANGLE
 #define YBT_MATH_TRIANGLE
-#include "math/Matrix.h"
-#include <math/Matrix.h>
-#include <math/Common.h>
-#include <Core/Actor.h>
+#include "Matrix.h"
+#include "Common.h"
+#include "Core/Scene/Actor.h"
 #include <math/Vertex.h>
 namespace YYLB
 {

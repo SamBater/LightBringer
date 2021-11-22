@@ -1,9 +1,7 @@
 #ifndef YYLB_VERTEXS_H
 #define YYLB_VERTEXS_H
-#include <math/Matrix.h>
-#include "Core/Actor.h"
-#include "Core/Light.h"
-#include "math/Matrix.h"
+#include "Matrix.h"
+#include "Core/Scene/Actor.h"
 namespace YYLB
 {
     class Transformer;
@@ -23,8 +21,9 @@ namespace YYLB
         float inv;
 
     // public:
-        Vertex(Vec3f &&position, Vec3f&& normal,Vec2f &&uv);
-        Vertex(Vec3f &position, Vec3f& normal,Vec2f &uv);
+        Vertex(Vec3f &&position, Vec3f &&normal,Vec2f &&uv) : position(position), normal(normal),uv(uv){}
+
+        Vertex(Vec3f &position, Vec3f& normal, Vec2f &uv) : position(position), normal(normal),uv(uv){}
         inline const float &x() { return position.x(); }
         inline const float &y() { return position.y(); }
         inline const float &z() { return position.z(); }

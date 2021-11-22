@@ -1,7 +1,7 @@
 #ifndef YYLB_CAMERA
 #define YYLB_CAMERA
-#include <math/Matrix.h>
-#include <Core/Actor.h>
+#include "Math/Matrix.h"
+#include "Core/Scene/Actor.h"
 namespace YYLB
 {
     class Transformer;

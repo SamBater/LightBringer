@@ -1,9 +1,8 @@
 #pragma once
 #include "Shader.h"
-#include "math/Common.h"
-#include "math/Matrix.h"
+#include "Math/Common.h"
 #include <cmath>
-#include "math/Triangle.h"
+#include "Math/Triangle.h"
 namespace YYLB{
     class SimpleShader : public Shader
     {

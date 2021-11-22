@@ -1,8 +1,8 @@
 #ifndef YYLB_TRANSFORMER_H
 #define YYLB_TRANSFORMER_H
-#include <math/Matrix.h>
-#include <Core/Camera.h>
-#include <math/Vertex.h>
+#include "Math/Matrix.h"
+#include "Core/Scene/Camera.h"
+#include "Math/Vertex.h"
 namespace YYLB
 {
     //负责坐标转换,并输出相应

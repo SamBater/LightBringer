@@ -1,12 +1,9 @@
 #ifndef YYLB_MESH
 #define YYLB_MESH
-#include "math/Matrix.h"
-#include <math/Vertex.h>
-#include <math/Matrix.h>
-#include <math/Triangle.h>
-#include <Core/Actor.h>
-#include <vector>
-#include "Core/SimpleShader.h"
+#include "Matrix.h"
+#include "Core/Scene/Actor.h"
+#include "Triangle.h"
+#include "Core/Shader/Shader.h"
 namespace YYLB
 {
     class Render;

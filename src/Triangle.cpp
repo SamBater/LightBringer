@@ -1,5 +1,4 @@
-#include "math/Triangle.h"
-#include <math/Triangle.h>
+#include "Math/Triangle.h"
 
 using namespace YYLB;
 
@@ -42,24 +41,23 @@ void Triangle::interpolated_uv(float &u, float &v)
     v = s * (cof.x() * vts[0].v() + cof.y() * vts[1].v() + cof.z() * vts[2].v());
 }
 
-void Triangle::interpolated_color(Vec3f& color)
+void Triangle::interpolated_color(Vec3f &color)
 {
     float s = 1 / (cof.x() * vts[0].inv + cof.y() * vts[1].inv + cof.z() * vts[2].inv);
-    color = (vts[0].color * cof.x() , vts[1].color * cof.y() , vts[2].color * cof.z() ) ;
+    color = (vts[0].color * cof.x(), vts[1].color * cof.y(), vts[2].color * cof.z());
 }
-
-
 
 Vec3f Triangle::interpolated_world_position()
 {
     Vec3f pos;
-    pos = (vts[0].position_world * cof.x() , vts[1].position_world * cof.y(),vts[2].position_world * cof.y());
+    pos = (vts[0].position_world * cof.x(), vts[1].position_world * cof.y(), vts[2].position_world * cof.z());
     return pos;
 }
 
 Vec3f Triangle::interpolated_world_normal()
 {
+    float s = 1 / (cof.x() * vts[0].inv + cof.y() * vts[1].inv + cof.z() * vts[2].inv);
     Vec3f normal;
-    normal =  (vts[0].normal * cof.x() , vts[1].normal * cof.y() , vts[2].normal * cof.z() ) ;
+    normal = (vts[0].normal * cof.x(), vts[1].normal * cof.y(), vts[2].normal * cof.z()) * s;
     return normal;
 }

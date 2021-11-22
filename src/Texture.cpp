@@ -1,9 +1,7 @@
-#include <Core/Texture.h>
+#include "Core/Texture/Texture.h"
 #define STB_IMAGE_IMPLEMENTATION
-#include <Image/stb_image.h>
-#include <math/Common.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "Image/stb_image.h"
+#include "Math/Common.h"
 namespace YYLB
 {
     Texture::Texture()

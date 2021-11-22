@@ -1,11 +1,11 @@
 #ifndef YYLB_ACTOR_H
 #define YYLB_ACTOR_H
-#include <math/Matrix.h>
+#include "Math/Matrix.h"
 namespace YYLB
 {
     class Actor
     {
-        
+
     public:
         YYLB::Vec3f position_world;
         Actor(Vec3f &list) : position_world(list) {}

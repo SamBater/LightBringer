@@ -1,6 +1,6 @@
 #ifndef YYLB_TEXTURE_H
 #define YYLB_TEXTURE_H
-#include <math/Matrix.h>
+#include "Math/Matrix.h"
 
 namespace YYLB
 {

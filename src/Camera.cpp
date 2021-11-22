@@ -1,6 +1,4 @@
-#include <Core/Camera.h>
-#include <math/Common.h>
-#include <cmath>
+#include "Core/Scene/Camera.h"
 namespace YYLB
 {
     Camera::Camera(const float x, const float y, const float z,

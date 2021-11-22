@@ -180,11 +180,10 @@ namespace YYLB
     template <int R, int C>
     const Matrix<float, R, C> scale_matrix(int scaleCoef);
 
-
-    inline float dot_product(const Vec3f& lhs,const Vec3f& rhs)
+    inline float dot_product(const Vec3f &lhs, const Vec3f &rhs)
     {
         float sum = 0;
-        for(int i = 0 ; i < 3 ; i++)
+        for (int i = 0; i < 3; i++)
             sum += lhs[0][i] * rhs[0][i];
         return sum;
     }
@@ -235,7 +234,8 @@ namespace YYLB
     void set_identyti(Matrix4f &mat);
 
     void set_zero(Matrix4f &mat);
-    
+
+    float distance(Vec3f &a, Vec3f &b);
 
 }
 #endif

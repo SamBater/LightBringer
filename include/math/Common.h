@@ -1,6 +1,6 @@
 #ifndef YBT_MATH_COMMON
 #define YBT_MATH_COMMON
-#include "math/Matrix.h"
+#include "Matrix.h"
 namespace YYLB
 {
     const float PI = 3.1415926f;
