@@ -17,7 +17,8 @@
 #include "Core/Texture/Texture.h"
 #include <Math/Vertex.h>
 #include "Core/Light/ParallelLight.h"
-#include "Core/Shader/SimpleShader.h"
+#include "Core/Shader/GouraudShader.h"
+#include "Core/Shader/PhongShader.h"
 #include "Core/Light/PointLight.h"
 #include "FrameBuffer.h"
 #include "Core/ModelLoader.h"

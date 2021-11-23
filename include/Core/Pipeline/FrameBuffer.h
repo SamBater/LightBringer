@@ -1,6 +1,7 @@
 #ifndef FRAME_BUFFER_H
 #define FRAME_BUFFER_H
 #include "Math/Matrix.h"
+#include "Math/Common.h"
 namespace YYLB{
     struct FrameBuffer
     {
@@ -32,6 +33,7 @@ namespace YYLB{
 
         inline void set_color(int &x, int &y, Vec3f &color)
         {
+            YYLB::clamp(color,0.f,1.0f);
             int pixel = w * y * 3 + x * 3;
             pixels[pixel] = color.x() * 255.f;
             pixels[pixel + 1] = color.y() * 255.f;

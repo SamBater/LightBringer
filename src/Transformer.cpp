@@ -68,8 +68,6 @@ namespace YYLB
         ccv_pos /= w;
         vt.set_uv(vt.u() / w, vt.v() / w);
         vt.inv = 1.0f / w;
-        auto newN = vt.normal / w;
-        vt.set_normal(newN);
 
         out_ss_pos = view_port * ccv_pos;
         return true;

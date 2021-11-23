@@ -1,5 +1,5 @@
 #include "Core/Pipeline/Render.h"
-#include "Core/ModelLoader.h"
+#include "GLFW/glfw3.h"
 namespace YYLB
 {
 
@@ -18,10 +18,17 @@ namespace YYLB
 
         int ty = glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS ? 1 : 0;
         ty = glfwGetKey(window, GLFW_KEY_RIGHT) ? -1 : ty;
+
+        int tx = glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS ? 1 : 0;
+        tx = glfwGetKey(window, GLFW_KEY_DOWN) ? -1 : tx;
         auto pos = cam->getPos();
         if (ty)
         {
             world[0].rotate(rot_speed * ty);
+        }
+        if(tx)
+        {
+            world[0].rotate(rot_speed * tx);
         }
         if (dx || dz || dy)
         {
@@ -92,17 +99,22 @@ namespace YYLB
 
         using YYLB::Triangle;
         using YYLB::Vertex;       
-        YYLB::ParalleLight *sun = new ParalleLight(1.1f, Vec3f{1, 0, 1}, Vec3f{0.23f, -0.44, -0.22f});
+        // YYLB::ParalleLight *sun = new ParalleLight(1.1f, Vec3f{1, 0, 1}, Vec3f{0.23f, -0.44, -0.22f});
+        YYLB::ParalleLight *sun = new ParalleLight(1.1f, Vec3f{1, 1, 1}, Vec3f{0.44f, -0.35f, -0.33f});
         lights.push_back(sun);
 
         YYLB::PointLight *point_light = new YYLB::PointLight(5.1f, Vec3f{1, 1, 1});
-        point_light->setPos(-.45f, 2.1f, 3.f);
-        lights.push_back(point_light);
+        point_light->setPos(-3.5f, 4.5f, -9.f);
+        // lights.push_back(point_light);
 
-        YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("sphere.obj"));
+        // YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("sphere.obj"));
         // YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("cube.obj"));
+        YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("teapot.obj"));
+        // YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("monkey.obj"));
         auto t = new Texture("Img/uv.jpg");
-        m1.shader = new SimpleShader(t);
+        // m1.shader = new GouraudShader(t);
+        m1.shader = new PhongShader(t);
+        m1.shader->camPos = &cam->position_world;
         char *str = new char[256];
 
         world.push_back(std::move(m1));

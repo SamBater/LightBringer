@@ -1,5 +1,6 @@
 #ifndef YBT_MATH_COMMON
 #define YBT_MATH_COMMON
+#include "Math/Matrix.h"
 #include "Matrix.h"
 namespace YYLB
 {
@@ -30,12 +31,34 @@ namespace YYLB
     }
 
     template <typename T>
-    T &clamp(T val, const T min, const T max)
+    inline T &clamp(T& val, const T min, const T max)
     {
         if (val > max)
             val = max;
         if (val < min)
             val = min;
+        return val;
+    }
+
+    inline RGB &clamp(RGB& val, const unsigned char min, const unsigned char max)
+    {
+        if(val.x() < min) val.x() = min;
+        if(val.y() < min) val.y() = min;
+        if(val.z() < min) val.z() = min;
+        if(val.x() > max) val.x() = max;
+        if(val.y() > max) val.y() = max;
+        if(val.z() > max) val.z() = max;
+        return val;
+    }
+
+    inline Vec3f &clamp(Vec3f& val, const float min, const float max)
+    {
+        if(val.x() < min) val.x() = min;
+        if(val.y() < min) val.y() = min;
+        if(val.z() < min) val.z() = min;
+        if(val.x() > max) val.x() = max;
+        if(val.y() > max) val.y() = max;
+        if(val.z() > max) val.z() = max;
         return val;
     }
 

@@ -3,14 +3,14 @@
 #include "Math/Matrix.h"
 namespace YYLB
 {
-        class SimpleShader;
+        class GouraudShader;
         class Light : public Actor
         {
         protected:
                 float light_intense = 1.0f;
                 Vec3f light_color = {1.f, 1.f, 1.f};
                 friend class Shader;
-                friend class SimpleShader;
+                friend class GouraudShader;
 
         public:
                 Light(float intence, Vec3f light_color) : light_intense(intence), light_color(light_color) {}

@@ -1,4 +1,5 @@
 #include "Core/ModelLoader.h"
+#include "Math/Matrix.h"
 std::vector<YYLB::Triangle> YYLB::LoadObj(const char *modelPath)
 {
     std::vector< unsigned int > vertexIndices, uvIndices, normalIndices;
@@ -36,11 +37,11 @@ std::vector<YYLB::Triangle> YYLB::LoadObj(const char *modelPath)
         else if(strcmp(lineHeader,"f") == 0){
             std::string vertex1, vertex2, vertex3;
             int vertexIndex[3], uvIndex[3], normalIndex[3];
+
             int matches = fscanf(fp, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2] );
-            if (matches != 9){
-                std::cerr << "File can't be read by our simple parser : ( Try exporting with other options\n";
-                return std::vector<YYLB::Triangle>();
-            }
+            // int matches = fscanf(fp,"%d//%d %d//%d %d//%d\n",&vertexIndex[0],&normalIndex[0],&vertexIndex[1],&normalIndex[1],&vertexIndex[2],&normalIndex[2]);
+            // int matches = fscanf(fp,"%d %d %d\n",&vertexIndex[0],&vertexIndex[1],&vertexIndex[2]);
+
             auto in3 = [](std::vector<YYLB::Vec3f>&vec,int& i)->YYLB::Vec3f&{return vec[i-1];};
             auto in2 = [](std::vector<YYLB::Vec2f>&vec,int& i)->YYLB::Vec2f&{return vec[i-1];};
             
@@ -49,6 +50,7 @@ std::vector<YYLB::Triangle> YYLB::LoadObj(const char *modelPath)
             {
                 Vec3f& pos = in3(vts,vertexIndex[i]);
                 Vec2f& uv = in2(uvs,uvIndex[i]);
+                // Vec2f uv = {0,0.5f};
                 Vec3f& n = in3(ns,normalIndex[i]);
                 vtv.push_back(YYLB::Vertex(pos,n,uv));
             }
