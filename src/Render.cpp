@@ -109,9 +109,9 @@ namespace YYLB
 
         // YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("sphere.obj"));
         // YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("cube.obj"));
-        YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("teapot.obj"));
-        // YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("monkey.obj"));
-        auto t = new Texture("Img/uv.jpg");
+        YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("assets/teapot.obj"));
+         //YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("monkey.obj"));
+        auto t = new Texture("assets/uv.jpg");
         // m1.shader = new GouraudShader(t);
         m1.shader = new PhongShader(t);
         m1.shader->camPos = &cam->position_world;
