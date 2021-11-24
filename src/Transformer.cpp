@@ -39,8 +39,8 @@ namespace YYLB
     void Transformer::set_projection_to_screen(int &w, int &h)
     {
         set_identyti(view_port);
-        view_port[0][0] = view_port[0][3] = w / 2;
-        view_port[1][1] = view_port[1][3] = h / 2;
+        view_port[0][0] = view_port[0][3] = w * 1.f / 2;
+        view_port[1][1] = view_port[1][3] = h * 1.f / 2;
     }
 
     bool Transformer::vertex_output(Vertex &vt, Vec3f &world_pos, Vec4f &out_ss_pos)
@@ -48,7 +48,6 @@ namespace YYLB
         auto local_pos = vt.position;
         vt.position_world = vt.position + world_pos;
         set_matrix_world(world_pos);
-        //auto rot = rotation_z_matrix4f(YYLB::PI / 6);
         Matrix4f mvp = projection * view * world;
         Vec4f local_pos_h{local_pos.x(), local_pos.y(), local_pos.z(), 1};
         Vec4f ccv_pos = mvp * local_pos_h;
@@ -66,8 +65,10 @@ namespace YYLB
         float w = ccv_pos.w();
         float z = ccv_pos.z();
         ccv_pos /= w;
-        vt.set_uv(vt.u() / w, vt.v() / w);
         vt.inv = 1.0f / w;
+        vt.set_uv(vt.u() * vt.inv, vt.v() * vt.inv);
+        vt.normal = vt.normal * vt.inv;
+        vt.position_world = vt.position_world * vt.inv;
 
         out_ss_pos = view_port * ccv_pos;
         return true;

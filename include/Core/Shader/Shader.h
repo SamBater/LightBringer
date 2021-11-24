@@ -11,8 +11,8 @@ namespace YYLB
         Texture *texture;
         
     public:
-        Vec3f* camPos;
-        Shader() {}
+        static Vec3f* camPos;
+        Shader() { texture = nullptr; }
         Shader(Texture *t) : texture(t) {}
         virtual Vec3f shading(Vertex &v, Light *l) {return Vec3f{1,1,1};}
         virtual Vec3f fragment_shading(Triangle &t, Light *l) {return Vec3f{1,1,1};}

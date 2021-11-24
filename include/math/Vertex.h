@@ -1,5 +1,4 @@
-#ifndef YYLB_VERTEXS_H
-#define YYLB_VERTEXS_H
+#pragma once
 #include "Matrix.h"
 #include "Core/Scene/Actor.h"
 namespace YYLB
@@ -46,4 +45,3 @@ namespace YYLB
         }
     };
 }
-#endif

@@ -6,11 +6,8 @@ YYLB::Vec3f GouraudShader::shading(Vertex &v, Light *l)
 {
     auto& normal = v.normal;
     auto& position_world = v.position_world;
-    //纹理采样
-    // t.interpolated_uv(u, v);
-    // texture->tex2d(u, v, color);
-    // Vec3f kd{color.x() / 255.f, color.y() / 255.f, color.z() / 255.f};
-    Vec3f kd{0.8f,0.8f,0.8f};
+
+    Vec3f kd{1.f,1.f,1.f};
 
     //计算光照方向及衰减
     float attenuation = l->attenuation(position_world);

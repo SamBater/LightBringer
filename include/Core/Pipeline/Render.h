@@ -21,7 +21,9 @@
 #include "Core/Shader/PhongShader.h"
 #include "Core/Light/PointLight.h"
 #include "FrameBuffer.h"
+#include "Core/Texture/Checkboard.h"
 #include "Core/ModelLoader.h"
+#include "Core/Texture/NoiseMap.h"
 namespace YYLB
 {
     class Render
@@ -38,10 +40,8 @@ namespace YYLB
         std::vector<Mesh> world;
         std::vector<Light *> lights;
         void processInput(double &&delta_time);
-        void render(YYLB::Triangle &t);
+        void render(YYLB::Triangle &t,YYLB::Shader*& shader);
         void render(std::vector<YYLB::Mesh> &ts);
-        void vertext_shader();
-        void pixel_shader();
 
     public:
         Render(int _w = 800, int _h = 600);

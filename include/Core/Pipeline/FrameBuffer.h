@@ -8,9 +8,9 @@ namespace YYLB{
         float *depth;
         unsigned char *pixels;
         int w, h;
-        FrameBuffer(int _w, int _h) : w(_w), h(_h)
+        FrameBuffer(size_t _w, size_t _h) : w(_w), h(_h)
         {
-            int length = h * w;
+            size_t length = _h * _w;
             pixels = new unsigned char[length * 3];
             depth = new float[length];
         }

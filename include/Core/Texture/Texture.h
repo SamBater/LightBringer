@@ -1,23 +1,20 @@
-#ifndef YYLB_TEXTURE_H
-#define YYLB_TEXTURE_H
+#pragma once
 #include "Math/Matrix.h"
-
+#include "Math/Common.h"
 namespace YYLB
 {
     class Texture
     {
-    private:
-        unsigned char *texture;
+    protected:
+        unsigned char *sprite;
         int w;
         int h;
         int comp;
 
     public:
-        Texture();
+        Texture() = default;
         Texture(const char *file_name);
-        void tex2d(const float &tex_cord_x, const float &tex_cord_y, RGB &color);
+        virtual Vec3f tex2d(const float &tex_cord_x, const float &tex_cord_y);
         virtual ~Texture();
     };
 }
-
-#endif

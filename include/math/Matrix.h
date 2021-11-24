@@ -13,9 +13,6 @@ namespace YYLB
         T data[R][C];
         Matrix()
         {
-            //默认单位矩阵
-            for (int r = 0; r < R && r >= C; r++)
-                data[r][r] = 1;
         }
         Matrix(std::initializer_list<T> &&list) : Matrix()
         {

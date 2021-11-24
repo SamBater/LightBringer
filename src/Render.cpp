@@ -1,12 +1,11 @@
 #include "Core/Pipeline/Render.h"
-#include "GLFW/glfw3.h"
 namespace YYLB
 {
 
     void Render::processInput(double &&delta_time)
     {
-        double move_speed = 10.0 * delta_time;
-        double rot_speed = YYLB::PI / 6 * delta_time;
+        double move_speed = 5.0 * delta_time;
+        double rot_speed = YYLB::PI / 3 * delta_time;
         int dx = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS   ? -1
                  : glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ? 1
                                                                 : 0;
@@ -40,35 +39,37 @@ namespace YYLB
 
     void Render::render(std::vector<YYLB::Mesh> &meshs)
     {
-        for (auto &mesh : meshs)
+        for (auto& light : lights)
         {
-            auto world_pos = mesh.getPos();
-            auto triangles = mesh.get_triangles();
-
-            for (auto &t : triangles)
+            for (auto& mesh : meshs)
             {
+                auto world_pos = mesh.getPos();
+                auto triangles = mesh.get_triangles();
 
-                Vec4f vertex_ss[3];
-                bool need_clip = false;
-                for (int i = 0; i < 3 && !need_clip; i++)
+                for (auto& t : triangles)
                 {
-                    need_clip = !transformer->vertex_output(t.vts[i], world_pos, vertex_ss[i]);
-                    t.vts[i].color = mesh.shader->shading(t.vts[i],lights[0]);
+
+                    Vec4f vertex_ss[3];
+                    bool need_clip = false;
+                    for (int i = 0; i < 3 && !need_clip; i++)
+                    {
+                        need_clip = !transformer->vertex_output(t.vts[i], world_pos, vertex_ss[i]);
+                        t.vts[i].color = mesh.shader->shading(t.vts[i], light);
+                    }
+
+                    if (need_clip)
+                        continue;
+
+                    //设置三角形,准备光栅化
+                    t.ready_to_raser(vertex_ss);
+                    render(t, mesh.shader);
                 }
-
-                if (need_clip)
-                    continue;
-
-                //设置三角形,准备光栅化
-                t.ready_to_raser(vertex_ss);
-                render(t);
             }
         }
     }
 
-    void Render::render(YYLB::Triangle &t)
+    void Render::render(YYLB::Triangle &t,Shader *&shader)
     {
-        auto shader = world[0].shader;
         const YYLB::BoundingBox *bb = t.bounding_box();
         Vec3f color = {0.5, 0.5, 0.5};
         for (int y = bb->bot; y < bb->top; y++)
@@ -99,25 +100,34 @@ namespace YYLB
 
         using YYLB::Triangle;
         using YYLB::Vertex;       
-        // YYLB::ParalleLight *sun = new ParalleLight(1.1f, Vec3f{1, 0, 1}, Vec3f{0.23f, -0.44, -0.22f});
-        YYLB::ParalleLight *sun = new ParalleLight(1.1f, Vec3f{1, 1, 1}, Vec3f{0.44f, -0.35f, -0.33f});
+        YYLB::ParalleLight *sun = new ParalleLight(1.5f, Vec3f{1, 1, 1}, Vec3f{0.44f, -0.35f, -0.33f});
+        //YYLB::ParalleLight* sun = new ParalleLight(1.1f, Vec3f{ 1, 1, 1 }, Vec3f{ -0.13f, -0.77f, -0.23f });
         lights.push_back(sun);
 
-        YYLB::PointLight *point_light = new YYLB::PointLight(5.1f, Vec3f{1, 1, 1});
-        point_light->setPos(-3.5f, 4.5f, -9.f);
-        // lights.push_back(point_light);
+        YYLB::PointLight *point_light = new YYLB::PointLight(5.1f, Vec3f{1, 0, 1});
+        point_light->setPos(2.f,6.5f, -6.f);
+         lights.push_back(point_light);
 
-        // YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("sphere.obj"));
-        // YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("cube.obj"));
-        YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("assets/teapot.obj"));
-         //YYLB::Mesh m1(0.f, 0.0f, -11.f, LoadObj("monkey.obj"));
-        auto t = new Texture("assets/uv.jpg");
-        // m1.shader = new GouraudShader(t);
-        m1.shader = new PhongShader(t);
-        m1.shader->camPos = &cam->position_world;
-        char *str = new char[256];
+        Vertex v1{ {5,-1,3} ,{0,1,0},{0,0} }, v2{ {5,-1,-10} ,{0,1,0},{0,0.5} }, 
+                v3{ {-5,-1,3},{0,1,0},{0.5,0} }, v4{ {-5,-1,-10},{0,1,0},{0.5,0.5 } };
+        
+        std::vector<Triangle> ts2 = {
+            YYLB::Triangle(v1, v2, v3),
+            YYLB::Triangle(v4, v2, v3)
+        };
 
-        world.push_back(std::move(m1));
+        Texture* t = new Texture("assets/uv.jpg");
+        Texture* checkBoard = new Checkboard();
+        Texture* noise = new NoiseMap();
+        YYLB::Mesh cube(-7.f,4.0f,-7.f,LoadObj("assets/cube.obj"));
+        cube.shader = new PhongShader(noise);
+        world.push_back(cube);
+
+        //YYLB::Mesh m1(-10.f, 5.0f, -7.f, LoadObj("assets/monkey.obj"));
+        //m1.shader = new PhongShader();
+        //world.push_back(std::move(m1));
+
+        char* str = new char[256];
         auto start = std::chrono::high_resolution_clock::now();
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> delta_time = end - start;
@@ -157,13 +167,12 @@ namespace YYLB
             return;
         }
         glfwMakeContextCurrent(window);
-        int length = w * h;
-
         frame_buffer = new FrameBuffer(w, h);
 
         //设置渲染状态
-        Vec3f camPos = {0.f, 0.f, 1.f};
+        Vec3f camPos = {-10.f, 5.f, 1.f};
         cam = new Camera(camPos.x(), camPos.y(), camPos.z(), PI / 3, w * 1.f / h, 0.8f, 1000.f);
+        Shader::camPos = &cam->position_world;
         transformer = new Transformer();
         transformer->set_world_to_view(cam);
         transformer->set_view_to_project(cam);

@@ -5,7 +5,7 @@
 namespace YYLB
 {
     const float PI = 3.1415926f;
-    const float eps = 1e-6;
+    const float eps = 1e-6f;
     template <typename T>
     inline T min(const T &a, const T &b)
     {
