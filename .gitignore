@@ -1,6 +1,7 @@
 *.o
 .cache/*
 .vs/*
+vs/
 .vscode/*
 out/*
 build/*
