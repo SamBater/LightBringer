@@ -10,11 +10,11 @@ configure_file(assets/cube.obj assets/cube.obj COPYONLY)
 configure_file(assets/uv.jpg assets/uv.jpg COPYONLY)
 configure_file(lib/glfw3.dll glfw3.dll COPYONLY)
 
+
 LINK_DIRECTORIES(lib)
-set(EXTRA_LIBS opengl32 glfw3dll)
+set(EXTRA_LIBS opengl32 glfw3)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SOURCES)
-
 
 file(GLOB HEADERS ${PROJECT_SOURCE_DIR}/include/math/*.h)
 file(GLOB HEADERS_CORE ${PROJECT_SOURCE_DIR}/include/Core/*/*.h)

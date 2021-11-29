@@ -1,5 +1,7 @@
 *.o
 .cache/*
+.idea/
+cmake-build-debug/
 .vs/*
 vs/
 .vscode/*
