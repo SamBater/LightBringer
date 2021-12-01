@@ -20,15 +20,17 @@ namespace YYLB
         void set_world_to_view(Camera *cam);
 
         //相机变化时重新计算
-        void set_view_to_project(Camera *cam);
+        void set_view_to_project(Camera *cam,PROJECTION_MODE mode);
 
         //屏幕尺寸改变时重新计算
         void set_projection_to_screen(int &w, int &h);
 
         //转换输出
         //return : 是否需要裁剪
-        bool vertex_output(Vertex &vt, Vec3f &world_pos, Vec4f &out_ss_pos);
+        bool vertex_output(Camera* cam,Vertex &vt, Vec3f &world_pos, Vec4f &out_ss_pos);
     };
+
+
 
 }
 #endif

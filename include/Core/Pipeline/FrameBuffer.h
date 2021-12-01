@@ -23,14 +23,6 @@ namespace YYLB{
             pixels[pixel + 2] = b;
         }
 
-        inline void set_color(int &x, int &y, RGB &rgb)
-        {
-            int pixel = w * y * 3 + x * 3;
-            pixels[pixel] = rgb.x();
-            pixels[pixel + 1] = rgb.y();
-            pixels[pixel + 2] = rgb.z();
-        }
-
         inline void set_color(int &x, int &y, Vec3f &color)
         {
             YYLB::clamp(color,0.f,1.0f);

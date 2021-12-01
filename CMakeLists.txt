@@ -12,7 +12,7 @@ configure_file(lib/glfw3.dll glfw3.dll COPYONLY)
 
 
 LINK_DIRECTORIES(lib)
-set(EXTRA_LIBS opengl32 glfw3)
+set(EXTRA_LIBS opengl32 glfw3dll)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SOURCES)
 
@@ -22,7 +22,7 @@ file(GLOB HEADERS_CORE ${PROJECT_SOURCE_DIR}/include/Core/*/*.h)
 source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${HEADERS})
 source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${HEADERS_CORE})
 
-add_executable(LightBringer ${SOURCES} ${HEADERS} ${HEADERS_CORE} )
+add_executable(LightBringer ${SOURCES} ${HEADERS} ${HEADERS_CORE})
 target_include_directories(LightBringer
     PUBLIC 
         ${CMAKE_CURRENT_SOURCE_DIR}/include

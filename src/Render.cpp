@@ -1,10 +1,12 @@
 #include "Core/Pipeline/Render.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "Image/stb_image_write.h"
 namespace YYLB
 {
 
     void Render::processInput(double &&delta_time)
     {
-        double move_speed = 5.0 * delta_time;
+        double move_speed = 10.0 * delta_time;
         double rot_speed = YYLB::PI / 3 * delta_time;
         int dx = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS   ? -1
                  : glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ? 1
@@ -20,20 +22,21 @@ namespace YYLB
 
         int tx = glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS ? 1 : 0;
         tx = glfwGetKey(window, GLFW_KEY_DOWN) ? -1 : tx;
-        auto pos = cam->getPos();
         if (ty)
         {
-            world[0].rotate(rot_speed * ty);
+
         }
         if(tx)
         {
-            world[0].rotate(rot_speed * tx);
+
         }
         if (dx || dz || dy)
         {
-            cam->setPos(pos.x() + dx * move_speed, pos.y() + dy * move_speed, pos.z() + dz * move_speed);
+            Vec3f vx = Vec3f {1,0,0} * dx * move_speed;
+            Vec3f vz = Vec3f {0,0,1} * dz * move_speed;
+            Vec3f vy = Vec3f {0,1,0} * dy * move_speed;
+            cam->position_world = cam->position_world + vx + vz + vy;
             transformer->set_world_to_view(cam);
-            transformer->set_view_to_project(cam);
         }
     }
 
@@ -53,7 +56,7 @@ namespace YYLB
                     bool need_clip = false;
                     for (int i = 0; i < 3 && !need_clip; i++)
                     {
-                        need_clip = !transformer->vertex_output(t.vts[i], world_pos, vertex_ss[i]);
+                        need_clip = !transformer->vertex_output(cam,t.vts[i], world_pos, vertex_ss[i]);
                         t.vts[i].color = mesh.shader->shading(t.vts[i], light);
                     }
 
@@ -98,15 +101,19 @@ namespace YYLB
 
         //准备物体
 
+        //设置渲染状态
+        Vec3f camPos = {0.f, 0.f, -7.f};
+        cam = new Camera(camPos.x(), camPos.y(), camPos.z(), PI / 6, w * 1.f / h, 1, -10.f);
+        transformer->set_world_to_view(cam);
+        transformer->set_view_to_project(cam,PROJECTION_MODE::PERSPECTIVE);
+//        transformer->set_view_to_project(cam,PROJECTION_MODE::ORTHOGONAL);
+        transformer->set_projection_to_screen(w, h);
+        Shader::camPos = &cam->position_world;
+
         using YYLB::Triangle;
         using YYLB::Vertex;       
-        YYLB::ParalleLight *sun = new ParalleLight(1.5f, Vec3f{1, 1, 1}, Vec3f{0.44f, -0.35f, -0.33f});
-        //YYLB::ParalleLight* sun = new ParalleLight(1.1f, Vec3f{ 1, 1, 1 }, Vec3f{ -0.13f, -0.77f, -0.23f });
+        YYLB::ParalleLight *sun = new ParalleLight(1.5f, Vec3f{1, 1, 1}, Vec3f{0.33f, -0.35f, 0.33f});
         lights.push_back(sun);
-
-        YYLB::PointLight *point_light = new YYLB::PointLight(5.1f, Vec3f{1, 0, 1});
-        point_light->setPos(2.f,6.5f, -6.f);
-         lights.push_back(point_light);
 
         Vertex v1{ {5,-1,3} ,{0,1,0},{0,0} }, v2{ {5,-1,-10} ,{0,1,0},{0,0.5} }, 
                 v3{ {-5,-1,3},{0,1,0},{0.5,0} }, v4{ {-5,-1,-10},{0,1,0},{0.5,0.5 } };
@@ -116,16 +123,88 @@ namespace YYLB
             YYLB::Triangle(v4, v2, v3)
         };
 
-        Texture* t = new Texture("assets/uv.jpg");
-        Texture* checkBoard = new Checkboard();
+        Mesh tm(0.5,0.0,1.f,ts2);
+        tm.shader = new PhongShader();
+        world.push_back(tm);
+
         Texture* noise = new NoiseMap();
-        YYLB::Mesh cube(-7.f,4.0f,-7.f,LoadObj("assets/cube.obj"));
-        cube.shader = new PhongShader(noise);
+        YYLB::Mesh cube(0.f,0.0f,5.f,LoadObj("assets/cube.obj"));
+        cube.shader = new PhongShader();
         world.push_back(cube);
 
-        //YYLB::Mesh m1(-10.f, 5.0f, -7.f, LoadObj("assets/monkey.obj"));
-        //m1.shader = new PhongShader();
-        //world.push_back(std::move(m1));
+        YYLB::Mesh m1(0.f, 1.0f, -1.f, LoadObj("assets/monkey.obj"));
+        m1.shader = new PhongShader();
+        m1.rotate(YYLB::PI);
+        world.push_back(std::move(m1));
+
+
+
+        //生成shadowMap
+        Vec3f origin_look_at = cam->look_at;
+        cam->look_at = sun->dir; cam->look_at.z() *= -1.f;
+        transformer->set_view_to_project(cam,PROJECTION_MODE::ORTHOGONAL);
+        transformer->set_world_to_view(cam);
+        Vec2i shadow_size{w ,h};
+        unsigned char *buffer = new unsigned char[shadow_size.x() * shadow_size.y() * 3];
+        frame_buffer->clear();
+        for(auto& mesh : world)
+        {
+            auto world_pos = mesh.getPos();
+            for(auto& t : mesh.triangles)
+            {
+                Vec4f vertex_ss[3];
+                bool need_clip = false;
+                for (int i = 0; i < 3 && !need_clip; i++)
+                {
+                    need_clip = !transformer->vertex_output(cam,t.vts[i], world_pos, vertex_ss[i]);
+                }
+
+                if (need_clip)
+                    continue;
+
+                //设置三角形,准备光栅化
+                t.ready_to_raser(vertex_ss);
+                const YYLB::BoundingBox *bb = t.bounding_box();
+                for (int y = bb->bot; y < bb->top; y++)
+                    for (int x = bb->left; x < bb->right; x++)
+                    {
+                        int pixel = y * w + x;
+                        //三角形测试
+                        if (YYLB::Triangle::inside(x + 0.5f, y + 0.5f, t))
+                        {
+                            float depth = t.interpolated_depth();
+                            //深度测试
+                            if (depth - frame_buffer->depth[pixel] > YYLB::eps)
+                            {
+                                frame_buffer->set_depth(x, y, depth);
+                            }
+                        }
+                    }
+            }
+        }
+
+        for(int y = 0 ; y < shadow_size.y() ; y++)
+        {
+            for(int x = 0 ; x < shadow_size.x() ; x++)
+            {
+                int i = y * shadow_size.x() * 3 + x * 3;
+                float depth = frame_buffer->depth[y*w+x];
+                depth -= 1;
+                unsigned char color = 0;
+                if(depth > -10)color = (1+depth/11) * 255;
+                buffer[i] = color;
+                buffer[i+1] = color;
+                buffer[i+2] = color;
+            }
+        }
+
+        stbi__flip_vertically_on_write = 1;
+        stbi_write_bmp("shadowMap.bmp",shadow_size.x(),shadow_size.y(),3,buffer);
+
+        cam->look_at = origin_look_at;
+        transformer->set_view_to_project(cam,PROJECTION_MODE::PERSPECTIVE);
+//        transformer->set_view_to_project(cam,PROJECTION_MODE::ORTHOGONAL);
+        transformer->set_world_to_view(cam);
 
         char* str = new char[256];
         auto start = std::chrono::high_resolution_clock::now();
@@ -140,8 +219,36 @@ namespace YYLB
             render(world);
             glDrawPixels(w, h, GL_RGB, GL_UNSIGNED_BYTE, frame_buffer->pixels);
 
+//            Vec2i shadow_size{w ,h };
+//            unsigned char *buffer = new unsigned char[shadow_size.x() * shadow_size.y() * 3];
+//            float max = -9999;
+//            float min = 1000;
+//            for(int y = 0 ; y < shadow_size.y() ; y++)
+//            {
+//                for(int x = 0 ; x < shadow_size.x() ; x++)
+//                {
+//                    int i = y * shadow_size.x() * 3 + x * 3;
+//                    float depth = frame_buffer->depth[y*w+x];
+//                    depth -= 1;
+//                    max = std::max(max,depth);
+//                    if(depth > - 1000 )min = std::min(min,depth);
+//                    unsigned char color = 0;
+//                    if(depth > -10)color = (1+depth/11) * 255;
+//                    buffer[i] = color;
+//                    buffer[i+1] = color;
+//                    buffer[i+2] = color;
+//                }
+//            }
+//
+//            stbi__flip_vertically_on_write = 1;
+//            stbi_write_bmp("shadowMap.bmp",shadow_size.x(),shadow_size.y(),3,buffer);
+//            stbi_write_bmp("pixel.bmp",w,h,3,frame_buffer->pixels);
+//            exit(0);
+
+
             glfwSwapBuffers(window);
             glfwPollEvents();
+
 
             end = std::chrono::high_resolution_clock::now();
             delta_time = end - start;
@@ -168,14 +275,7 @@ namespace YYLB
         }
         glfwMakeContextCurrent(window);
         frame_buffer = new FrameBuffer(w, h);
-
-        //设置渲染状态
-        Vec3f camPos = {-10.f, 5.f, 1.f};
-        cam = new Camera(camPos.x(), camPos.y(), camPos.z(), PI / 3, w * 1.f / h, 0.8f, 1000.f);
-        Shader::camPos = &cam->position_world;
         transformer = new Transformer();
-        transformer->set_world_to_view(cam);
-        transformer->set_view_to_project(cam);
-        transformer->set_projection_to_screen(w, h);
+
     }
 }

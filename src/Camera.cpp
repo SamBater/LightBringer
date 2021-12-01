@@ -10,5 +10,31 @@ namespace YYLB
         r = aspect_ratio * t;
         l = -r;
         b = -t;
+
+//        look_at = {0.33,-0.35,-0.33};
+look_at = {0,0,-1};
+        look_at.normalized();
+        up = {0,1,0};
+    }
+
+    void Camera::set_perspective_matrix(Matrix4f &mat) {
+        set_zero(mat);
+        mat[0][0] = 2 * n / (r - l);
+        mat[0][2] = (l + r) / (l - r);
+        mat[1][1] = 2 * n / (t - b);
+        mat[1][2] = (b + t) / (b - t);
+        mat[2][2] = (f + n) / (n - f);
+        mat[2][3] = 2 * f * n / (f - n);
+        mat[3][2] = 1;
+    }
+
+    void Camera::set_orthogonal_matrix(Matrix4f &mat) {
+        set_identyti(mat);
+        mat[0][0] = 2 / (r-l);
+        mat[1][1] = 2 / (t-b);
+        mat[2][2] = 2 / (n-f);
+        mat[0][3] = -(r+l) / (r-l);
+        mat[1][3] = -(t+b) / (t-b);
+        mat[2][3] = -(n+f) / (n-f);
     }
 }

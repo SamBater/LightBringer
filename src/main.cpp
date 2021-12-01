@@ -1,4 +1,3 @@
-#include "Core/ModelLoader.h"
 #include "Core/Pipeline/Render.h"
 int main(int argc, const char **argv)
 {
