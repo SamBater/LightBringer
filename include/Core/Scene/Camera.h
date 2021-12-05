@@ -18,7 +18,7 @@ namespace YYLB
         float aspect_ratio;
         float l, r, t, b, n, f;
         friend class YYLB::Transformer;
-        float size = 20.f;
+        friend class Render;
 
     public:
         enum PROJECTION_MODE mode;

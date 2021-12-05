@@ -3,6 +3,7 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
+#include <numeric>
 namespace YYLB
 {
     template <typename T, int R, int C>
@@ -144,6 +145,18 @@ namespace YYLB
             return *this;
         }
 
+        Matrix<T, R, C> &operator*=(const float val)
+        {
+            for (int r = 0; r < R; r++)
+            {
+                for (int c = 0; c < C; c++)
+                {
+                    data[r][c] *= val;
+                }
+            }
+            return *this;
+        }
+
         double scalar() const
         {
             T scalar = 0;
@@ -173,6 +186,7 @@ namespace YYLB
     typedef Matrix<float, 3, 3> Matrix3f;
     const Matrix<float, 3, 3> M_identity_3x3{1, 0, 0, 0, 1, 0, 0, 0, 1};
     const Matrix4f M_identity_4x4{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+    const Vec4f vaild_pos{-1,-1,-1,-1};
 
     template <int R, int C>
     const Matrix<float, R, C> scale_matrix(int scaleCoef);
@@ -212,21 +226,8 @@ namespace YYLB
         return out;
     }
 
-    //平移
-    Matrix4f translation_matrix4x4(const float tx, const float ty, const float tz);
-    Matrix4f translation_matrix4x4(const Vec4f &vec);
+
     void translate(Matrix4f &mat, const Vec3f &offset);
-    void translate(Matrix3f &mat, const Vec3f &offset);
-
-    //缩放
-    Matrix4f scale_matrix4x4(const float sx, const float sy, const float sz, const float sw);
-
-    //旋转
-    Matrix4f rotation_z_matrix4f(float theta);
-
-    Matrix4f rotation_y_matrix4f(float theta);
-
-    Matrix4f rotation_x_matrix4f(float theta);
 
     void set_identyti(Matrix4f &mat);
 
@@ -234,5 +235,6 @@ namespace YYLB
 
     float distance(Vec3f &a, Vec3f &b);
 
+    Matrix3f rotate_transform(Vec3f &axis,float theta);
 }
 #endif

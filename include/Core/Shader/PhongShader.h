@@ -6,7 +6,7 @@ namespace YYLB
         public:
             PhongShader() : Shader(){}
             PhongShader(Texture* tex):Shader(tex){}
-            virtual Vec3f shading(Vertex& v,Light* l);
-            virtual Vec3f fragment_shading(Triangle& t,Light* l);
+            Vec4f vertex_shading(Vertex& v, Light* l) override;
+            Vec3f fragment_shading(Triangle& t, Light* l) override;
     };
 }

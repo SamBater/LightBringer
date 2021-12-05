@@ -2,11 +2,34 @@
 #include "Math/Vertex.h"
 using namespace YYLB;
 
-Vec3f PhongShader::shading(Vertex &v, Light *l)
+Vec4f PhongShader::vertex_shading(Vertex &v, Light *l)
 {
+    Vec4f pos_h{v.x(),v.y(),v.z(),1};
+
+    //MVP变换 model->view->projection
+    Vec4f ccv_pos = mvp * pos_h;
+    v.l_pos = l->lvp * pos_h;
+
+    //裁剪
+    if (ccv_pos.x() >= ccv_pos.w() || ccv_pos.x() <= -ccv_pos.w())
+        return vaild_pos;
+    if (ccv_pos.y() >= ccv_pos.w() || ccv_pos.y() <= -ccv_pos.w())
+        return vaild_pos;
+    if(ccv_pos.z() >= ccv_pos.w() || ccv_pos.z() <= -ccv_pos.w())
+        return vaild_pos;
+
+
+    //透视除法 CLIP->NDC
+    float w = ccv_pos.w();
+    ccv_pos /= w;
+    v.sz() = ccv_pos.z();
+
+    v.inv = 1.0f / w;
+    v.set_uv(v.u() * v.inv, v.v() * v.inv);
     v.normal = v.normal * v.inv;
     v.position_world = v.position_world * v.inv;
-    return Vec3f{1,1,1};
+    v.sz() *= v.inv;
+    return ccv_pos;
 }
 
 Vec3f PhongShader::fragment_shading(Triangle &t, Light *l)
@@ -38,7 +61,7 @@ Vec3f PhongShader::fragment_shading(Triangle &t, Light *l)
     float p = 256;
     Vec3f ks = {1.f, 1.f, 1.f};
     Vec3f L_specular = ks * std::pow(std::max(0.0, nxh), p);
-    Vec3f ambient = {0.0f, 0.0f, 0.0f};
+    Vec3f ambient = {0.2f, 0.2f, 0.2f};
     Vec3f L = L_diffuse  + L_specular + ambient;
     return L;
 }

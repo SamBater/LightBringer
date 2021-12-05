@@ -13,17 +13,16 @@ namespace YYLB
         Vec2f uv;       //纹理坐标
         Vec3f normal;   //法线
         Vec3f color;
+        Vec4f l_pos;    //光源空间坐标
         friend class Transformer;
         friend class Triangle;
-        // friend class YYLB::Shader;
-        // friend class YYLB::SimpleShader;
         float inv;
 
     // public:
         Vertex(Vec3f &&position, Vec3f &&normal,Vec2f &&uv) : position(position), normal(normal),uv(uv){}
 
         Vertex(Vec3f &position, Vec3f& normal, Vec2f &uv) : position(position), normal(normal),uv(uv){}
-        inline const float &x() { return position.x(); }
+        inline const float &x() { return position.x(); }//模型空间坐标
         inline const float &y() { return position.y(); }
         inline const float &z() { return position.z(); }
         inline float &sx() { return sv_pos.x(); }

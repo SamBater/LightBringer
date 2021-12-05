@@ -19,20 +19,30 @@ namespace YYLB
         Mesh(const float x, const float y, const float z, std::vector<Triangle>& ts) : Actor(x, y, z), triangles(ts) {}
         inline const std::vector<Triangle> &get_triangles() const { return triangles; }
         inline std::vector<Triangle> &get_triangles() { return triangles; }
-        void rotate(float theta)
+        void rotate(Vec3f axis,float theta)
         {
-            auto rot = YYLB::rotation_y_matrix4f(theta);
+            auto rot = YYLB::rotate_transform(axis,theta);
             for(auto &t : triangles)
             {
                 for(Vertex& v : t.vts)
                 {
-                    Vec4f pos_h = {v.x(),v.y(),v.z(),1}; 
-                    Vec4f normal_h = {v.normal.x(),v.normal.y(),v.normal.z(),0};
-                    auto pos = rot * pos_h; 
-                    auto n = rot * normal_h;
-                    auto normal = Vec3f{n.x(),n.y(),n.z()};
+                    auto pos = rot * v.position;
+                    auto normal = rot * v.normal;
                     v.set_pos(pos.x(),pos.y(), pos.z());
                     v.set_normal(normal);
+                }
+            }
+        }
+
+        void scale_transform(float sx,float sy,float sz)
+        {
+            for(auto &t : triangles)
+            {
+                for(auto& v : t.vts)
+                {
+                    v.position.x() = v.position.x() * sx;
+                    v.position.y() = v.position.y() * sy;
+                    v.position.z() = v.position.z() * sz;
                 }
             }
         }

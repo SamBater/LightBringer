@@ -11,8 +11,6 @@ namespace YYLB
     {
         set_identyti(view);
 
-        Vec3f target{0,0,0};
-
 //        auto g = cam->position_world - target;
         auto g = cam->look_at;
         g.normalized();
@@ -42,11 +40,11 @@ namespace YYLB
     void Transformer::set_projection_to_screen(int &w, int &h)
     {
         set_identyti(view_port);
-        view_port[0][0] = view_port[0][3] = w * 1.f / 2;
-        view_port[1][1] = view_port[1][3] = h * 1.f / 2;
+        view_port[0][0] = w * 1.f / 2;view_port[0][3] = (w-1) / 2;
+        view_port[1][1] = h * 1.f / 2;view_port[1][3] = (h-1) / 2;
     }
 
-    bool Transformer::vertex_output(Camera* cam,Vertex &vt, Vec3f &world_pos, Vec4f &out_ss_pos)
+    bool Transformer::vertex_output(Vertex &vt, Vec3f &world_pos, Vec4f &out_ss_pos)
     {
         auto local_pos = vt.position;
         vt.position_world = vt.position + world_pos;
@@ -54,22 +52,19 @@ namespace YYLB
         Matrix4f mvp = projection * view * world;
         Vec4f local_pos_h{local_pos.x(), local_pos.y(), local_pos.z(), 1};
         Vec4f ccv_pos = mvp * local_pos_h;
-        ccv_pos.w() = cam->mode == PROJECTION_MODE::PERSPECTIVE ? ccv_pos.w() : cam->size;
         //裁剪
-        if (ccv_pos.x() >= ccv_pos.w())
+        if (ccv_pos.x() >= ccv_pos.w() || ccv_pos.x() <= -ccv_pos.w())
             return false;
-        if (ccv_pos.x() <= -ccv_pos.w())
+        if (ccv_pos.y() >= ccv_pos.w() || ccv_pos.y() <= -ccv_pos.w())
             return false;
-        if (ccv_pos.y() >= ccv_pos.w())
+        if(ccv_pos.z() >= ccv_pos.w() || ccv_pos.z() <= -ccv_pos.w())
             return false;
-        if (ccv_pos.y() <= -ccv_pos.w())
-            return false;
-        // if (ccv_pos.z() <= -ccv_pos.w() || ccv_pos.z() >= 1)
-        //     return false;
-        float w = ccv_pos.w();
-        float z = ccv_pos.z();
-        ccv_pos /= w;
-        vt.inv = 1.0f / w;
+        //透视除法
+        vt.inv = 1.0f / ccv_pos.w();
+        ccv_pos *= vt.inv;
+
+
+
         vt.set_uv(vt.u() * vt.inv, vt.v() * vt.inv);
         vt.normal = vt.normal * vt.inv;
         vt.position_world = vt.position_world * vt.inv;
@@ -77,4 +72,15 @@ namespace YYLB
         out_ss_pos = view_port * ccv_pos;
         return true;
     }
+
+    Matrix4f Transformer::calc_mvp(Camera *cam, const Vec3f &model_world_pos) {
+        YYLB::Matrix4f model;
+        YYLB::set_identyti(model);
+        translate(model,model_world_pos * -1.0);
+        set_world_to_view(cam);
+        set_view_to_project(cam,cam->mode);
+        return projection * view * model;
+    }
+
+
 }

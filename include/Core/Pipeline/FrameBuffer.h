@@ -37,6 +37,8 @@ namespace YYLB{
             depth[y * w + x] = d;
         }
 
+        void save(const char* fileName,bool perspective);
+
         void clear();
     };
 }

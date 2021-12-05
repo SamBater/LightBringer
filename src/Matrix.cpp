@@ -86,4 +86,27 @@ namespace YYLB
         rot[2][1] = -rot[1][2];
         return rot;
     }
+
+    float distance(Vec3f &a, Vec3f &b) {
+        Vec3f diff = a - b;
+        return std::sqrt(diff.x() * diff.x() + diff.y() * diff.y() + diff.z() * diff.z());
+    }
+
+    Matrix3f rotate_transform(Vec3f &axis,float theta)
+    {
+        Matrix3f rot;
+        float s = std::sin(theta);
+        float c = std::cos(theta);
+        rot[0][0] = c + (axis.x() * axis.x()) * (1-c);
+        rot[0][1] = (axis.x() * axis.y()) * (1-c) - axis.z() * s;
+        rot[0][2] = (axis.x() * axis.z()) * (1-c) + axis.y() * axis.y() * s;
+        rot[1][0] = (axis.y() * axis.x()) * (1-c) + axis.z() * axis.z() * s;
+        rot[1][1] = c + (axis.y() * axis.y()) * (1-c);
+        rot[1][2] = axis.y() * axis.z() * (1-c) - axis.x() * s;
+        rot[2][0] = axis.z() * axis.x() *(1-c) - axis.y() * s;
+        rot[2][1] = axis.z() * axis.y() * (1-c) + axis.x() * s;
+        rot[2][2] = c + (axis.z() * axis.z()) * (1-c);
+
+        return rot;
+    }
 }

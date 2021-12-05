@@ -62,6 +62,12 @@ namespace YYLB
         return val;
     }
 
+    template<typename T>
+    T lerp(T x, T y,float t)
+    {
+        return x + (y-x) * t;
+    }
+
     inline float theta_to_degree(float theta)
     {
         return theta / 180 * PI;
