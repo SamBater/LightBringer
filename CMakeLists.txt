@@ -11,22 +11,21 @@ configure_file(assets/uv.jpg assets/uv.jpg COPYONLY)
 configure_file(lib/glfw3.dll glfw3.dll COPYONLY)
 
 
+add_subdirectory(glm)
+
 LINK_DIRECTORIES(lib)
 set(EXTRA_LIBS opengl32 glfw3dll)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SOURCES)
 
-file(GLOB HEADERS ${PROJECT_SOURCE_DIR}/include/math/*.h)
-file(GLOB HEADERS_CORE ${PROJECT_SOURCE_DIR}/include/Core/*/*.h)
-
-source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${HEADERS})
-source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${HEADERS_CORE})
-
 add_executable(LightBringer ${SOURCES} ${HEADERS} ${HEADERS_CORE})
 target_include_directories(LightBringer
     PUBLIC 
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+        glm
 )
+
 target_link_libraries(LightBringer
     ${EXTRA_LIBS}
+        glm::glm
 )

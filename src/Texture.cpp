@@ -21,10 +21,10 @@ namespace YYLB
     Vec3f Texture::tex2d(const float &tex_cord_x, const float &tex_cord_y)
     {
 //        nearest
-//        int x = tex_cord_x * w;
-//        int y = tex_cord_y * h;
-//        int pixel = y * 3 * w + x * 3;
-//        return uchar3_to_vec3(sprite[pixel], sprite[pixel+1], sprite[pixel+2]);
+        int x = tex_cord_x * w;
+        int y = tex_cord_y * h;
+        int pixel = y * 3 * w + x * 3;
+        return uchar3_to_vec3(sprite[pixel], sprite[pixel+1], sprite[pixel+2]);
         auto calc_index = [&](int x,int y)
         {
             return y*w*comp + x * comp;
@@ -48,6 +48,7 @@ namespace YYLB
         Vec3f l2 = lerp(c3,c4,t3);
 
         return (l1+l2) / 2;
+
     }
 
     Texture::~Texture()

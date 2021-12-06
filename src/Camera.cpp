@@ -11,7 +11,7 @@ namespace YYLB
         l = -r;
         b = -t;
 
-        look_at = {0.5,1,-2};
+        look_at = {4,2,-1};
         look_at.normalized();
         up = {0,1,0};
     }
@@ -34,6 +34,6 @@ namespace YYLB
         mat[2][2] = 2 / (n-f);
         mat[0][3] = -(r+l) / (r-l);
         mat[1][3] = -(t+b) / (t-b);
-        mat[2][3] = -(n+f) / (n-f);
+        mat[2][3] = -(f+n) / (n-f);
     }
 }

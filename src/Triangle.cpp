@@ -28,10 +28,10 @@ void Triangle::ready_to_raser(Vec4f pos_screen_space[])
 float Triangle::interpolated_depth()
 {
     float s = 1 / (cof.x() * vts[0].inv + cof.y() * vts[1].inv + cof.z() * vts[2].inv);
-    return (cof.x() * vts[0].sz() +
-            cof.y() * vts[1].sz() +
+    return (cof.x() * vts[0].sz()  +
+            cof.y() * vts[1].sz()  +
             cof.z() * vts[2].sz()) *
-           s;
+           s  ;
 }
 
 void Triangle::interpolated_uv(float &u, float &v)
@@ -52,7 +52,7 @@ Vec3f Triangle::interpolated_world_position()
     float s = 1 / (cof.x() * vts[0].inv + cof.y() * vts[1].inv + cof.z() * vts[2].inv);
 
     Vec3f pos;
-    pos = (vts[0].position_world * cof.x(), vts[1].position_world * cof.y(), vts[2].position_world * cof.z()) * s;
+    pos = (vts[0].position_world * cof.x() , vts[1].position_world * cof.y(), vts[2].position_world * cof.z()) * s;
     return pos;
 }
 

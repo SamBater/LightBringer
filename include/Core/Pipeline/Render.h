@@ -23,6 +23,7 @@
 #include "Core/Texture/Checkboard.h"
 #include "Core/ModelLoader.h"
 #include "Core/Texture/NoiseMap.h"
+#include "glm/glm.hpp"
 namespace YYLB
 {
     struct RenderTargetSetting

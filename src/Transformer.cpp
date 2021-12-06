@@ -11,7 +11,6 @@ namespace YYLB
     {
         set_identyti(view);
 
-//        auto g = cam->position_world - target;
         auto g = cam->look_at;
         g.normalized();
         auto& t = cam->up;
@@ -44,7 +43,7 @@ namespace YYLB
         view_port[1][1] = h * 1.f / 2;view_port[1][3] = (h-1) / 2;
     }
 
-    bool Transformer::vertex_output(Vertex &vt, Vec3f &world_pos, Vec4f &out_ss_pos)
+    bool Transformer::vertex_output(Vertex &vt, Vec3f &world_pos, Vec4f &out_ss_pos,PROJECTION_MODE project_mode)
     {
         auto local_pos = vt.position;
         vt.position_world = vt.position + world_pos;
@@ -59,15 +58,17 @@ namespace YYLB
             return false;
         if(ccv_pos.z() >= ccv_pos.w() || ccv_pos.z() <= -ccv_pos.w())
             return false;
+
         //透视除法
         vt.inv = 1.0f / ccv_pos.w();
         ccv_pos *= vt.inv;
 
-
-
-        vt.set_uv(vt.u() * vt.inv, vt.v() * vt.inv);
-        vt.normal = vt.normal * vt.inv;
-        vt.position_world = vt.position_world * vt.inv;
+        if(project_mode == PROJECTION_MODE::PERSPECTIVE)
+        {
+            vt.set_uv(vt.u() * vt.inv, vt.v() * vt.inv);
+            vt.normal = vt.normal * vt.inv;
+            vt.position_world = vt.position_world * vt.inv;
+        }
 
         out_ss_pos = view_port * ccv_pos;
         return true;

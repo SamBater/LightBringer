@@ -22,13 +22,13 @@ Vec4f PhongShader::vertex_shading(Vertex &v, Light *l)
     //透视除法 CLIP->NDC
     float w = ccv_pos.w();
     ccv_pos /= w;
-    v.sz() = ccv_pos.z();
+    v.sz() = ccv_pos.z() * v.inv;
 
     v.inv = 1.0f / w;
     v.set_uv(v.u() * v.inv, v.v() * v.inv);
     v.normal = v.normal * v.inv;
     v.position_world = v.position_world * v.inv;
-    v.sz() *= v.inv;
+
     return ccv_pos;
 }
 

@@ -27,7 +27,7 @@ namespace YYLB
 
         //转换输出
         //return : 是否需要裁剪
-        bool vertex_output(Vertex &vt, Vec3f &world_pos, Vec4f &out_ss_pos);
+        bool vertex_output(Vertex &vt, Vec3f &world_pos, Vec4f &out_ss_pos,PROJECTION_MODE mode);
 
         Matrix4f calc_mvp(Camera* cam,const Vec3f& model_world_pos);
     };
