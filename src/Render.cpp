@@ -81,12 +81,6 @@ namespace YYLB
                         }
                     }
 
-                    //NDC->SCREEN
-//                    for(int i = 0 ; i < 3 ; i++)
-//                    {
-//                        vertex_ss[i] = transformer->view_port * vertex_ss[i];
-//                    }
-
                     //设置三角形,准备光栅化
                     t.ready_to_raser(vertex_ss);
                     render(t, mesh.shader,light);
@@ -94,7 +88,7 @@ namespace YYLB
             }
         }
     }
-    static float minz = 1000,maxz = -1000;
+
     void Render::render(YYLB::Triangle &t,Shader *&shader,Light*& light)
     {
 
@@ -119,8 +113,6 @@ namespace YYLB
                         if(renderTargetSetting->open_z_buffer_write)
                         {
                             frame_buffer->set_depth(x, y, depth);
-//                            minz = std::min(minz,depth);
-//                            maxz = std::max(maxz,depth);
                         }
                         //帧缓存写入
                         if(renderTargetSetting->open_frame_buffer_write)
@@ -146,17 +138,13 @@ namespace YYLB
                             v_light_pos.x() /= w;
                             v_light_pos.y() /= h;
 
-                            float shadow_bias = 0.005f;
+                            float shadow_bias = 0.05f;
                             if(si >= 0 && si < w * h)
                             {
                                 depth_shadow_map = light->shadow_map->tex2d(v_light_pos.x(),v_light_pos.y()).z()  ;
                                 //[0,1] => [-1,1]
                                 depth_shadow_map -= 0.5f;
                                 depth_shadow_map *= 2;
-                                minz = std::min(minz,depth_light_pos);
-                                maxz = std::max(maxz,depth_light_pos);
-//                                minz = std::min(minz,depth_shadow_map);
-//                                maxz = std::max(maxz,depth_shadow_map);
                                 if(depth_shadow_map > depth_light_pos + shadow_bias)
                                     visibility = 0.5;
                             }
@@ -177,8 +165,8 @@ namespace YYLB
         //准备物体
 
         //设置渲染状态
-        Vec3f camPos = {0, 8, -70.f};
-        cam = new Camera(camPos.x(), camPos.y(), camPos.z(), PI / 4, w * 1.f / h, 0.2, 100);
+        Vec3f camPos = {-1, 1, -70.f};
+        cam = new Camera(camPos.x(), camPos.y(), camPos.z(), PI / 4, w * 1.f / h, 0.2, 1000);
         transformer->set_world_to_view(cam);
         transformer->set_view_to_project(cam,PROJECTION_MODE::PERSPECTIVE);
         transformer->set_projection_to_screen(w, h);
@@ -186,7 +174,7 @@ namespace YYLB
 
         using YYLB::Triangle;
         using YYLB::Vertex;
-        YYLB::ParalleLight *sun = new ParalleLight(1.5f, Vec3f{1, 1, 1}, Vec3f{0.5, -2,-2});
+        YYLB::ParalleLight *sun = new ParalleLight(1.5f, Vec3f{1, 1, 1}, Vec3f{1.5, -1.5,-2});
         sun->dir.normalized();
         lights.push_back(sun);
 
@@ -201,11 +189,19 @@ namespace YYLB
         Texture* cb = new Texture("assets/cb.jpg");
         YYLB::Mesh tm(0,0,2.f,ts2);
 
-        YYLB::Mesh wall(0,0,12,ts2);
+        YYLB::Mesh wall(0,0,13,ts2);
         wall.shader = new PhongShader();
         wall.rotate(Vec3f{1,0,0},YYLB::PI/2);
         wall.scale_transform(4,1.5,4);
         world.push_back(wall);
+
+        for(auto& t : wall.get_triangles())
+        {
+            for(auto& v : t.vts)
+            {
+                v.normal = Vec3f {0,0,0};
+            }
+        }
 
 
         PhongShader *shader = new PhongShader();
@@ -217,21 +213,17 @@ namespace YYLB
         world.push_back(tm);
 
         Texture* t = new Texture("assets/uv.jpg");
-        YYLB::Mesh cube(-4.f,2,-6.f,LoadObj("assets/cube.obj"));
+        YYLB::Mesh cube(-1.f,5,-14.f,LoadObj("assets/cube.obj"));
         cube.scale_transform(2,2,2);
         cube.shader = new PhongShader(t);
         world.push_back(cube);
 
-        YYLB::Mesh m1(4.f, 3.0f, -5.f, LoadObj("assets/monkey.obj"));
+        YYLB::Mesh m1(8.f, 2.5f, -15.f, LoadObj("assets/monkey.obj"));
         m1.shader = new PhongShader();
         m1.rotate(Vec3f{0,1,0},YYLB::PI);
         world.push_back(std::move(m1));
 
         generate_shadow_map(sun);
-        printf("%.2f %.2f\n", minz,maxz);
-        minz = 1000;
-        maxz = -1000;
-
         char str[256] = "";
         auto start = std::chrono::high_resolution_clock::now();
         auto end = std::chrono::high_resolution_clock::now();
@@ -243,7 +235,6 @@ namespace YYLB
             frame_buffer->clear();
 
             render(world);
-            printf("%.4f %.4f\n", minz,maxz);
 //            frame_buffer->save("z_buffer.bmp", true);
 //            exit(0);
             glDrawPixels(w, h, GL_RGB, GL_UNSIGNED_BYTE, frame_buffer->pixels);
@@ -283,7 +274,7 @@ namespace YYLB
         frame_buffer->clear();
         Camera *originCam = cam;
         auto mode = cam->mode;
-        cam = new Camera(0,8,-250,YYLB::PI / 2 ,16/9.f,0.2,400);
+        cam = new Camera(-10,10,-25,YYLB::PI  ,16/9.f,0,100);
         cam->l = -40;cam->r = 40;
         cam->t = 40;cam->b = -40;
         cam->mode = PROJECTION_MODE::ORTHOGONAL;
@@ -295,8 +286,6 @@ namespace YYLB
         Vec2i size{256,256};
         unsigned char* shadow_map = new unsigned char[w*h*3];
         renderTargetSetting->open_frame_buffer_write = false;
-//        set_identyti(transformer->view_port);
-//        transformer->view_port *= 0.5f;
         render(world);
         for(int y = 0 ; y < h ; y++)
         {

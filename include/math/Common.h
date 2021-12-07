@@ -73,6 +73,12 @@ namespace YYLB
         return theta / 180 * PI;
     }
 
+    inline int calc_index(Vec2i& vec,int w,int comp)
+    {
+        int r = vec[0][1] * w * 3 + vec[0][0] * comp;
+        return r;
+    };
+
     inline float det(Matrix4f &mat)
     {
         return 0;
