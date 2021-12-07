@@ -7,6 +7,7 @@ add_compile_options(-O4)
 configure_file(assets/teapot.obj assets/teapot.obj COPYONLY)
 configure_file(assets/monkey.obj assets/monkey.obj COPYONLY)
 configure_file(assets/cube.obj assets/cube.obj COPYONLY)
+configure_file(assets/sphere.obj assets/sphere.obj COPYONLY)
 configure_file(assets/uv.jpg assets/uv.jpg COPYONLY)
 configure_file(lib/glfw3.dll glfw3.dll COPYONLY)
 

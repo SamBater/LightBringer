@@ -48,6 +48,9 @@ namespace YYLB
         void render(YYLB::Triangle &t,YYLB::Shader*& shader,Light*& light);
         void render(std::vector<YYLB::Mesh> &ts);
         void generate_shadow_map(Light* light);
+
+        //返回值:true->剔除
+        bool back_face_culling(Vertex& vt);
     public:
         Render(int _w = 800, int _h = 600);
         void start();

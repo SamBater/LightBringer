@@ -46,7 +46,6 @@ namespace YYLB
     bool Transformer::vertex_output(Vertex &vt, Vec3f &world_pos, Vec4f &out_ss_pos,PROJECTION_MODE project_mode)
     {
         auto local_pos = vt.position;
-        vt.position_world = vt.position + world_pos;
         set_matrix_world(world_pos);
         Matrix4f mvp = projection * view * world;
         Vec4f local_pos_h{local_pos.x(), local_pos.y(), local_pos.z(), 1};

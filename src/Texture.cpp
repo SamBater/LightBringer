@@ -31,9 +31,9 @@ namespace YYLB
         float cy = tex_cord_y * h;
 
         int x1 = std::floor(cx);
-        int x2 = std::min(x1+1,w-1);
+        int x2 = std::min(x1+1,w-30);
         int y1 = std::floor(cy);
-        int y2 = std::min(y1+1,h-1);
+        int y2 = std::min(y1+1,h-30);
         float tx = cx - x1;
         float ty = cy - y1;
 
@@ -50,7 +50,7 @@ namespace YYLB
 
         Vec3f l1 = lerp(c1,c2,tx);
         Vec3f l2 = lerp(c3,c4,tx);
-        Vec3f l3 = lerp(l1,l2,ty);
+        Vec3f l3 = lerp(l1,l2,1-ty);
 
         return l3;
 

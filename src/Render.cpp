@@ -50,25 +50,19 @@ namespace YYLB
                 auto triangles = mesh.get_triangles();
                 Matrix4f model;
                 set_identyti(model);
-                translate(model,mesh.position_world * -1.0f);
+                translate(model,mesh.position_world);
                 for (auto& t : triangles)
                 {
-
                     Vec4f vertex_ss[3];
                     bool need_clip = false;
                     for (int i = 0; i < 3 && !need_clip; i++)
                     {
-                        need_clip = !transformer->vertex_output(t.vts[i], world_pos, vertex_ss[i],cam->mode);
-//                        if(renderTargetSetting->open_frame_buffer_write)
-//                        {
-//                            vertex_ss[i] = mesh.shader->vertex_shading(t.vts[i], light);
-//                            need_clip = vertex_ss[i].z() <= 0;
-//                        }
+                        t.vts[i].position_world = t.vts[i].position + world_pos;
+                        need_clip = back_face_culling(t.vts[i]) || !transformer->vertex_output(t.vts[i], world_pos, vertex_ss[i],cam->mode);
                     }
 
                     if (need_clip)
                         continue;
-
 
                     //光源空间变换
                     if(renderTargetSetting->open_frame_buffer_write)
@@ -77,7 +71,7 @@ namespace YYLB
                         {
                             Vec4f pos_h {t.vts[i].x(),t.vts[i].y(),t.vts[i].z(),1};
                             t.vts[i].l_pos = light->lvp * model * pos_h;
-                            t.vts[i].l_pos = transformer->view_port * t.vts[i].l_pos * t.vts[i].inv;
+                            t.vts[i].l_pos *= t.vts[i].inv;
                         }
                     }
 
@@ -89,6 +83,7 @@ namespace YYLB
         }
     }
 
+    float shadowMap[1280*1024];
     void Render::render(YYLB::Triangle &t,Shader *&shader,Light*& light)
     {
 
@@ -124,28 +119,28 @@ namespace YYLB
                             float s = 1 / (cof.x() * vts[0].inv + cof.y() * vts[1].inv + cof.z() * vts[2].inv);
                             Vec4f v_light_pos = t.vts[0].l_pos * t.cof.x()  +
                                                 t.vts[1].l_pos * t.cof.y()  +
-                                                t.vts[2].l_pos * t.cof.z() ;
+                                                t.vts[2].l_pos * t.cof.z()  ;
                             v_light_pos *= s;
-
-
+                            depth_light_pos = v_light_pos.z();
 //                            auto pos = t.interpolated_world_position();
 //                            Vec4f pos_h{pos.x(),pos.y(),pos.z(),1};
 //                            Vec4f v_light_pos = transformer->view_port * light->lvp * pos_h;
-                            depth_light_pos = v_light_pos.z();
-//
-                            int si = v_light_pos.y() * w + v_light_pos.x();
+//                            depth_light_pos = v_light_pos.z();
 
+                            v_light_pos = transformer->view_port * v_light_pos;
+                            int si = v_light_pos.y() * w + v_light_pos.x();
+//                            depth_shadow_map = shadowMap[(int)(v_light_pos.y() * w + v_light_pos.x())];
                             v_light_pos.x() /= w;
                             v_light_pos.y() /= h;
 
-                            float shadow_bias = 0.05f;
+                            float shadow_bias = 0.005f;
                             if(si >= 0 && si < w * h)
                             {
                                 depth_shadow_map = light->shadow_map->tex2d(v_light_pos.x(),v_light_pos.y()).z()  ;
                                 //[0,1] => [-1,1]
                                 depth_shadow_map -= 0.5f;
                                 depth_shadow_map *= 2;
-                                if(depth_shadow_map > depth_light_pos + shadow_bias)
+                                if(depth_shadow_map > depth_light_pos + shadow_bias )
                                     visibility = 0.5;
                             }
 
@@ -165,8 +160,11 @@ namespace YYLB
         //准备物体
 
         //设置渲染状态
-        Vec3f camPos = {-1, 1, -70.f};
+//        Vec3f camPos = {-1, 1, -70.f};
+        Vec3f camPos = {0, 4, -60.f};
         cam = new Camera(camPos.x(), camPos.y(), camPos.z(), PI / 4, w * 1.f / h, 0.2, 1000);
+        cam->look_at = {-4,2,1};
+//        cam->look_at = {0,0,-1};
         transformer->set_world_to_view(cam);
         transformer->set_view_to_project(cam,PROJECTION_MODE::PERSPECTIVE);
         transformer->set_projection_to_screen(w, h);
@@ -174,7 +172,8 @@ namespace YYLB
 
         using YYLB::Triangle;
         using YYLB::Vertex;
-        YYLB::ParalleLight *sun = new ParalleLight(1.5f, Vec3f{1, 1, 1}, Vec3f{1.5, -1.5,-2});
+        YYLB::ParalleLight *sun = new ParalleLight(1.5f, Vec3f{1, 1, 1}, Vec3f{0, -2,-2});
+//        YYLB::ParalleLight *sun = new ParalleLight(1.5f, Vec3f{1, 1, 1}, Vec3f{-0.7, -1,0.63});
         sun->dir.normalized();
         lights.push_back(sun);
 
@@ -188,22 +187,6 @@ namespace YYLB
 
         Texture* cb = new Texture("assets/cb.jpg");
         YYLB::Mesh tm(0,0,2.f,ts2);
-
-        YYLB::Mesh wall(0,0,13,ts2);
-        wall.shader = new PhongShader();
-        wall.rotate(Vec3f{1,0,0},YYLB::PI/2);
-        wall.scale_transform(4,1.5,4);
-        world.push_back(wall);
-
-        for(auto& t : wall.get_triangles())
-        {
-            for(auto& v : t.vts)
-            {
-                v.normal = Vec3f {0,0,0};
-            }
-        }
-
-
         PhongShader *shader = new PhongShader();
         YYLB::Matrix4f m_i;
         YYLB::set_identyti(m_i);
@@ -212,18 +195,26 @@ namespace YYLB
         tm.scale_transform(3,1.5,3);
         world.push_back(tm);
 
+
+        auto cubeTs = LoadObj("assets/cube.obj");
+
         Texture* t = new Texture("assets/uv.jpg");
-        YYLB::Mesh cube(-1.f,5,-14.f,LoadObj("assets/cube.obj"));
+        YYLB::Mesh cube(-4.f,0,-16.f,cubeTs);
         cube.scale_transform(2,2,2);
         cube.shader = new PhongShader(t);
         world.push_back(cube);
 
-        YYLB::Mesh m1(8.f, 2.5f, -15.f, LoadObj("assets/monkey.obj"));
+        YYLB::Mesh m1(0.f, -0.5f, -10.f, LoadObj("assets/sphere.obj"));
         m1.shader = new PhongShader();
-        m1.rotate(Vec3f{0,1,0},YYLB::PI);
         world.push_back(std::move(m1));
 
+        Mesh wall(0,8,13,cubeTs);
+        wall.shader = new PhongShader();
+        wall.scale_transform(16,8,2);
+        world.push_back(wall);
+
         generate_shadow_map(sun);
+
         char str[256] = "";
         auto start = std::chrono::high_resolution_clock::now();
         auto end = std::chrono::high_resolution_clock::now();
@@ -274,7 +265,7 @@ namespace YYLB
         frame_buffer->clear();
         Camera *originCam = cam;
         auto mode = cam->mode;
-        cam = new Camera(-10,10,-25,YYLB::PI  ,16/9.f,0,100);
+        cam = new Camera(0,10,-25,YYLB::PI / 2 ,16/9.f,0,100);
         cam->l = -40;cam->r = 40;
         cam->t = 40;cam->b = -40;
         cam->mode = PROJECTION_MODE::ORTHOGONAL;
@@ -285,6 +276,8 @@ namespace YYLB
 
         Vec2i size{256,256};
         unsigned char* shadow_map = new unsigned char[w*h*3];
+
+
         renderTargetSetting->open_frame_buffer_write = false;
         render(world);
         for(int y = 0 ; y < h ; y++)
@@ -293,6 +286,7 @@ namespace YYLB
             {
                 int i = y*w*3+x*3;
                 shadow_map[i] = shadow_map[i+1] = shadow_map[i+2] = (1+frame_buffer->depth[y*w+x] ) * 127;
+                shadowMap[y*w+x] = frame_buffer->depth[y*w+x];
             }
         }
 
@@ -306,5 +300,16 @@ namespace YYLB
         transformer->set_world_to_view(cam);
         transformer->set_projection_to_screen(w,h);
         renderTargetSetting->open_frame_buffer_write = true;
+    }
+
+    bool Render::back_face_culling(Vertex &vt) {
+        Vec4f vp_h  {vt.position_world.x(),vt.position_world.y(),vt.position_world.z(),1};
+        vp_h = transformer->view * vp_h;
+        Vec3f vp{vt.position_world.x(),vt.position_world.y(),vt.position_world.z()};
+        auto eye_dir = cam->position_world - vp;
+        eye_dir.normalized();
+        auto n = YYLB::dot_product(eye_dir,vt.normal);
+//        return cam->mode == PROJECTION_MODE::ORTHOGONAL ? n < 0 : n > 0;
+        return false;
     }
 }

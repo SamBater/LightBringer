@@ -11,7 +11,6 @@ namespace YYLB
         l = -r;
         b = -t;
 
-        look_at = {4,2,-1};
         look_at.normalized();
         up = {0,1,0};
     }
