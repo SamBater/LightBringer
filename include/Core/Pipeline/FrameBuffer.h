@@ -1,6 +1,7 @@
 #ifndef FRAME_BUFFER_H
 #define FRAME_BUFFER_H
-#include "Math/Matrix.h"
+
+#include <glm/vec3.hpp>
 #include "Math/Common.h"
 namespace YYLB{
     struct FrameBuffer
@@ -23,13 +24,22 @@ namespace YYLB{
             pixels[pixel + 2] = b;
         }
 
-        inline void set_color(int &x, int &y, Vec3f &color)
+        inline void set_color(int &x, int &y, glm::vec3 &color)
         {
-            YYLB::clamp(color,0.f,1.0f);
+            auto clamp = [](float& n)
+            {
+                if( n > 1 ) n = 1;
+                if( n < 0 ) n = 0;
+            };
+
+            clamp(color.x);
+            clamp(color.y);
+            clamp(color.z);
+
             int pixel = w * y * 3 + x * 3;
-            pixels[pixel] = color.x() * 255.f;
-            pixels[pixel + 1] = color.y() * 255.f;
-            pixels[pixel + 2] = color.z() * 255.f;
+            pixels[pixel] = color.x * 255.f;
+            pixels[pixel + 1] = color.y * 255.f;
+            pixels[pixel + 2] = color.z * 255.f;
         }
 
         inline void set_depth(int &x, int &y, const float &d)
@@ -37,7 +47,9 @@ namespace YYLB{
             depth[y * w + x] = d;
         }
 
-        void save(const char* fileName,bool perspective);
+        void save_zbuffer(const char* fileName, bool perspective);
+
+        void save_frame(const char*fileName);
 
         void clear();
     };

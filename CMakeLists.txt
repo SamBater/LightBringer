@@ -9,6 +9,7 @@ configure_file(assets/monkey.obj assets/monkey.obj COPYONLY)
 configure_file(assets/cube.obj assets/cube.obj COPYONLY)
 configure_file(assets/sphere.obj assets/sphere.obj COPYONLY)
 configure_file(assets/uv.jpg assets/uv.jpg COPYONLY)
+configure_file(assets/brick_wall.png assets/brick_wall.png COPYONLY)
 configure_file(lib/glfw3.dll glfw3.dll COPYONLY)
 
 
@@ -20,6 +21,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SOURCES)
 
 add_executable(LightBringer ${SOURCES} ${HEADERS} ${HEADERS_CORE})
+
 target_include_directories(LightBringer
     PUBLIC 
         ${CMAKE_CURRENT_SOURCE_DIR}/include

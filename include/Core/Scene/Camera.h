@@ -1,6 +1,6 @@
 #ifndef YYLB_CAMERA
 #define YYLB_CAMERA
-#include "Math/Matrix.h"
+#include "glm/glm.hpp"
 #include "Core/Scene/Actor.h"
 namespace YYLB
 {
@@ -22,13 +22,13 @@ namespace YYLB
 
     public:
         enum PROJECTION_MODE mode;
-        Vec3f look_at; //看的朝向
-        Vec3f up;      //向上方向
+        glm::vec3 look_at; //看的朝向
+        glm::vec3 up;      //向上方向
         Camera(const float x, const float y,
                const float z, float fov_v,
                float _aspect_ratio, float _n, float _f);
-        void set_perspective_matrix(Matrix4f &mat);
-        void set_orthogonal_matrix(Matrix4f& mat);
+        void set_perspective_matrix(glm::mat4 &mat);
+        void set_orthogonal_matrix(glm::mat4 &mat);
     };
 }
 #endif

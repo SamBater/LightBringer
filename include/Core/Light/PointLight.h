@@ -6,14 +6,14 @@ namespace YYLB
     class PointLight : public Light
     {
     public:
-        PointLight(float intence, Vec3f light_color) : Light(intence, light_color) {}
-        virtual float attenuation(Vec3f &pos)
+        PointLight(float intence, glm::vec3 light_color) : Light(intence, light_color) {}
+        virtual float attenuation(glm::vec3 &pos)
         {
-            float r = std::sqrt((position_world - pos).scalar());
+            float r = glm::distance(pos,position_world);
             float result = light_intense / (r * r);
             return result;
         }
-        virtual Vec3f LightDir(Vec3f &pos)
+        virtual glm::vec3 LightDir(glm::vec3 &pos)
         {
             return (position_world - pos);
         }

@@ -1,6 +1,6 @@
 #ifndef YBT_MATH_TRIANGLE
 #define YBT_MATH_TRIANGLE
-#include "Matrix.h"
+#include "glm/glm.hpp"
 #include "Common.h"
 #include "Core/Scene/Actor.h"
 #include <math/Vertex.h>
@@ -17,10 +17,9 @@ namespace YYLB
     private:
         BoundingBox bb;
         float area;
-        
     public:
-
-        Vec3f cof;
+        glm::vec3 cof;
+        float s;
         YYLB::Vertex vts[3];
         Triangle() = default;
         
@@ -30,12 +29,17 @@ namespace YYLB
         {
             return &bb;
         }
-        void ready_to_raser(Vec4f pos_screen_space[]);
+        void ready_rasterization(glm::vec4 pos_screen_space[]);
         float interpolated_depth();
         void interpolated_uv(float &u, float &v);
-        void interpolated_color(Vec3f& color);
-        Vec3f interpolated_world_position();
-        Vec3f interpolated_world_normal();
+        glm::vec3 interpolated_world_position();
+        glm::vec3 interpolated_world_normal();
+
+        float interpolate_attribute1D(float attribute);
+        glm::vec2 interpolate_attribute2D(const glm::vec2 attribute);
+        glm::vec3 interpolate_attribute3D(const glm::vec3& vet);
+
+
         inline static bool inside(float x, float y, YYLB::Triangle &t)
         {
             float i = 1.0f;
@@ -48,9 +52,10 @@ namespace YYLB
                           t.vts[0].sy(), y, t.vts[2].sy(),
                           i, i, i) /
                       t.area;
-            t.cof.x() = a;
-            t.cof.y() = b;
-            t.cof.z() = 1 - a - b;
+            t.cof.x = a;
+            t.cof.y = b;
+            t.cof.z = 1 - a - b;
+            t.s = 1 / (t.cof.x * t.vts[0].inv + t.cof.y * t.vts[1].inv + t.cof.z * t.vts[2].inv);
             return a >= 0 && b >= 0 && a + b <= 1.0f;
         }
     };

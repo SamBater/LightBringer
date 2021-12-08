@@ -17,7 +17,7 @@ void FrameBuffer::clear()
     }
 }
 
-void FrameBuffer::save(const char *fileName,bool perspective) {
+void FrameBuffer::save_zbuffer(const char *fileName, bool perspective) {
     unsigned char *pixel = new unsigned char[w*h*3];
 
     for(int y = 0 ; y < h ; y++)
@@ -36,4 +36,9 @@ void FrameBuffer::save(const char *fileName,bool perspective) {
     }
     stbi_flip_vertically_on_write(1);
     stbi_write_bmp(fileName,w,h,3,pixel);
+}
+
+void FrameBuffer::save_frame(const char *fileName) {
+    stbi_flip_vertically_on_write(1);
+    stbi_write_bmp(fileName,w,h,3,pixels);
 }

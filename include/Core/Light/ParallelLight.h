@@ -6,10 +6,10 @@ namespace YYLB
     {
     private:
     public:
-        Vec3f dir;
-        ParalleLight(float intence, Vec3f color, Vec3f dir) : Light(intence, color), dir(dir) {}
-        virtual float attenuation(Vec3f &pos) { return 1.0f; }
-        virtual Vec3f LightDir(Vec3f &pos)
+        glm::vec3 dir;
+        ParalleLight(float intence, glm::vec3 color, glm::vec3 dir) : Light(intence, color), dir(dir) {}
+        virtual float attenuation(glm::vec3 &pos) { return 1.0f; }
+        virtual glm::vec3 LightDir(glm::vec3 &pos)
         {
             return dir * -1.f;
         }

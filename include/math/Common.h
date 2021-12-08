@@ -1,7 +1,6 @@
 #ifndef YBT_MATH_COMMON
 #define YBT_MATH_COMMON
-#include "Math/Matrix.h"
-#include "Matrix.h"
+#include "glm/glm.hpp"
 namespace YYLB
 {
     const float PI = 3.1415926f;
@@ -31,7 +30,7 @@ namespace YYLB
     }
 
     template <typename T>
-    inline T &clamp(T& val, const T min, const T max)
+    inline T &clamp(T& val, const T&& min, const T&& max)
     {
         if (val > max)
             val = max;
@@ -40,27 +39,17 @@ namespace YYLB
         return val;
     }
 
-    inline RGB &clamp(RGB& val, const unsigned char min, const unsigned char max)
+    inline glm::vec3 &clamp(glm::vec3& val, const float min, const float max)
     {
-        if(val.x() < min) val.x() = min;
-        if(val.y() < min) val.y() = min;
-        if(val.z() < min) val.z() = min;
-        if(val.x() > max) val.x() = max;
-        if(val.y() > max) val.y() = max;
-        if(val.z() > max) val.z() = max;
+        if(val.x < min) val.x = min;
+        if(val.y < min) val.y = min;
+        if(val.z < min) val.z = min;
+        if(val.x > max) val.x = max;
+        if(val.y > max) val.y = max;
+        if(val.z > max) val.z = max;
         return val;
     }
 
-    inline Vec3f &clamp(Vec3f& val, const float min, const float max)
-    {
-        if(val.x() < min) val.x() = min;
-        if(val.y() < min) val.y() = min;
-        if(val.z() < min) val.z() = min;
-        if(val.x() > max) val.x() = max;
-        if(val.y() > max) val.y() = max;
-        if(val.z() > max) val.z() = max;
-        return val;
-    }
 
     template<typename T>
     T lerp(T x, T y,float t)
@@ -73,13 +62,13 @@ namespace YYLB
         return theta / 180 * PI;
     }
 
-    inline int calc_index(Vec2i& vec,int w,int comp)
+    inline int calc_index(glm::vec<2,int>& vec,int w,int comp)
     {
-        int r = vec[0][1] * w * 3 + vec[0][0] * comp;
+        int r = static_cast<int>(vec[1] * w * 3 + vec[0] * comp);
         return r;
     };
 
-    inline float det(Matrix4f &mat)
+    inline float det(glm::mat4 &mat)
     {
         return 0;
     }

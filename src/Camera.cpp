@@ -11,12 +11,12 @@ namespace YYLB
         l = -r;
         b = -t;
 
-        look_at.normalized();
+        look_at = glm::normalize(look_at);
         up = {0,1,0};
     }
 
-    void Camera::set_perspective_matrix(Matrix4f &mat) {
-        set_zero(mat);
+    void Camera::set_perspective_matrix(glm::mat4 &mat) {
+        mat = glm::mat4 (0);
         mat[0][0] = 2 * n / (r - l);
         mat[0][2] = (l + r) / (l - r);
         mat[1][1] = 2 * n / (t - b);
@@ -26,8 +26,8 @@ namespace YYLB
         mat[3][2] = 1;
     }
 
-    void Camera::set_orthogonal_matrix(Matrix4f &mat) {
-        set_identyti(mat);
+    void Camera::set_orthogonal_matrix(glm::mat4 &mat) {
+        mat = glm::mat4 (1);
         mat[0][0] = 2 / (r-l);
         mat[1][1] = 2 / (t-b);
         mat[2][2] = 2 / (n-f);
