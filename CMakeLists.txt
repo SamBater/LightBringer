@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(LightBringer C CXX)
 set(CMAKE_CXX_STANDARD 14)
 add_compile_options(-O4)
-
+#
 # 复制Assets文件
 configure_file(assets/teapot.obj assets/teapot.obj COPYONLY)
 configure_file(assets/monkey.obj assets/monkey.obj COPYONLY)

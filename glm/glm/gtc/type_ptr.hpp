@@ -26,7 +26,7 @@
 /// glm::mat4 someMatrix(1.0);
 ///
 /// glUniform3fv(uniformLoc, 1, glm::value_ptr(aVector));
-/// glUniformglm::mat4v(uniformMatrixLoc, 1, GL_FALSE, glm::value_ptr(someMatrix));
+/// glUniformMatrix4fv(uniformMatrixLoc, 1, GL_FALSE, glm::value_ptr(someMatrix));
 /// @endcode
 ///
 /// <glm/gtc/type_ptr.hpp> need to be included to use the features of this extension.
