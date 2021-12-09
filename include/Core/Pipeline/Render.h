@@ -19,11 +19,12 @@
 #include "Core/Shader/PhongShader.h"
 #include "Core/Light/PointLight.h"
 #include "FrameBuffer.h"
-#include "Core/Texture/Checkboard.h"
 #include "Core/ModelLoader.h"
-#include "Core/Texture/NoiseMap.h"
 #include "glm/glm.hpp"
-namespace YYLB
+#include "Core/Texture/CubeMap.h"
+#include <iostream>
+#include <Core/Shader/SkyBoxShader.h>
+namespace ylb
 {
     struct RenderTargetSetting
     {
@@ -44,8 +45,8 @@ namespace YYLB
         std::vector<Mesh> world;
         std::vector<Light *> lights;
         void processInput(double &&delta_time);
-        void render(YYLB::Triangle &t,YYLB::Shader*& shader,Light*& light);
-        void render(std::vector<YYLB::Mesh> &ts);
+        void render(ylb::Triangle &t, ylb::Shader*& shader, Light*& light);
+        void render(std::vector<ylb::Mesh> &ts);
         void generate_shadow_map(Light* light);
 
         //返回值:true->剔除

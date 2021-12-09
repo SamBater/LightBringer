@@ -1,7 +1,7 @@
 #ifndef YYLB_ACTOR_H
 #define YYLB_ACTOR_H
 #include "glm/glm.hpp"
-namespace YYLB
+namespace ylb
 {
     class Actor
     {

@@ -4,7 +4,7 @@
 #include "Common.h"
 #include "Core/Scene/Actor.h"
 #include <math/Vertex.h>
-namespace YYLB
+namespace ylb
 {
     struct BoundingBox
     {
@@ -20,7 +20,7 @@ namespace YYLB
     public:
         glm::vec3 cof;
         float s;
-        YYLB::Vertex vts[3];
+        ylb::Vertex vts[3];
         Triangle() = default;
         
         Triangle(Vertex &vt1, Vertex &vt2, Vertex &vt3);
@@ -40,7 +40,7 @@ namespace YYLB
         glm::vec3 interpolate_attribute3D(const glm::vec3& vet);
 
 
-        inline static bool inside(float x, float y, YYLB::Triangle &t)
+        inline static bool inside(float x, float y, ylb::Triangle &t)
         {
             float i = 1.0f;
             float a = det(x, t.vts[1].sx(), t.vts[2].sx(),

@@ -1,7 +1,7 @@
 #include "Core/Pipeline/FrameBuffer.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "Image/stb_image_write.h"
-using namespace YYLB;
+using namespace ylb;
 
 void FrameBuffer::clear()
 {

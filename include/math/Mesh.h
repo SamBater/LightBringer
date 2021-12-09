@@ -7,7 +7,7 @@
 #include "Core/Shader/Shader.h"
 #include <vector>
 
-namespace YYLB
+namespace ylb
 {
     class Render;
     class Mesh : public Actor
@@ -17,7 +17,7 @@ namespace YYLB
         
     public:
         std::vector<Triangle> triangles;
-        YYLB::Shader* shader;
+        ylb::Shader* shader;
         Mesh(const float x, const float y, const float z, std::vector<Triangle> &&ts) : Actor(x, y, z), triangles(ts) {}
         Mesh(const float x, const float y, const float z, std::vector<Triangle>& ts) : Actor(x, y, z), triangles(ts) {}
         inline const std::vector<Triangle> &get_triangles() const { return triangles; }

@@ -3,16 +3,18 @@
 #include "glm/glm.hpp"
 #include "Math/Triangle.h"
 #include "Core/Texture/Texture.h"
+#include "Core/Texture/CubeMap.h"
 #include <cmath>
 #include <algorithm>
-namespace YYLB
+namespace ylb
 {
     class Shader
     {
-    protected:
-        Texture *texture;
-        glm::mat4 mvp;
     public:
+        Texture *texture;
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 projection;
         static glm::vec3* camPos;
         Shader() { texture = nullptr; }
         Shader(Texture *t) : texture(t) {}

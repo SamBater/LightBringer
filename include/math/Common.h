@@ -1,7 +1,7 @@
 #ifndef YBT_MATH_COMMON
 #define YBT_MATH_COMMON
 #include "glm/glm.hpp"
-namespace YYLB
+namespace ylb
 {
     const float PI = 3.1415926f;
     const float eps = 1e-6f;
@@ -30,13 +30,14 @@ namespace YYLB
     }
 
     template <typename T>
-    inline T &clamp(T& val, const T&& min, const T&& max)
+    inline T clamp(const T& val, const T&& min, const T&& max)
     {
-        if (val > max)
-            val = max;
-        if (val < min)
-            val = min;
-        return val;
+        T rVal = val;
+        if (rVal > max)
+            rVal = max;
+        if (rVal < min)
+            rVal = min;
+        return rVal;
     }
 
     inline glm::vec3 &clamp(glm::vec3& val, const float min, const float max)

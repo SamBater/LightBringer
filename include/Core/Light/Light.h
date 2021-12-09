@@ -4,7 +4,7 @@
 #include "Core/Scene/Actor.h"
 #include "glm/glm.hpp"
 #include "Core/Texture/Texture.h"
-namespace YYLB
+namespace ylb
 {
         class GouraudShader;
         class Light : public Actor

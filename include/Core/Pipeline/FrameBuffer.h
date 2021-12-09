@@ -3,7 +3,7 @@
 
 #include <glm/vec3.hpp>
 #include "Math/Common.h"
-namespace YYLB{
+namespace ylb{
     struct FrameBuffer
     {
         float *depth;

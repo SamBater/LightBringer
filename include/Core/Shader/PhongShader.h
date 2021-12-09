@@ -1,5 +1,5 @@
 #include "Shader.h"
-namespace YYLB
+namespace ylb
 {
     class PhongShader : public Shader
     {

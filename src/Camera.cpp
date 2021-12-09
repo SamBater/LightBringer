@@ -1,5 +1,5 @@
 #include "Core/Scene/Camera.h"
-namespace YYLB
+namespace ylb
 {
     Camera::Camera(const float x, const float y, const float z,
                    float fov_v, float _aspect_ratio,

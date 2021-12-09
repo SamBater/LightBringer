@@ -1,33 +1,14 @@
 #include "Core/Shader/PhongShader.h"
-#include "Math/Vertex.h"
-using namespace YYLB;
+using namespace ylb;
 
 glm::vec4 PhongShader::vertex_shading(Vertex &v, Light *l)
 {
-    static glm::vec4 vaild_pos(-1);
-    glm::vec4 pos_h{v.x(),v.y(),v.z(),1};
+    glm::vec4 pos_h(v.position,1);
 
     //MVP变换 model->view->projection
-    glm::vec4 ccv_pos = mvp * pos_h;
-    v.l_pos = pos_h * l->vp;
-
-    //裁剪
-    if (ccv_pos.x >= ccv_pos.w || ccv_pos.x <= -ccv_pos.w)
-        return vaild_pos;
-    if (ccv_pos.y >= ccv_pos.w || ccv_pos.y <= -ccv_pos.w)
-        return vaild_pos;
-    if(ccv_pos.z >= ccv_pos.w || ccv_pos.z <= -ccv_pos.w)
-        return vaild_pos;
-
-
-    //透视除法 CLIP->NDC
-    v.inv = 1.0f / ccv_pos.w;
-    ccv_pos *= v.inv;
-
-    v.set_uv(v.u() * v.inv, v.v() * v.inv);
-    v.normal = v.normal * v.inv;
-    v.position_world = v.position_world * v.inv;
-    v.l_pos *= v.inv;
+    glm::mat4 mvp = model * view * projection;
+    glm::vec4 ccv_pos = pos_h * mvp;
+    v.l_pos = glm::vec4(v.position_world,1) * l->vp;
 
     return ccv_pos;
 }

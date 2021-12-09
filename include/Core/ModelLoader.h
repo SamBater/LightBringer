@@ -4,7 +4,7 @@
 #include <cwchar>
 #include <vector>
 #include <cstring>
-namespace YYLB
+namespace ylb
 {
-    std::vector<YYLB::Triangle> LoadObj(const char* modelPath);
+    std::vector<ylb::Triangle> LoadObj(const char* modelPath);
 }

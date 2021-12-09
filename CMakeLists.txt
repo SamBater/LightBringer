@@ -2,16 +2,6 @@ cmake_minimum_required(VERSION 3.14)
 project(LightBringer C CXX)
 set(CMAKE_CXX_STANDARD 14)
 add_compile_options(-O4)
-#
-# 复制Assets文件
-configure_file(assets/teapot.obj assets/teapot.obj COPYONLY)
-configure_file(assets/monkey.obj assets/monkey.obj COPYONLY)
-configure_file(assets/cube.obj assets/cube.obj COPYONLY)
-configure_file(assets/sphere.obj assets/sphere.obj COPYONLY)
-configure_file(assets/uv.jpg assets/uv.jpg COPYONLY)
-configure_file(assets/brick_wall.png assets/brick_wall.png COPYONLY)
-configure_file(lib/glfw3.dll glfw3.dll COPYONLY)
-
 
 add_subdirectory(glm)
 
@@ -20,7 +10,7 @@ set(EXTRA_LIBS opengl32 glfw3dll)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SOURCES)
 
-add_executable(LightBringer ${SOURCES} ${HEADERS} ${HEADERS_CORE})
+add_executable(LightBringer ${SOURCES} ${HEADERS} ${HEADERS_CORE} include/Core/Texture/CubeMap.cpp include/Core/Texture/CubeMap.h include/Core/Shader/SkyBoxShader.cpp include/Core/Shader/SkyBoxShader.h)
 
 target_include_directories(LightBringer
     PUBLIC 
@@ -31,4 +21,13 @@ target_include_directories(LightBringer
 target_link_libraries(LightBringer
     ${EXTRA_LIBS}
         glm::glm
+)
+
+# 复制Assets文件
+add_custom_command(
+        TARGET ${CMAKE_PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${PROJECT_SOURCE_DIR}/assets"
+        "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/assets"
 )

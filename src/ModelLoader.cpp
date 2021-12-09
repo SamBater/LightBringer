@@ -2,19 +2,19 @@
 #include "glm/glm.hpp"
 #include <regex>
 #include <iostream>
-std::vector<YYLB::Triangle> YYLB::LoadObj(const char *modelPath)
+std::vector<ylb::Triangle> ylb::LoadObj(const char *modelPath)
 {
     FILE* fp = fopen(modelPath, "r");
     if (fp == NULL)
     {
         std::cerr << "Can't open " << modelPath << " !\n";
-        return std::vector<YYLB::Triangle>();
+        return std::vector<ylb::Triangle>();
     }
 
     std::vector<glm::vec3> vts;
     std::vector<glm::vec2> uvs;
     std::vector<glm::vec3> ns;
-    std::vector<YYLB::Triangle> ts;
+    std::vector<ylb::Triangle> ts;
     int f_style = -1 , matches = -1;
 
 
@@ -78,7 +78,7 @@ std::vector<YYLB::Triangle> YYLB::LoadObj(const char *modelPath)
                 if (f_style == -1)
                 {
                     std::cerr << "cant't parse file:" << modelPath << std::endl;
-                    return std::vector<YYLB::Triangle>();
+                    return std::vector<ylb::Triangle>();
                 }
             }
 
@@ -109,15 +109,15 @@ std::vector<YYLB::Triangle> YYLB::LoadObj(const char *modelPath)
             
             glm::vec2 defaultvec2 = { 0.5f,0.5f };
             glm::vec3 defaultvec3 = { 0.33f,0.33f,0.33f };
-            std::vector<YYLB::Vertex> vtv;
+            std::vector<ylb::Vertex> vtv;
             for(size_t i = 0 ; i < 3 ;i++)
             {
                 glm::vec3& pos = in3(vts,vertexIndex[i]);
                 glm::vec2& uv = uvs.size() > 0 ? in2(uvs, uvIndex[i]) : defaultvec2;
                 glm::vec3& n = ns.size() > 0 ? in3(ns, normalIndex[i]) : defaultvec3;
-                vtv.push_back(YYLB::Vertex(pos,n,uv));
+                vtv.push_back(ylb::Vertex(pos, n, uv));
             }
-            ts.push_back(YYLB::Triangle(vtv[0],vtv[1],vtv[2]));
+            ts.push_back(ylb::Triangle(vtv[0], vtv[1], vtv[2]));
         }
     }
     return ts;

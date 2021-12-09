@@ -1,7 +1,7 @@
 #pragma once
 #include "Light.h"
 #include "Math/Common.h"
-namespace YYLB
+namespace ylb
 {
     class PointLight : public Light
     {

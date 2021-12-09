@@ -1,11 +1,11 @@
-#include <iostream>
+
 #include "Core/Pipeline/Render.h"
-namespace YYLB
+namespace ylb
 {
     void Render::processInput(double &&delta_time)
     {
         double move_speed = 10.0 * delta_time;
-        double rot_speed = YYLB::PI / 3 * delta_time;
+        double rot_speed = ylb::PI / 3 * delta_time;
         int dx = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS   ? -1
                  : glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ? 1
                                                                 : 0;
@@ -37,11 +37,10 @@ namespace YYLB
             glm::vec3 vy = glm::vec3 {0,1,0} * static_cast<float>(dy * move_speed);
             cam->position_world = cam->position_world + vx + vz + vy;
             transformer->set_world_to_view(cam);
-            std::cerr << "move\n";
         }
     }
 
-    void Render::render(std::vector<YYLB::Mesh> &meshs)
+    void Render::render(std::vector<ylb::Mesh> &meshs)
     {
         for (auto& light : lights)
         {
@@ -49,22 +48,45 @@ namespace YYLB
             {
                 auto world_pos = mesh.getPos();
                 auto triangles = mesh.get_triangles();
-                glm::mat4 model(1);
-                model[0][3] = world_pos.x;
-                model[1][3] = world_pos.y;
-                model[2][3] = world_pos.z;
+
+                //默认固定mvp
+                mesh.shader->model = transformer->calc_matrix_world(mesh.position_world);
+                mesh.shader->view = transformer->view;
+                mesh.shader->projection = transformer->projection;
                 for (auto& t : triangles)
                 {
                     glm::vec4 vertex_ss[3];
                     bool need_clip = false;
-                    for (int i = 0; i < 3 && !need_clip; i++)
+                    for (int i = 0; i < 3 && !need_clip ; i++)
                     {
-                        t.vts[i].position_world = t.vts[i].position + world_pos;
-                        need_clip = !transformer->vertex_output(t.vts[i], world_pos, vertex_ss[i],cam->mode);
+                        auto& vt = t.vts[i];
+                        vt.position_world = vt.position + world_pos;
+                        auto ccv_pos = mesh.shader->vertex_shading(vt,light);
+
+                        //裁剪
+                        if (ccv_pos.x >= ccv_pos.w || ccv_pos.x <= -ccv_pos.w)
+                            need_clip = true;
+                        if (ccv_pos.y >= ccv_pos.w || ccv_pos.y <= -ccv_pos.w)
+                            need_clip = true;
+                        if(ccv_pos.z >= ccv_pos.w || ccv_pos.z <= -ccv_pos.w)
+                            need_clip = true;
+
+                        //透视除法
+                        vt.inv = 1.0f / ccv_pos.w;
+                        ccv_pos *= vt.inv;
+
+                        if(cam->mode == PROJECTION_MODE::PERSPECTIVE)
+                        {
+                            vt.tex_coord *= vt.inv;
+                            vt.normal = vt.normal * vt.inv;
+                            vt.position_world = vt.position_world * vt.inv;
+                        }
+
+                        vertex_ss[i] = ccv_pos * transformer->view_port;
                     }
 
-                    if (need_clip)
-                        continue;
+                    if(need_clip) continue;
+
 
                     //光源空间变换
                     if(renderTargetSetting->open_frame_buffer_write)
@@ -72,7 +94,7 @@ namespace YYLB
                         for(int i = 0 ; i < 3 ; i++)
                         {
                             glm::vec4 pos = glm::vec4 (t.vts[i].position,1);
-                            t.vts[i].l_pos =pos * model * light->vp;
+                            t.vts[i].l_pos =pos * mesh.shader->model * light->vp;
                             t.vts[i].l_pos *= t.vts[i].inv;
                         }
                     }
@@ -85,18 +107,16 @@ namespace YYLB
         }
     }
 
-    void Render::render(YYLB::Triangle &t,Shader *&shader,Light*& light)
+    void Render::render(ylb::Triangle &t, Shader *&shader, Light*& light)
     {
-
-        const YYLB::BoundingBox *bb = t.bounding_box();
+        const ylb::BoundingBox *bb = t.bounding_box();
         glm::vec3 color = {0.5, 0.5, 0.5};
-        float zero = 0;
-        for (int y = YYLB::max(bb->bot,zero); y < bb->top; y++)
-            for (int x = YYLB::max(bb->left,zero); x < bb->right; x++)
+        for (int y = bb->bot; y < bb->top; y++)
+            for (int x = bb->left; x < bb->right; x++)
             {
                 int pixel = y * w + x;
                 //三角形测试
-                if (YYLB::Triangle::inside(x + 0.5f, y + 0.5f, t))
+                if (ylb::Triangle::inside(x + 0.5f, y + 0.5f, t))
                 {
                     float depth = 0;
 
@@ -105,7 +125,7 @@ namespace YYLB
                     else
                         depth = t.vts[0].sz() * t.cof.x + t.vts[1].sz() * t.cof.y + t.vts[2].sz() * t.cof.z;
                     //深度测试
-                    if (depth - frame_buffer->depth[pixel] > YYLB::eps)
+                    if (depth - frame_buffer->depth[pixel] > ylb::eps)
                     {
                         //深度写入
                         if(renderTargetSetting->open_z_buffer_write)
@@ -142,10 +162,10 @@ namespace YYLB
         transformer->set_projection_to_screen(w, h);
         Shader::camPos = &cam->position_world;
 
-        using YYLB::Triangle;
-        using YYLB::Vertex;
-        YYLB::ParalleLight *sun = new ParalleLight(1.5f, glm::vec3{1, 1, 1}, glm::vec3{0, -2,-2});
-//        YYLB::ParalleLight *sun = new ParalleLight(1.5f, glm::vec3{1, 1, 1}, glm::vec3{-0.7, -1,0.63});
+        using ylb::Triangle;
+        using ylb::Vertex;
+        ylb::ParalleLight *sun = new ParalleLight(1.5f, glm::vec3{1, 1, 1}, glm::vec3{0, -2, -2});
+//        ylb::ParalleLight *sun = new ParalleLight(1.5f, glm::vec3{1, 1, 1}, glm::vec3{-0.7, -1,0.63});
         sun->dir = glm::normalize(sun->dir);
         lights.push_back(sun);
 
@@ -153,17 +173,99 @@ namespace YYLB
                 v3{ {-5,-1,3},{0,1,0},{0.5,0} }, v4{ {-5,-1,-10},{0,1,0},{0.5,0.5 } };
 
         std::vector<Triangle> ts2 = {
-            YYLB::Triangle(v1, v2, v3),
-            YYLB::Triangle(v4, v2, v3)
+                ylb::Triangle(v1, v2, v3),
+                ylb::Triangle(v4, v2, v3)
         };
 
         Texture* cb = new Texture("assets/cb.jpg");
         Texture* brick_wall = new Texture("assets/brick_wall.png");
         Texture* t = new Texture("assets/uv.jpg");
+        Shader* shader = new PhongShader();
+        Shader* cube_shader = new PhongShader(t);
+
+        shader->view = transformer->view;
+        shader->projection = transformer->projection;
+        cube_shader->view = transformer->view;
+        cube_shader->projection = transformer->projection;
+
+        std::vector<std::string> cube_maps = {
+                "assets/skybox/right.jpg",
+                "assets/skybox/left.jpg",
+                "assets/skybox/top.jpg",
+                "assets/skybox/bottom.jpg",
+                "assets/skybox/front.jpg",
+                "assets/skybox/back.jpg"
+        };
+        CubeMap* skybox = new CubeMap(cube_maps);
+        float skyboxVertices[] = {
+                // positions
+                -1.0f,  1.0f, -1.0f,
+                -1.0f, -1.0f, -1.0f,
+                1.0f, -1.0f, -1.0f,
+                1.0f, -1.0f, -1.0f,
+                1.0f,  1.0f, -1.0f,
+                -1.0f,  1.0f, -1.0f,
+
+                -1.0f, -1.0f,  1.0f,
+                -1.0f, -1.0f, -1.0f,
+                -1.0f,  1.0f, -1.0f,
+                -1.0f,  1.0f, -1.0f,
+                -1.0f,  1.0f,  1.0f,
+                -1.0f, -1.0f,  1.0f,
+
+                1.0f, -1.0f, -1.0f,
+                1.0f, -1.0f,  1.0f,
+                1.0f,  1.0f,  1.0f,
+                1.0f,  1.0f,  1.0f,
+                1.0f,  1.0f, -1.0f,
+                1.0f, -1.0f, -1.0f,
+
+                -1.0f, -1.0f,  1.0f,
+                -1.0f,  1.0f,  1.0f,
+                1.0f,  1.0f,  1.0f,
+                1.0f,  1.0f,  1.0f,
+                1.0f, -1.0f,  1.0f,
+                -1.0f, -1.0f,  1.0f,
+
+                -1.0f,  1.0f, -1.0f,
+                1.0f,  1.0f, -1.0f,
+                1.0f,  1.0f,  1.0f,
+                1.0f,  1.0f,  1.0f,
+                -1.0f,  1.0f,  1.0f,
+                -1.0f,  1.0f, -1.0f,
+
+                -1.0f, -1.0f, -1.0f,
+                -1.0f, -1.0f,  1.0f,
+                1.0f, -1.0f, -1.0f,
+                1.0f, -1.0f, -1.0f,
+                -1.0f, -1.0f,  1.0f,
+                1.0f, -1.0f,  1.0f
+        };
 
 
-        YYLB::Mesh tm(0,0,2.f,ts2);
-        PhongShader *shader = new PhongShader();
+        std::vector<ylb::Triangle> skybox_ts;
+        int index = 0;
+        auto getVal = [&](){return skyboxVertices[index++];};
+        for(int i = 0 ; i < 12 ; i++)
+        {
+            ylb::Triangle triangle;
+            for(int j = 0 ; j < 3 ; j++)
+            {
+                triangle.vts[j].position = glm::vec3(getVal(),getVal(),getVal());
+            }
+            skybox_ts.push_back(triangle);
+        }
+
+        ylb::Mesh skybox_mesh(0,0,0,skybox_ts);
+        Shader* skybox_shader = new SkyBoxShader(skybox);
+        skybox_mesh.shader = skybox_shader;
+        world.push_back(skybox_mesh);
+        std::vector<ylb::Mesh> world_only_sky;
+        world_only_sky.push_back(skybox_mesh);
+
+
+
+        ylb::Mesh tm(0, 0, 2.f, ts2);
         tm.shader = shader;
         tm.scale_transform(3,1.5,3);
         world.push_back(tm);
@@ -178,17 +280,17 @@ namespace YYLB
 //            }
 //        }
 
-        YYLB::Mesh cube(-4.f,0,-16.f,cubeTs);
+        ylb::Mesh cube(-4.f, 0, -16.f, cubeTs);
         cube.scale_transform(2,2,2);
-        cube.shader = new PhongShader(t);
+        cube.shader = cube_shader;
         world.push_back(cube);
 
-        YYLB::Mesh m1(5.f, -0.5f, -16.f, LoadObj("assets/sphere.obj"));
-        m1.shader = new PhongShader();
+        ylb::Mesh m1(5.f, -0.5f, -16.f, LoadObj("assets/sphere.obj"));
+        m1.shader = shader;
         world.push_back(std::move(m1));
 
         Mesh wall(0,6,13,cubeTs);
-        wall.shader = new PhongShader();
+        wall.shader = shader;
         wall.scale_transform(16,8,2);
         world.push_back(wall);
 
@@ -204,6 +306,7 @@ namespace YYLB
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             frame_buffer->clear();
 
+//            render(world_only_sky);
             render(world);
             glDrawPixels(w, h, GL_RGB, GL_UNSIGNED_BYTE, frame_buffer->pixels);
             end = std::chrono::high_resolution_clock::now();
@@ -242,38 +345,40 @@ namespace YYLB
         frame_buffer->clear();
         Camera *originCam = cam;
         auto mode = cam->mode;
-        cam = new Camera(0,10,-25,YYLB::PI / 2 ,16/9.f,0,100);
+        cam = new Camera(0, 10, -25, ylb::PI  , 16 / 9.f, 0, 100);
         cam->l = -40;cam->r = 40;
         cam->t = 40;cam->b = -40;
         cam->mode = PROJECTION_MODE::ORTHOGONAL;
         cam->look_at = light->LightDir(cam->position_world);
         transformer->set_view_to_project(cam,PROJECTION_MODE::ORTHOGONAL);
         transformer->set_world_to_view(cam);
-        transformer->set_projection_to_screen(w,h);
 
         glm::vec<2,int> size{256,256};
-        unsigned char* shadow_map = new unsigned char[w*h*3];
+        unsigned char* shadow_map = new unsigned char[size.x*size.y*3];
 
         renderTargetSetting->open_frame_buffer_write = false;
         render(world);
-        for(int y = 0 ; y < h ; y++)
+
+        float scaleX = w / size.x;
+        float scaleY = h / size.y;
+        for(int y = 0 ; y < size.y ; y++)
         {
-            for(int x = 0 ; x < w ; x++)
+            for(int x = 0 ; x < size.x ; x++)
             {
-                int i = y*w*3+x*3;
-                shadow_map[i] = shadow_map[i+1] = shadow_map[i+2] = (1+frame_buffer->depth[y*w+x] ) * 127;
+                int i = y*size.x*3 +x*3;
+                float depth = (1+frame_buffer->depth[static_cast<int>(y*scaleY*w+x*scaleX)] ) * 127;
+                shadow_map[i] = shadow_map[i+1] = shadow_map[i+2] = depth;
             }
         }
 
         frame_buffer->save_zbuffer("shadow_map.bmp", false);
-        light->shadow_map = new Texture(shadow_map,w,h);
+        light->shadow_map = new Texture(shadow_map,size.x,size.y);
         light->vp = transformer->view * transformer->projection;
 
         delete cam;
         cam = originCam;
         transformer->set_view_to_project(cam,originCam->mode);
         transformer->set_world_to_view(cam);
-        transformer->set_projection_to_screen(w,h);
         renderTargetSetting->open_frame_buffer_write = true;
     }
 

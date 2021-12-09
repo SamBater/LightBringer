@@ -2,7 +2,7 @@
 #define YYLB_CAMERA
 #include "glm/glm.hpp"
 #include "Core/Scene/Actor.h"
-namespace YYLB
+namespace ylb
 {
     class Transformer;
 
@@ -17,7 +17,7 @@ namespace YYLB
         float fov_Y;
         float aspect_ratio;
         float l, r, t, b, n, f;
-        friend class YYLB::Transformer;
+        friend class ylb::Transformer;
         friend class Render;
 
     public:

@@ -1,6 +1,6 @@
 #pragma once
 #include "Light.h"
-namespace YYLB
+namespace ylb
 {
     class ParalleLight : public Light
     {

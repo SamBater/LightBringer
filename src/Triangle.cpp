@@ -1,6 +1,6 @@
 #include "Math/Triangle.h"
 
-using namespace YYLB;
+using namespace ylb;
 
 Triangle::Triangle(Vertex &vt1, Vertex &vt2, Vertex &vt3) : vts{vt1, vt2, vt3}
 {
@@ -19,10 +19,10 @@ void Triangle::ready_rasterization(glm::vec4 pos_screen_space[])
     area = det(vts[0].sx(), vts[1].sx(), vts[2].sx(),
                vts[0].sy(), vts[1].sy(), vts[2].sy(),
                i, i, i);
-    bb.top = YYLB::max3(vts[0].sy(), vts[1].sy(), vts[2].sy());
-    bb.bot = YYLB::min3(vts[0].sy(), vts[1].sy(), vts[2].sy());
-    bb.right = YYLB::max3(vts[0].sx(), vts[1].sx(), vts[2].sx());
-    bb.left = YYLB::min3(vts[0].sx(), vts[1].sx(), vts[2].sx());
+    bb.top = ylb::max3(vts[0].sy(), vts[1].sy(), vts[2].sy());
+    bb.bot = ylb::min3(vts[0].sy(), vts[1].sy(), vts[2].sy());
+    bb.right = ylb::max3(vts[0].sx(), vts[1].sx(), vts[2].sx());
+    bb.left = ylb::min3(vts[0].sx(), vts[1].sx(), vts[2].sx());
 }
 
 float Triangle::interpolated_depth()
