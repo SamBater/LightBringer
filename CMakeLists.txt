@@ -10,7 +10,7 @@ set(EXTRA_LIBS opengl32 glfw3dll)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SOURCES)
 
-add_executable(LightBringer ${SOURCES} ${HEADERS} ${HEADERS_CORE} include/Core/Texture/CubeMap.cpp include/Core/Texture/CubeMap.h include/Core/Shader/SkyBoxShader.cpp include/Core/Shader/SkyBoxShader.h)
+add_executable(LightBringer ${SOURCES} ${HEADERS} ${HEADERS_CORE} include/Core/Pipeline/Clipper.cpp include/Core/Texture/CubeMap.cpp include/Core/Texture/CubeMap.h include/Core/Shader/SkyBoxShader.cpp include/Core/Shader/SkyBoxShader.h)
 
 target_include_directories(LightBringer
     PUBLIC 

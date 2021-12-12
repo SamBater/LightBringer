@@ -7,7 +7,7 @@
 
 glm::vec4 ylb::SkyBoxShader::vertex_shading(ylb::Vertex &v, ylb::Light *l) {
     v.tex_coord = v.position;
-    view[0][3] = view[1][3] = view[2][3] = 0;
+    view = glm::mat4 (glm::mat3(view));
     glm::vec4 glPosition = glm::vec4(v.position,1.0) * view * projection;
     return glPosition;
 }

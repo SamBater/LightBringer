@@ -8,7 +8,6 @@ glm::vec4 PhongShader::vertex_shading(Vertex &v, Light *l)
     //MVP变换 model->view->projection
     glm::mat4 mvp = model * view * projection;
     glm::vec4 ccv_pos = pos_h * mvp;
-    v.l_pos = glm::vec4(v.position_world,1) * l->vp;
 
     return ccv_pos;
 }

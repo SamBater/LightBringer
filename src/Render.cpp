@@ -1,4 +1,5 @@
 
+#include <Core/Pipeline/Clipper.h>
 #include "Core/Pipeline/Render.h"
 namespace ylb
 {
@@ -39,9 +40,10 @@ namespace ylb
             transformer->set_world_to_view(cam);
         }
     }
-
+    static int delTriangles = 0;
     void Render::render(std::vector<ylb::Mesh> &meshs)
     {
+        delTriangles = 0;
         for (auto& light : lights)
         {
             for (auto& mesh : meshs)
@@ -55,63 +57,19 @@ namespace ylb
                 mesh.shader->projection = transformer->projection;
                 for (auto& t : triangles)
                 {
-                    glm::vec4 vertex_ss[3];
-                    bool need_clip = false;
-                    for (int i = 0; i < 3 && !need_clip ; i++)
-                    {
-                        auto& vt = t.vts[i];
-                        vt.position_world = vt.position + world_pos;
-                        auto ccv_pos = mesh.shader->vertex_shading(vt,light);
-
-                        //裁剪
-                        if (ccv_pos.x >= ccv_pos.w || ccv_pos.x <= -ccv_pos.w)
-                            need_clip = true;
-                        if (ccv_pos.y >= ccv_pos.w || ccv_pos.y <= -ccv_pos.w)
-                            need_clip = true;
-                        if(ccv_pos.z >= ccv_pos.w || ccv_pos.z <= -ccv_pos.w)
-                            need_clip = true;
-
-                        //透视除法
-                        vt.inv = 1.0f / ccv_pos.w;
-                        ccv_pos *= vt.inv;
-
-                        if(cam->mode == PROJECTION_MODE::PERSPECTIVE)
-                        {
-                            vt.tex_coord *= vt.inv;
-                            vt.normal = vt.normal * vt.inv;
-                            vt.position_world = vt.position_world * vt.inv;
-                        }
-
-                        vertex_ss[i] = ccv_pos * transformer->view_port;
-                    }
-
-                    if(need_clip) continue;
-
-
-                    //光源空间变换
-                    if(renderTargetSetting->open_frame_buffer_write)
-                    {
-                        for(int i = 0 ; i < 3 ; i++)
-                        {
-                            glm::vec4 pos = glm::vec4 (t.vts[i].position,1);
-                            t.vts[i].l_pos =pos * mesh.shader->model * light->vp;
-                            t.vts[i].l_pos *= t.vts[i].inv;
-                        }
-                    }
-
-                    //设置三角形,准备光栅化
-                    t.ready_rasterization(vertex_ss);
-                    render(t, mesh.shader,light);
+                    geometryProcessing(t, mesh.shader, light);
                 }
             }
         }
     }
 
-    void Render::render(ylb::Triangle &t, Shader *&shader, Light*& light)
+    float maxDepth = -1000;
+    float minDepth = 1000;
+    void Render::rasterization(ylb::Triangle &t, Shader *&shader, Light*& light)
     {
         const ylb::BoundingBox *bb = t.bounding_box();
         glm::vec3 color = {0.5, 0.5, 0.5};
-        for (int y = bb->bot; y < bb->top; y++)
+        for (int y = ylb::max(bb->bot,0.f); y < bb->top; y++)
             for (int x = bb->left; x < bb->right; x++)
             {
                 int pixel = y * w + x;
@@ -125,7 +83,7 @@ namespace ylb
                     else
                         depth = t.vts[0].sz() * t.cof.x + t.vts[1].sz() * t.cof.y + t.vts[2].sz() * t.cof.z;
                     //深度测试
-                    if (depth - frame_buffer->depth[pixel] > ylb::eps)
+                    if (depth - frame_buffer->depth[pixel] >= ylb::eps)
                     {
                         //深度写入
                         if(renderTargetSetting->open_z_buffer_write)
@@ -152,10 +110,10 @@ namespace ylb
 
         //设置渲染状态
 //        glm::vec3 camPos = {-1, 1, -70.f};
-        glm::vec3 camPos = {0, 4, -70.f};
+        glm::vec3 camPos = {0, 1, -70.f};
         cam = new Camera(camPos.x, camPos.y, camPos.z, PI / 4, w * 1.f / h, 0.2, 1000);
-        cam->look_at = {-4,2,1};
-//        cam->look_at = {0,0,-1};
+//        cam->look_at = {-4,2,1};
+        cam->look_at = {0,0,-1};
         cam->look_at = glm::normalize(cam->look_at);
         transformer->set_world_to_view(cam);
         transformer->set_view_to_project(cam,PROJECTION_MODE::PERSPECTIVE);
@@ -164,7 +122,7 @@ namespace ylb
 
         using ylb::Triangle;
         using ylb::Vertex;
-        ylb::ParalleLight *sun = new ParalleLight(1.5f, glm::vec3{1, 1, 1}, glm::vec3{0, -2, -2});
+        ylb::ParalleLight *sun = new ParalleLight(1.5f, glm::vec3{1, 1, 1}, glm::vec3{0.5, -1.5, 1});
 //        ylb::ParalleLight *sun = new ParalleLight(1.5f, glm::vec3{1, 1, 1}, glm::vec3{-0.7, -1,0.63});
         sun->dir = glm::normalize(sun->dir);
         lights.push_back(sun);
@@ -259,11 +217,9 @@ namespace ylb
         ylb::Mesh skybox_mesh(0,0,0,skybox_ts);
         Shader* skybox_shader = new SkyBoxShader(skybox);
         skybox_mesh.shader = skybox_shader;
-        world.push_back(skybox_mesh);
+//        world.push_back(skybox_mesh);
         std::vector<ylb::Mesh> world_only_sky;
         world_only_sky.push_back(skybox_mesh);
-
-
 
         ylb::Mesh tm(0, 0, 2.f, ts2);
         tm.shader = shader;
@@ -271,14 +227,6 @@ namespace ylb
         world.push_back(tm);
 
         auto cubeTs = LoadObj("assets/cube.obj");
-
-//        for(auto &t : cubeTs)
-//        {
-//            for(auto& v : t.vts)
-//            {
-//                v.set_uv(1-v.u(),v.v());
-//            }
-//        }
 
         ylb::Mesh cube(-4.f, 0, -16.f, cubeTs);
         cube.scale_transform(2,2,2);
@@ -300,19 +248,24 @@ namespace ylb
         auto start = std::chrono::high_resolution_clock::now();
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> delta_time = end - start;
+
         while (!glfwWindowShouldClose(window))
         {
             processInput(delta_time.count());
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             frame_buffer->clear();
 
-//            render(world_only_sky);
+            renderTargetSetting->open_z_buffer_write = false;
+            render(world_only_sky);
+            renderTargetSetting->open_z_buffer_write = true;
             render(world);
+
             glDrawPixels(w, h, GL_RGB, GL_UNSIGNED_BYTE, frame_buffer->pixels);
+
             end = std::chrono::high_resolution_clock::now();
             delta_time = end - start;
             start = std::chrono::high_resolution_clock::now();
-            sprintf(str, "%s delta_time:%.3lf", title, delta_time.count());
+            sprintf(str, "%s delta_time:%.3lf tri:%d", title, delta_time.count(),delTriangles);
             glfwSetWindowTitle(window, str);
 
             glfwSwapBuffers(window);
@@ -385,4 +338,65 @@ namespace ylb
     bool Render::back_face_culling(Vertex &vt) {
         return false;
     }
+
+
+    void Render::geometryProcessing(Triangle &t, Shader *&shader, Light *&light) {
+        for (int i = 0; i < 3 ; i++) {
+            auto &vt = t.vts[i];
+            vt.ccv = shader->vertex_shading(vt, light);
+        }
+
+
+        //裁剪
+
+
+        std::vector<Vertex> vts{t.vts[0],t.vts[1],t.vts[2]};
+
+        auto clipped_x = Clipper::ClipPolygon(Plane::POSITIVE_X,vts);
+        auto clipped_nx = Clipper::ClipPolygon(Plane::NEGATIVE_X,clipped_x);
+        auto clipped_y = Clipper::ClipPolygon(Plane::POSITIVE_Y,clipped_nx);
+        auto clipped_ny = Clipper::ClipPolygon(Plane::NEGATIVE_Y,clipped_y);
+        auto clipped_z = Clipper::ClipPolygon(Plane::POSITIVE_Z,clipped_ny);
+        auto clipped_nz = Clipper::ClipPolygon(Plane::NEGATIVE_Z,clipped_z);
+        auto clipped_vt = Clipper::ClipPolygon(Plane::POSITIVE_W,clipped_nz);
+
+        if(clipped_vt.size() < 3) return;
+
+        for(int i = 0 ; i < clipped_vt.size() ; i++)
+        {
+            auto& vt = clipped_vt[i];
+            auto& ccv_pos = vt.ccv;
+            //透视除法
+            vt.inv = 1.0f / ccv_pos.w;
+            ccv_pos *= vt.inv;
+
+            if(cam->mode == PROJECTION_MODE::PERSPECTIVE)
+            {
+                vt.tex_coord *= vt.inv;
+                vt.normal = vt.normal * vt.inv;
+                vt.position_world = vt.position_world * vt.inv;
+            }
+
+            if(renderTargetSetting->open_frame_buffer_write)
+            {
+                glm::vec4 pos = glm::vec4 (vt.position,1);
+                vt.l_pos =pos * shader->model * light->vp;
+                vt.l_pos *= vt.inv;
+            }
+
+            vt.sv_pos = ccv_pos * transformer->view_port;
+        }
+
+        int step = clipped_vt.size() > 3  ? 1 : 3;
+        int triangle_num = clipped_vt.size();
+        for(int i = 0 ; i < triangle_num ; i+=step)
+        {
+            Triangle t (clipped_vt[i],clipped_vt[ (i+1) % clipped_vt.size()],clipped_vt[(i+2) % clipped_vt.size()]);
+            //设置三角形,准备光栅化
+            t.ready_rasterization();
+            rasterization(t,shader,light);
+            delTriangles++;
+        }
+    }
+
 }

@@ -29,7 +29,7 @@ namespace ylb
         {
             return &bb;
         }
-        void ready_rasterization(glm::vec4 pos_screen_space[]);
+        void ready_rasterization();
         float interpolated_depth();
         void interpolated_uv(float &u, float &v);
         glm::vec3 interpolated_world_position();

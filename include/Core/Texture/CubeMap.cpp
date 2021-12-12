@@ -28,22 +28,28 @@ glm::vec3 CubeMap::tex3d(glm::vec3 &vec) {
         vec /= x;
         vec += 1;
         vec *= 0.5f;
-        return faces->at(x > 0 ? 0 : 1)->tex2d(vec.y,vec.z);
+        if(vec.x > 0)
+            return faces->at( 0 )->tex2d(vec.y,vec.z);
+        return faces->at( 1 )->tex2d(vec.y,vec.z);
     }
 
-    if(max3(x,y,z) == y)
+    else if(max3(x,y,z) == y)
     {
         vec /= y;
         vec += 1;
         vec *= 0.5f;
-        return faces->at(y > 0 ?  2 : 3)->tex2d(vec.x,vec.z);
+        if(y > 0)
+            return faces->at(2)->tex2d(vec.x,vec.z);
+        return faces->at(3)->tex2d(vec.x,vec.z);
     }
 
-    if(max3(x,y,z) == z)
+    else
     {
         vec /= z;
         vec += 1;
         vec *= 0.5f;
-        return faces->at(z > 0 ? 4 : 5)->tex2d(vec.x,vec.y);
+        if(z > 0 )
+            return faces->at(4)->tex2d(vec.x,vec.y);
+        return faces->at( 5)->tex2d(vec.x,vec.y);
     }
 }

@@ -45,7 +45,8 @@ namespace ylb
         std::vector<Mesh> world;
         std::vector<Light *> lights;
         void processInput(double &&delta_time);
-        void render(ylb::Triangle &t, ylb::Shader*& shader, Light*& light);
+        void geometryProcessing(ylb::Triangle &t, Shader*& shader, Light*& light);
+        void rasterization(ylb::Triangle &t, ylb::Shader*& shader, Light*& light);
         void render(std::vector<ylb::Mesh> &ts);
         void generate_shadow_map(Light* light);
 

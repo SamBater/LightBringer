@@ -6,15 +6,8 @@ Triangle::Triangle(Vertex &vt1, Vertex &vt2, Vertex &vt3) : vts{vt1, vt2, vt3}
 {
 }
 
-void Triangle::ready_rasterization(glm::vec4 pos_screen_space[])
+void Triangle::ready_rasterization()
 {
-    for (int r = 0; r < 3; r++)
-    {
-        vts[r].sx() = pos_screen_space[r].x;
-        vts[r].sy() = pos_screen_space[r].y;
-        vts[r].sz() = pos_screen_space[r].z;
-    }
-
     float i = 1.f;
     area = det(vts[0].sx(), vts[1].sx(), vts[2].sx(),
                vts[0].sy(), vts[1].sy(), vts[2].sy(),

@@ -53,7 +53,7 @@ namespace ylb
 
 
     template<typename T>
-    T lerp(T x, T y,float t)
+    T lerp(T& x, T& y,float t)
     {
         return x + (y-x) * t;
     }
@@ -65,8 +65,7 @@ namespace ylb
 
     inline int calc_index(glm::vec<2,int>& vec,int w,int comp)
     {
-        int r = static_cast<int>(vec[1] * w * 3 + vec[0] * comp);
-        return r;
+        return static_cast<int>(vec[1] * w * 3 + vec[0] * comp);
     };
 
     inline float det(glm::mat4 &mat)
