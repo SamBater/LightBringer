@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.14)
 project(LightBringer C CXX)
 set(CMAKE_CXX_STANDARD 14)
-add_compile_options(-O4)
 
 add_subdirectory(glm)
 
 LINK_DIRECTORIES(lib)
-set(EXTRA_LIBS opengl32 glfw3dll)
+set(EXTRA_LIBS opengl32 glfw3)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src SOURCES)
 

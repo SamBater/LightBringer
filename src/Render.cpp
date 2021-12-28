@@ -122,7 +122,7 @@ namespace ylb
 
         using ylb::Triangle;
         using ylb::Vertex;
-        ylb::ParalleLight *sun = new ParalleLight(1.5f, glm::vec3{1, 1, 1}, glm::vec3{0.5, -1.5, 1});
+        ylb::ParalleLight *sun = new ParalleLight(1.5f, glm::vec3{1, 1, 1}, glm::vec3{0, -1, 2});
 //        ylb::ParalleLight *sun = new ParalleLight(1.5f, glm::vec3{1, 1, 1}, glm::vec3{-0.7, -1,0.63});
         sun->dir = glm::normalize(sun->dir);
         lights.push_back(sun);
@@ -228,7 +228,7 @@ namespace ylb
 
         auto cubeTs = LoadObj("assets/cube.obj");
 
-        ylb::Mesh cube(-4.f, 0, -16.f, cubeTs);
+        ylb::Mesh cube(-4.f, 0.6, -16.f, cubeTs);
         cube.scale_transform(2,2,2);
         cube.shader = cube_shader;
         world.push_back(cube);
