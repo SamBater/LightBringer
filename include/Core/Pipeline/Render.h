@@ -24,6 +24,9 @@
 #include "Core/Texture/CubeMap.h"
 #include <iostream>
 #include <Core/Shader/SkyBoxShader.h>
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 namespace ylb
 {
     struct RenderTargetSetting
