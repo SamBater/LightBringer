@@ -28,35 +28,10 @@ glm::vec3 PhongShader::fragment_shading(Triangle &t, Light *l)
     l_dir = glm::normalize(l_dir);
     normal = glm::normalize(normal);
 
-    //计算阴影
-    float visibility = 1.0f;
-    if(l->shadow_map != nullptr)
-    {
-        glm::vec4 v_light_pos = t.vts[0].l_pos * t.cof.x  +
-                            t.vts[1].l_pos * t.cof.y  +
-                            t.vts[2].l_pos * t.cof.z  ;
-        v_light_pos *= t.s;
-
-        if(v_light_pos.x < -1 || v_light_pos.x > 1 ||
-        v_light_pos.y < -1 || v_light_pos.y > 1 ||
-        v_light_pos.z > 1 || v_light_pos.z < -1)
-            visibility = 0.0;
-
-        glm::vec4 one{1,1,1,1};
-        v_light_pos = v_light_pos + one;
-        v_light_pos *= 0.5f;
-        float depth_lb = v_light_pos.z;
-
-        float shadow_bias = 1e-6;
-        float depth_sb = l->shadow_map->tex2d(v_light_pos.x,v_light_pos.y).z;
-
-        if(depth_sb > depth_lb + shadow_bias)
-            visibility = 0.5f;
-    }
 
     //Lambert term
     float nxl = glm::dot(l_dir, normal);
-    glm::vec3 L_diffuse = kd * (float)std::max(0.f, nxl) * attenuation * visibility;
+    glm::vec3 L_diffuse = kd * (float)std::max(0.f, nxl) * attenuation;
 
     //Specular term
     glm::vec3 viewDir = *camPos - position_world;
@@ -66,7 +41,7 @@ glm::vec3 PhongShader::fragment_shading(Triangle &t, Light *l)
     double nxh = glm::dot(normal, h);
     float p = 256;
     glm::vec3 ks = {1.f, 1.f, 1.f};
-    glm::vec3 L_specular = ks * (float)std::pow(std::max(0.0, nxh), p) * visibility ;
+    glm::vec3 L_specular = ks * (float)std::pow(std::max(0.0, nxh), p);
     glm::vec3 ambient = {0.22f, 0.27f, 0.32f};
     glm::vec3 L = L_diffuse  + L_specular + ambient;
     return L;

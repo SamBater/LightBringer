@@ -59,7 +59,6 @@ namespace ylb
         void ProcessGeometry(ylb::Triangle &t, Shader*& shader, Light*& light);
         void Rasterization(ylb::Triangle &t, ylb::Shader*& shader, Light*& light);
         void Render(std::vector<ylb::Mesh> &ts);
-        void Generate_ShadowMap(Light* light);
 
         //返回值:true->剔除
         bool Backface_culling(Vertex& vt);

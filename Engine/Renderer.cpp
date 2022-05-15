@@ -91,11 +91,7 @@ void Renderer::Start() {
     //设置渲染状态
     //        glm::vec3 camPos = {-1, 1, -70.f};
     glm::vec3 camPos = {0, 1, -70.f};
-    cam =
-        new Camera(camPos.x, camPos.y, camPos.z, PI / 4, w * 1.f / h, 0.2, 1000);
-    //        cam->look_at = {-4,2,1};
-    cam->look_at = {0, 0, -1};
-    cam->look_at = glm::normalize(cam->look_at);
+    cam = new Camera(camPos,glm::vec3(0,0,-1),PI / 4, w * 1.f / h, 0.2, 1000);
     transformer->set_world_to_view(cam);
     transformer->set_view_to_project(cam, PROJECTION_MODE::PERSPECTIVE);
     transformer->set_projection_to_screen(w, h);
@@ -192,8 +188,6 @@ void Renderer::Start() {
     wall.shader = shader;
     wall.scale_transform(16, 8, 2);
     world.push_back(wall);
-
-    Generate_ShadowMap(sun);
 
     char str[256] = "";
     auto start = std::chrono::high_resolution_clock::now();
@@ -293,47 +287,6 @@ Renderer::Renderer(int _w, int _h) :
     renderTargetSetting = new RenderTargetSetting();
 }
 
-void Renderer::Generate_ShadowMap(Light *light) {
-    frame_buffer->clear();
-    Camera *originCam = cam;
-    auto mode = cam->mode;
-    cam = new Camera(0, 10, -25, ylb::PI, 16 / 9.f, 0, 100);
-    cam->l = -40;
-    cam->r = 40;
-    cam->t = 40;
-    cam->b = -40;
-    cam->mode = PROJECTION_MODE::ORTHOGONAL;
-    cam->look_at = light->LightDir(cam->position_world);
-    transformer->set_view_to_project(cam, PROJECTION_MODE::ORTHOGONAL);
-    transformer->set_world_to_view(cam);
-
-    glm::vec<2, int> size{256, 256};
-    unsigned char *shadow_map = new unsigned char[size.x * size.y * 3];
-
-    renderTargetSetting->open_frame_buffer_write = false;
-    Render(world);
-
-    float scaleX = w / size.x;
-    float scaleY = h / size.y;
-    for (int y = 0; y < size.y; y++) {
-        for (int x = 0; x < size.x; x++) {
-            int i = y * size.x * 3 + x * 3;
-            float depth =
-                (1 + frame_buffer->depth[static_cast<int>(y * scaleY * w + x * scaleX)]) * 127;
-            shadow_map[i] = shadow_map[i + 1] = shadow_map[i + 2] = depth;
-        }
-    }
-
-    frame_buffer->save_zbuffer("shadow_map.bmp", false);
-    light->shadow_map = new Texture(shadow_map, size.x, size.y);
-    light->vp = transformer->view * transformer->projection;
-
-    delete cam;
-    cam = originCam;
-    transformer->set_view_to_project(cam, originCam->mode);
-    transformer->set_world_to_view(cam);
-    renderTargetSetting->open_frame_buffer_write = true;
-}
 
 bool Renderer::Backface_culling(Vertex &vt) {
     return false;

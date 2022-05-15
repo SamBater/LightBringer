@@ -7,7 +7,7 @@ namespace ylb
     {
     public:
         glm::vec3 position_world;
-        Actor(glm::vec3 &list) : position_world(list) {}
+        Actor(const glm::vec3 &list) : position_world(list) {}
         Actor(const float x = 0, const float y = 0, const float z = 0) : position_world{x, y, z} {}
         inline const glm::vec3 & getPos() const { return position_world; }
         virtual void setPos(float x, float y, float z)
