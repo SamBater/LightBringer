@@ -37,9 +37,9 @@ namespace ylb{
             clamp(color.z);
 
             int pixel = w * y * 3 + x * 3;
-            pixels[pixel] = color.x * 255.f;
-            pixels[pixel + 1] = color.y * 255.f;
-            pixels[pixel + 2] = color.z * 255.f;
+            pixels[pixel]     = static_cast<unsigned char>(color.x * 255.f);
+            pixels[pixel + 1] = static_cast<unsigned char>(color.y * 255.f);
+            pixels[pixel + 2] = static_cast<unsigned char>(color.z * 255.f);
         }
 
         inline void set_depth(int &x, int &y, const float &d)

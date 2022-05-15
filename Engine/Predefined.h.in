@@ -1,0 +1,7 @@
+#ifndef __PREDEFINED_H__
+#define __PREDEFINED_H__
+
+static const char* PROJECT_NAME = "${PROJECT_NAME}";
+static const char* ASSETS_DIR = "${ASSETS_DIR}/";
+
+#endif // __PREDEFINED.H_H__

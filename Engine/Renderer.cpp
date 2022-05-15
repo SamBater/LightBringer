@@ -18,11 +18,11 @@ void Renderer::ProcessInput(double &&delta_time) {
     tx = glfwGetKey(window, GLFW_KEY_DOWN) ? -1 : tx;
     if (ty) {
         auto sun = static_cast<ParalleLight *>(lights[0]);
-        sun->dir.y += delta_time * 0.1f * ty;
+        sun->dir.y += static_cast<float>(delta_time * 0.1f * ty);
     }
     if (tx) {
         auto sun = static_cast<ParalleLight *>(lights[0]);
-        sun->dir.x += delta_time * 0.1f * tx;
+        sun->dir.x += static_cast<float>(delta_time * 0.1f * tx);
     }
     if (dx || dz || dy) {
         glm::vec3 vx = glm::vec3{1, 0, 0} * static_cast<float>(dx * move_speed);
@@ -55,7 +55,8 @@ void Renderer::Rasterization(ylb::Triangle &t, Shader *&shader, Light *&light) {
     statistic.IncreaseTriangleCnt();
     const ylb::BoundingBox *bb = t.bounding_box();
     glm::vec3 color = {0.5, 0.5, 0.5};
-    for (int y = ylb::max(bb->bot, 0.f); y < bb->top; y++)
+    int min_left = static_cast<int>(ylb::max(bb->bot, 0.f));
+    for (int y = min_left; y < bb->top; y++)
         for (int x = bb->left; x < bb->right; x++) {
             int pixel = y * w + x;
             //三角形测试
@@ -82,19 +83,23 @@ void Renderer::Rasterization(ylb::Triangle &t, Shader *&shader, Light *&light) {
         }
 }
 
+void Renderer::SetMVPMatrix(Camera* cam,PROJECTION_MODE mode) {
+    transformer->set_world_to_view(cam);
+    transformer->set_view_to_project(cam, mode);
+    transformer->set_projection_to_screen(w, h);
+}
+
 void Renderer::Start() {
     if (window == nullptr)
         return;
 
     //准备物体
-
+    auto scene = LoadScene("Scene/sample.json");
+    cam = std::move(scene->cam);
     //设置渲染状态
-    //        glm::vec3 camPos = {-1, 1, -70.f};
-    glm::vec3 camPos = {0, 1, -70.f};
-    cam = new Camera(camPos,glm::vec3(0,0,-1),PI / 4, w * 1.f / h, 0.2, 1000);
-    transformer->set_world_to_view(cam);
-    transformer->set_view_to_project(cam, PROJECTION_MODE::PERSPECTIVE);
-    transformer->set_projection_to_screen(w, h);
+    
+    SetMVPMatrix(cam,PROJECTION_MODE::PERSPECTIVE);
+    
     Shader::camPos = &cam->position_world;
 
     using ylb::Triangle;
@@ -286,7 +291,6 @@ Renderer::Renderer(int _w, int _h) :
     transformer = new Transformer();
     renderTargetSetting = new RenderTargetSetting();
 }
-
 
 bool Renderer::Backface_culling(Vertex &vt) {
     return false;

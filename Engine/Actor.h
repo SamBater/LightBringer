@@ -16,7 +16,6 @@ namespace ylb
             position_world.y = y;
             position_world.z = z;
         }
-
     };
 
 

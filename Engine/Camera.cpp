@@ -35,4 +35,5 @@ void Camera::set_orthogonal_matrix(glm::mat4 &mat) {
     mat[1][3] = -(t + b) / (t - b);
     mat[2][3] = -(f + n) / (n - f);
 }
+
 } // namespace ylb

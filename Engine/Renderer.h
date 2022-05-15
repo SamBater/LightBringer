@@ -29,6 +29,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "Statistic.h"
+#include "SceneLoader.h"
 namespace ylb
 {
     struct RenderTargetSetting
@@ -55,6 +56,7 @@ namespace ylb
         std::vector<Mesh> world;
         std::vector<Light *> lights;
         Statistic statistic;
+        void SetMVPMatrix(Camera* cam,PROJECTION_MODE mode);
         void ProcessInput(double &&delta_time);
         void ProcessGeometry(ylb::Triangle &t, Shader*& shader, Light*& light);
         void Rasterization(ylb::Triangle &t, ylb::Shader*& shader, Light*& light);
