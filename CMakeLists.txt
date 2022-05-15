@@ -2,22 +2,23 @@ cmake_minimum_required(VERSION 3.14)
 project(LightBringer C CXX)
 set(CMAKE_CXX_STANDARD 14)
 
-add_subdirectory(ThirdParty)
-set(EXTRA_LIBS opengl32 glfw glm::glm imgui)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-aux_source_directory(${PROJECT_SOURCE_DIR}/src SOURCES)
+set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMakePredefinedTargets")
 
-add_executable(LightBringer ${SOURCES} ${HEADERS} ${HEADERS_CORE} include/Core/Pipeline/Clipper.cpp include/Core/Texture/CubeMap.cpp include/Core/Texture/CubeMap.h include/Core/Shader/SkyBoxShader.cpp include/Core/Shader/SkyBoxShader.h)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${PROJECT_SOURCE_DIR}/bin)
 
-target_include_directories(LightBringer
-    PUBLIC 
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        glm
-)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
 
-target_link_libraries(LightBringer
-    ${EXTRA_LIBS}
-        glm::glm
+add_subdirectory(ThirdParty)
+add_subdirectory(Engine)
+
+add_executable(${PROJECT_NAME} Engine/main.cpp)
+
+target_link_libraries(
+    ${PROJECT_NAME}
+    Engine
 )
 
 # 复制Assets文件
