@@ -7,4 +7,5 @@ vs/
 .vscode/*
 out/*
 build/*
+bin
 CMakeSettings.json
