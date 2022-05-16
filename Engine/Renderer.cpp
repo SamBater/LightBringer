@@ -16,14 +16,6 @@ void Renderer::ProcessInput(double &&delta_time) {
 
     int tx = glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS ? 1 : 0;
     tx = glfwGetKey(window, GLFW_KEY_DOWN) ? -1 : tx;
-    if (ty) {
-        auto sun = static_cast<ParalleLight *>(lights[0]);
-        sun->dir.y += static_cast<float>(delta_time * 0.1f * ty);
-    }
-    if (tx) {
-        auto sun = static_cast<ParalleLight *>(lights[0]);
-        sun->dir.x += static_cast<float>(delta_time * 0.1f * tx);
-    }
     if (dx || dz || dy) {
         glm::vec3 vx = glm::vec3{1, 0, 0} * static_cast<float>(dx * move_speed);
         glm::vec3 vz = glm::vec3{0, 0, 1} * static_cast<float>(dz * move_speed);
@@ -38,13 +30,13 @@ void Renderer::Render(std::vector<ylb::Mesh> &meshs) {
     for (auto &light : lights) {
         for (auto &mesh : meshs) {
             auto world_pos = mesh.getPos();
-            auto triangles = mesh.get_triangles();
+            auto triangles = mesh.GetTriangles();
 
             //默认固定mvp
             mesh.shader->model = transformer->calc_matrix_world(mesh.position_world);
             mesh.shader->view = transformer->view;
             mesh.shader->projection = transformer->projection;
-            for (auto &t : triangles) {
+            for (auto &t : *triangles) {
                 ProcessGeometry(t, mesh.shader, light);
             }
         }
@@ -75,7 +67,7 @@ void Renderer::Rasterization(ylb::Triangle &t, Shader *&shader, Light *&light) {
                     }
                     //帧缓存写入
                     if (renderTargetSetting->open_frame_buffer_write) {
-                        color = shader->fragment_shading(t, light);
+                        color = shader->FragmentShading(t, light);
                         frame_buffer->set_color(x, y, color);
                     }
                 }
@@ -90,114 +82,23 @@ void Renderer::SetMVPMatrix(Camera* cam,PROJECTION_MODE mode) {
 }
 
 void Renderer::Start() {
-    if (window == nullptr)
-        return;
-
-    //准备物体
-    auto scene = LoadScene("Scene/sample.json");
-    cam = std::move(scene->cam);
-    //设置渲染状态
-    
-    SetMVPMatrix(cam,PROJECTION_MODE::PERSPECTIVE);
-    
-    Shader::camPos = &cam->position_world;
-
     using ylb::Triangle;
     using ylb::Vertex;
-    ylb::ParalleLight *sun =
-        new ParalleLight(1.5f, glm::vec3{1, 1, 1}, glm::vec3{0, -1, 2});
-    //        ylb::ParalleLight *sun = new ParalleLight(1.5f, glm::vec3{1, 1, 1},
-    //        glm::vec3{-0.7, -1,0.63});
-    sun->dir = glm::normalize(sun->dir);
-    lights.push_back(sun);
 
-    Vertex v1{{5, -1, 3}, {0, 1, 0}, {0, 0}},
-        v2{{5, -1, -10}, {0, 1, 0}, {0, 0.5}},
-        v3{{-5, -1, 3}, {0, 1, 0}, {0.5, 0}},
-        v4{{-5, -1, -10}, {0, 1, 0}, {0.5, 0.5}};
-
-    std::vector<Triangle> ts2 = {ylb::Triangle(v1, v2, v3),
-                                 ylb::Triangle(v4, v2, v3)};
-
-    Texture *cb = new Texture("assets/cb.jpg");
-    Texture *brick_wall = new Texture("assets/brick_wall.png");
-    Texture *t = new Texture("assets/uv.jpg");
-    Shader *shader = new PhongShader();
-    Shader *cube_shader = new PhongShader(t);
-
-    shader->view = transformer->view;
-    shader->projection = transformer->projection;
-    cube_shader->view = transformer->view;
-    cube_shader->projection = transformer->projection;
-
-    std::vector<std::string> cube_maps = {
-        "assets/skybox/right.jpg", "assets/skybox/left.jpg",
-        "assets/skybox/top.jpg", "assets/skybox/bottom.jpg",
-        "assets/skybox/front.jpg", "assets/skybox/back.jpg"};
-    CubeMap *skybox = new CubeMap(cube_maps);
-    float skyboxVertices[] = {
-        // positions
-        -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f,
-
-        -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f,
-        -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
-
-        1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f,
-
-        -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
-
-        -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f,
-
-        -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, 1.0f};
-
-    std::vector<ylb::Triangle> skybox_ts;
-    int index = 0;
-    auto getVal = [&]() { return skyboxVertices[index++]; };
-    for (int i = 0; i < 12; i++) {
-        ylb::Triangle triangle;
-        for (int j = 0; j < 3; j++) {
-            triangle.vts[j].position = glm::vec3(getVal(), getVal(), getVal());
-        }
-        skybox_ts.push_back(triangle);
+    auto scene = LoadScene("Scene/sample.json");
+    cam = std::move(scene->cam);
+    cam->aspect_ratio = static_cast<float>(w) / static_cast<float>(h);
+    cam->UpdateProjectionInfo();
+    SetMVPMatrix(cam,PROJECTION_MODE::PERSPECTIVE);
+    Shader::camPos = &cam->position_world;
+    for (auto& obj : *scene->meshs) {
+        world.push_back(*obj);
     }
 
-    ylb::Mesh skybox_mesh(0, 0, 0, skybox_ts);
-    Shader *skybox_shader = new SkyBoxShader(skybox);
-    skybox_mesh.shader = skybox_shader;
-    //        world.push_back(skybox_mesh);
-    std::vector<ylb::Mesh> world_only_sky;
-    world_only_sky.push_back(skybox_mesh);
-
-    ylb::Mesh tm(0, 0, 2.f, ts2);
-    tm.shader = shader;
-    tm.scale_transform(3, 1.5, 3);
-    world.push_back(tm);
-
-    auto cubeTs = LoadObj("assets/cube.obj");
-
-    ylb::Mesh cube(-4.f, 0.6, -16.f, cubeTs);
-    cube.scale_transform(2, 2, 2);
-    cube.shader = cube_shader;
-    world.push_back(cube);
-
-    ylb::Mesh m1(5.f, -0.5f, -16.f, LoadObj("assets/sphere.obj"));
-    m1.shader = shader;
-    world.push_back(std::move(m1));
-
-    Mesh wall(0, 6, 13, cubeTs);
-    wall.shader = shader;
-    wall.scale_transform(16, 8, 2);
-    world.push_back(wall);
-
-    char str[256] = "";
-    auto start = std::chrono::high_resolution_clock::now();
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> delta_time = end - start;
+    for (auto& lite : *scene->lights) {
+        lights.push_back(lite);
+    }
+    
 
     while (!glfwWindowShouldClose(window)) {
         ProcessInput(ImGui::GetIO().Framerate / 1000);
@@ -299,7 +200,7 @@ bool Renderer::Backface_culling(Vertex &vt) {
 void Renderer::ProcessGeometry(Triangle &t, Shader *&shader, Light *&light) {
     for (int i = 0; i < 3; i++) {
         auto &vt = t.vts[i];
-        vt.ccv = shader->vertex_shading(vt, light);
+        vt.ccv = shader->VertexShading(vt, light);
     }
 
     //裁剪
@@ -328,12 +229,6 @@ void Renderer::ProcessGeometry(Triangle &t, Shader *&shader, Light *&light) {
             vt.tex_coord *= vt.inv;
             vt.normal = vt.normal * vt.inv;
             vt.position_world = vt.position_world * vt.inv;
-        }
-
-        if (renderTargetSetting->open_frame_buffer_write) {
-            glm::vec4 pos = glm::vec4(vt.position, 1);
-            vt.l_pos = pos * shader->model * light->vp;
-            vt.l_pos *= vt.inv;
         }
 
         vt.sv_pos = ccv_pos * transformer->view_port;

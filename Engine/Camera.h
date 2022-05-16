@@ -29,6 +29,15 @@ public:
            float _aspect_ratio, float _n, float _f);
     void set_perspective_matrix(glm::mat4 &mat);
     void set_orthogonal_matrix(glm::mat4 &mat);
+
+    void UpdateProjectionInfo() {
+        t = std::tan(fov_Y / 2) * n;
+        r = aspect_ratio * t;
+        l = -r;
+        b = -t;
+        up = {0, 1, 0};
+    }
+
     virtual void DeSerilization(const json11::Json &json) override {
         position_world = DeSerilizationVec3(json["Transform"]["position"]);
         look_at = DeSerilizationVec3(json["lookat"]);
@@ -36,12 +45,7 @@ public:
         aspect_ratio = json["aspect_ratio"].number_value();
         n = json["n"].number_value();
         f = json["f"].number_value();
-
-        t = std::tan(fov_Y / 2) * n;
-        r = aspect_ratio * t;
-        l = -r;
-        b = -t;
-        up = {0, 1, 0};
+        UpdateProjectionInfo();
     }
 };
 } // namespace ylb

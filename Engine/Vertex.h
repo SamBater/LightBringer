@@ -1,11 +1,12 @@
 #pragma once
 #include "glm/glm.hpp"
 #include "Actor.h"
+#include "YLBSerializable.h"
 namespace ylb
 {
     class Transformer;
     class Triangle;
-    class Vertex : public Actor
+    class Vertex : public Actor , public YLBSerializable
     {
     public:
         glm::vec3 position; //局部坐标
@@ -19,7 +20,6 @@ namespace ylb
         friend class Triangle;
         float inv;
 
-    // public:
         Vertex(glm::vec3 &&position, glm::vec3 &&normal,glm::vec3 &&uv) : position(position), normal(normal),tex_coord(uv){}
         Vertex() = default;
         Vertex(glm::vec3 &position, glm::vec3& normal, glm::vec3 &uv) : position(position), normal(normal),tex_coord(uv){}
@@ -33,5 +33,8 @@ namespace ylb
         inline float &sz() { return sv_pos.z; }
         inline const float &u() { return tex_coord.x; }
         inline const float &v() { return tex_coord.y; }
+
+        // 通过 YLBSerializable 继承
+        virtual void DeSerilization(const json11::Json &json) override;
     };
-}
+    }

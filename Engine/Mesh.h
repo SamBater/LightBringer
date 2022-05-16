@@ -6,49 +6,32 @@
 #include "Triangle.h"
 #include "Shader.h"
 #include <vector>
+#include "YLBSerializable.h"
+#include "ModelLoader.h"
+namespace ylb {
+class Renderer;
+class Mesh : public Actor , public YLBSerializable {
+public:
+    Mesh() = default;
+    
+    Mesh(glm::vec3 pos, std::vector<Triangle> *trs, Shader *shader) :
+        Actor(pos), triangles(trs), shader(shader) {
+    }
 
-namespace ylb
-{
-    class Renderer;
-    class Mesh : public Actor
-    {
-    private:
+    std::vector<Triangle> *GetTriangles() {
+        return triangles;
+    }
 
-        
-    public:
-        std::vector<Triangle> triangles;
-        ylb::Shader* shader;
-        Mesh(const float x, const float y, const float z, std::vector<Triangle> &&ts) : Actor(x, y, z), triangles(ts) {}
-        Mesh(const float x, const float y, const float z, std::vector<Triangle>& ts) : Actor(x, y, z), triangles(ts) {}
-        inline const std::vector<Triangle> &get_triangles() const { return triangles; }
-        inline std::vector<Triangle> &get_triangles() { return triangles; }
-        void rotate(glm::vec3 axis,float theta)
-        {
-//            auto rot = 1;
-//            for(auto &t : triangles)
-//            {
-//                for(Vertex& v : t.vts)
-//                {
-//                    auto pos = rot * v.position;
-//                    auto normal = rot * v.normal;
-//                    v.set_pos(pos.x,pos.y, pos.z);
-//                    v.set_normal(normal);
-//                }
-//            }
-        }
+    void SetShader(Shader* shader) {
+        this->shader = shader;
+    }
 
-        void scale_transform(float sx,float sy,float sz)
-        {
-            for(auto &t : triangles)
-            {
-                for(auto& v : t.vts)
-                {
-                    v.position.x = v.position.x * sx;
-                    v.position.y = v.position.y * sy;
-                    v.position.z = v.position.z * sz;
-                }
-            }
-        }
-    };
-}
+    virtual void DeSerilization(const json11::Json &json) override;
+
+private:
+    friend Renderer;
+    std::vector<Triangle> *triangles = new std::vector<Triangle>();
+    ylb::Shader *shader = new Shader();
+};
+} // namespace ylb
 #endif

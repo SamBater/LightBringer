@@ -3,18 +3,18 @@
 #include <iostream>
 #include <regex>
 #include "YLBFileSystem.h"
-std::vector<ylb::Triangle> ylb::LoadObj(const char *modelPath) {
+std::vector<ylb::Triangle>* ylb::LoadObj(const char *modelPath) {
     std::string s_modelPath = ylb::YLBFileSystem::GetInstance().GetAssetsPath(modelPath);
     FILE *fp = fopen(s_modelPath.c_str(), "r");
     if (fp == NULL) {
         std::cerr << "Can't open " << modelPath << " !\n";
-        return std::vector<ylb::Triangle>();
+        return nullptr;
     }
 
     std::vector<glm::vec3> vts;
     std::vector<glm::vec2> uvs;
     std::vector<glm::vec3> ns;
-    std::vector<ylb::Triangle> ts;
+    std::vector<ylb::Triangle>* ts = new std::vector<ylb::Triangle>();
     int f_style = -1, matches = -1;
 
     int vertexIndex[3], uvIndex[3], normalIndex[3];
@@ -67,7 +67,7 @@ std::vector<ylb::Triangle> ylb::LoadObj(const char *modelPath) {
                 }
                 if (f_style == -1) {
                     std::cerr << "cant't parse file:" << modelPath << std::endl;
-                    return std::vector<ylb::Triangle>();
+                    return nullptr;
                 }
             }
 
@@ -111,7 +111,7 @@ std::vector<ylb::Triangle> ylb::LoadObj(const char *modelPath) {
                 glm::vec3 &n = ns.size() > 0 ? in3(ns, normalIndex[i]) : defaultvec3;
                 vtv.push_back(ylb::Vertex(pos, n, uv));
             }
-            ts.push_back(ylb::Triangle(vtv[0], vtv[1], vtv[2]));
+            ts->push_back(ylb::Triangle(vtv[0], vtv[1], vtv[2]));
         }
     }
     return ts;

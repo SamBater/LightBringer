@@ -4,6 +4,7 @@
 #include "Common.h"
 #include "Actor.h"
 #include "Vertex.h"
+#include "YLBSerializable.h"
 namespace ylb
 {
     struct BoundingBox
@@ -11,7 +12,7 @@ namespace ylb
         float top, bot, left, right;
     };
 
-    class Triangle : public Actor
+    class Triangle : public Actor , public YLBSerializable
     {
 
     private:
@@ -58,7 +59,10 @@ namespace ylb
             t.s = 1 / (t.cof.x * t.vts[0].inv + t.cof.y * t.vts[1].inv + t.cof.z * t.vts[2].inv);
             return a >= 0 && b >= 0 && a + b <= 1.0f;
         }
+
+        // Í¨¹ý YLBSerializable ¼Ì³Ð
+        virtual void DeSerilization(const json11::Json &json) override;
     };
-}
+    }
 
 #endif

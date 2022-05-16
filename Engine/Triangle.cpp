@@ -40,3 +40,9 @@ glm::vec3 Triangle::interpolated_world_normal() {
     normal = (vts[0].normal * cof.x + vts[1].normal * cof.y + vts[2].normal * cof.z) * s;
     return normal;
 }
+
+void ylb::Triangle::DeSerilization(const json11::Json &json) {
+    vts[0].DeSerilization(json["v1"]);
+    vts[1].DeSerilization(json["v2"]);
+    vts[2].DeSerilization(json["v3"]);
+}

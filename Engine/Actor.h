@@ -1,6 +1,7 @@
 #ifndef YYLB_ACTOR_H
 #define YYLB_ACTOR_H
 #include "glm/glm.hpp"
+#include "YLBSerializable.h"
 namespace ylb
 {
     class Actor

@@ -4,23 +4,37 @@
 #include "Actor.h"
 #include "glm/glm.hpp"
 #include "Texture.h"
-namespace ylb
-{
-        class GouraudShader;
-        class Light : public Actor
-        {
-        private:
-            friend class Render;
-        protected:
-                float light_intense = 1.0f;
-                glm::vec3 light_color = {1.f, 1.f, 1.f};
-                friend class Shader;
+#include "YLBSerializable.h"
+namespace ylb {
+class Light : public Actor , public YLBSerializable {
+public:
+    Light() = default;
 
-        public:
-                Texture *shadow_map;
-                glm::mat4 vp;
-                Light(float intence, glm::vec3 light_color) : light_intense(intence), light_color(light_color) {}
-                virtual float attenuation(glm::vec3 &pos) = 0;
-                virtual glm::vec3 LightDir(glm::vec3 &pos) = 0;
-        };
-}
+    Light(const glm::vec3& light_color) :
+        light_color(light_color) {
+    }
+
+    glm::vec3 LightIntensity() const {
+        return light_color;
+    }
+
+    virtual float attenuation(const glm::vec3 &pos) const = 0;
+
+    virtual glm::vec3 LightDir(const glm::vec3 &pos) const = 0;
+
+    void SetLightIntensity(const glm::vec3& light_intensity) {
+        light_color = light_intensity;
+    }
+
+    virtual void DeSerilization(const json11::Json &json) override {
+
+    }
+
+protected:
+    glm::vec3 light_color = {1.f, 1.f, 1.f};
+    friend class Shader;
+
+private:
+    friend class Render;
+};
+} // namespace ylb

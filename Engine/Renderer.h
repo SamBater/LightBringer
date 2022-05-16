@@ -41,7 +41,7 @@ namespace ylb
     class Renderer
     {
     public:
-        Renderer(int _w = 800, int _h = 600);
+        Renderer(int _w = 1024, int _h = 768);
         void Start();
     
     private:

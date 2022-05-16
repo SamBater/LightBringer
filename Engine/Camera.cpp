@@ -7,12 +7,7 @@ Camera::Camera(const glm::vec3 &origin, const glm::vec3 &lookat,
     Actor(origin),
     look_at(lookat), fov_Y(fov_v),
     aspect_ratio(_aspect_ratio), n(_n), f(_f) {
-    t = std::tan(fov_Y / 2) * n;
-    r = aspect_ratio * t;
-    l = -r;
-    b = -t;
-
-    up = {0, 1, 0};
+    UpdateProjectionInfo();
 }
 
 void Camera::set_perspective_matrix(glm::mat4 &mat) {

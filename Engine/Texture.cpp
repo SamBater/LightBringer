@@ -9,6 +9,7 @@ namespace ylb
     Texture::Texture(char const *file_name)
     {
         stbi__vertically_flip_on_load = 1;
+        //auto path = YLBFileSystem::GetInstance().GetAssetsPath(file_name);
         sprite = stbi_load(file_name, &w, &h, &comp, 0);
     }
 

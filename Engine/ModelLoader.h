@@ -6,5 +6,5 @@
 #include <cstring>
 namespace ylb
 {
-    std::vector<ylb::Triangle> LoadObj(const char* modelPath);
+    std::vector<ylb::Triangle>* LoadObj(const char* modelPath);
 }
