@@ -41,10 +41,14 @@ namespace ylb
     class Renderer
     {
     public:
-        Renderer(int _w = 1024, int _h = 768);
+        static Renderer& Instance() {
+            static Renderer instance(1024, 768);
+            return instance;
+        }
         void Start();
     
     private:
+        Renderer(int _w = 1024, int _h = 768);
         int w;
         int h;
         const char *title = "Light Bringer - Made By YBT";
@@ -56,8 +60,10 @@ namespace ylb
         std::vector<Mesh> world;
         std::vector<Light *> lights;
         Statistic statistic;
+        void InitOpenGL();
         void SetMVPMatrix(Camera* cam,PROJECTION_MODE mode);
         void ProcessInput(double &&delta_time);
+        static void Framebuffer_Size_Callback(GLFWwindow *window, int width, int height);
         void ProcessGeometry(ylb::Triangle &t, Shader*& shader, Light*& light);
         void Rasterization(ylb::Triangle &t, ylb::Shader*& shader, Light*& light);
         void Render(std::vector<ylb::Mesh> &ts);

@@ -23,16 +23,28 @@ void Renderer::ProcessInput(double &&delta_time) {
     }
 }
 
+void Renderer::Framebuffer_Size_Callback(GLFWwindow *window, int width, int height) {
+    auto &instance = Instance();
+    delete instance.frame_buffer;
+    instance.w = width;
+    instance.h = height;
+    instance.frame_buffer = new FrameBuffer(width, height);
+    instance.cam->aspect_ratio = width / height;
+    instance.cam->UpdateProjectionInfo();
+    instance.SetMVPMatrix(instance.cam, PROJECTION_MODE::PERSPECTIVE);
+    std::cerr << "callback" << '\n';
+}
+
 void Renderer::Render(std::vector<ylb::Mesh> &meshs) {
     statistic.InitTriangleCnt();
     for (auto &light : lights) {
         for (auto &mesh : meshs) {
             auto world_pos = mesh.getPos();
-            auto triangles = mesh.GetTriangles();
+            auto triangles = mesh.Triangles();
 
             //默认固定mvp
-            mesh.shader->model = transformer->calc_matrix_world(mesh.position_world);
-            mesh.shader->view = transformer->view;
+            mesh.shader->model      = transformer->calc_matrix_world(mesh.position_world);
+            mesh.shader->view       = transformer->view;
             mesh.shader->projection = transformer->projection;
             for (auto &t : *triangles) {
                 ProcessGeometry(t, mesh.shader, light);
@@ -73,7 +85,67 @@ void Renderer::Rasterization(ylb::Triangle &t, Shader *&shader, Light *&light) {
         }
 }
 
-void Renderer::SetMVPMatrix(Camera* cam,PROJECTION_MODE mode) {
+void Renderer::InitOpenGL() {
+    //设置opengl
+    if (!glfwInit()) {
+        printf("Couldn't init GLFW\n");
+        return;
+    }
+
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
+    // Decide GL+GLSL versions
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+    // GL ES 2.0 + GLSL 100
+    const char *glsl_version = "#version 100";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+#elif defined(__APPLE__)
+    // GL 3.2 + GLSL 150
+    const char *glsl_version = "#version 150";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
+#else
+    // GL 3.0 + GLSL 130
+    const char *glsl_version = "#version 130";
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+
+    // only glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 3.0+ only
+#endif
+
+    window = glfwCreateWindow(w, h, title, NULL, NULL);
+    if (!window) {
+        printf("Couldn't open window\n");
+        return;
+    }
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, &Renderer::Framebuffer_Size_Callback);
+
+    glfwSwapInterval(1); // Enable vsync
+                         // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    // ImGui::StyleColorsClassic();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable
+    // Keyboard Controls io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; //
+    // Enable Gamepad Controls
+}
+
+void Renderer::SetMVPMatrix(Camera *cam, PROJECTION_MODE mode) {
     transformer->set_world_to_view(cam);
     transformer->set_view_to_project(cam, mode);
     transformer->set_projection_to_screen(w, h);
@@ -82,6 +154,8 @@ void Renderer::SetMVPMatrix(Camera* cam,PROJECTION_MODE mode) {
 void Renderer::Start() {
     using ylb::Triangle;
     using ylb::Vertex;
+
+    InitOpenGL();
 
     auto scene = LoadScene("Scene/sample.json");
     cam = std::move(scene->cam);
@@ -131,61 +205,6 @@ void Renderer::Start() {
 
 Renderer::Renderer(int _w, int _h) :
     w(_w), h(_h) {
-    //设置opengl
-    if (!glfwInit()) {
-        printf("Couldn't init GLFW\n");
-        return;
-    }
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-    // Decide GL+GLSL versions
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-    // GL ES 2.0 + GLSL 100
-    const char *glsl_version = "#version 100";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-#elif defined(__APPLE__)
-    // GL 3.2 + GLSL 150
-    const char *glsl_version = "#version 150";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // Required on Mac
-#else
-    // GL 3.0 + GLSL 130
-    const char *glsl_version = "#version 130";
-    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+
-    // only glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 3.0+ only
-#endif
-
-    window = glfwCreateWindow(w, h, title, NULL, NULL);
-    if (!window) {
-        printf("Couldn't open window\n");
-        return;
-    }
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // Enable vsync
-                         // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    (void)io;
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    // ImGui::StyleColorsClassic();
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
-    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable
-    // Keyboard Controls io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; //
-    // Enable Gamepad Controls
     frame_buffer = new FrameBuffer(w, h);
     transformer = new Transformer();
     renderTargetSetting = new RenderTargetSetting();
