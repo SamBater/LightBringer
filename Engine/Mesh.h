@@ -18,7 +18,7 @@ public:
         Actor(pos), triangles(trs), shader(shader) {
     }
 
-    std::vector<Triangle> *GetTriangles() {
+    std::vector<Triangle> *Triangles() {
         return triangles;
     }
 

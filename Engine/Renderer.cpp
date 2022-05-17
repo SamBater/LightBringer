@@ -14,8 +14,6 @@ void Renderer::ProcessInput(double &&delta_time) {
     int ty = glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS ? 1 : 0;
     ty = glfwGetKey(window, GLFW_KEY_RIGHT) ? -1 : ty;
 
-    int tx = glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS ? 1 : 0;
-    tx = glfwGetKey(window, GLFW_KEY_DOWN) ? -1 : tx;
     if (dx || dz || dy) {
         glm::vec3 vx = glm::vec3{1, 0, 0} * static_cast<float>(dx * move_speed);
         glm::vec3 vz = glm::vec3{0, 0, 1} * static_cast<float>(dz * move_speed);
