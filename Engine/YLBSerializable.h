@@ -12,7 +12,7 @@ public:
 
 protected:
     inline glm::vec3 DeSerilizationVec3(const json11::Json &json) {
-        glm::vec3 v{0,0,0};
+        glm::vec3 v{1,1,1};
         glm::vec3::length_type i = 0;
         for (auto &e : json.array_items())
             v[i++] = std::stof(e.dump());

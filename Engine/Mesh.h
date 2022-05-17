@@ -26,7 +26,10 @@ public:
         this->shader = shader;
     }
 
-    virtual void DeSerilization(const json11::Json &json) override;
+    virtual void DeSerilization(const json11::Json& json) override {
+        triangles = LoadObj(json["path"].string_value().c_str());
+        transform.DeSerilization(json["Transform"]);
+    }
 
 private:
     friend Renderer;

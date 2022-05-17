@@ -12,7 +12,7 @@ namespace ylb
         float top, bot, left, right;
     };
 
-    class Triangle : public Actor , public YLBSerializable
+    class Triangle : public Actor
     {
 
     private:
@@ -60,8 +60,6 @@ namespace ylb
             return a >= 0 && b >= 0 && a + b <= 1.0f;
         }
 
-        // Í¨¹ý YLBSerializable ¼Ì³Ð
-        virtual void DeSerilization(const json11::Json &json) override;
     };
     }
 

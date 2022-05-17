@@ -28,9 +28,9 @@ void Triangle::interpolated_uv(float &u, float &v) {
 
 glm::vec3 Triangle::interpolated_world_position() {
     glm::vec3 pos;
-    pos = (vts[0].position_world * cof.x,
-           vts[1].position_world * cof.y,
-           vts[2].position_world * cof.z)
+    pos = (vts[0].world_position * cof.x,
+           vts[1].world_position * cof.y,
+           vts[2].world_position * cof.z)
           * s;
     return pos;
 }
@@ -39,10 +39,4 @@ glm::vec3 Triangle::interpolated_world_normal() {
     glm::vec3 normal;
     normal = (vts[0].normal * cof.x + vts[1].normal * cof.y + vts[2].normal * cof.z) * s;
     return normal;
-}
-
-void ylb::Triangle::DeSerilization(const json11::Json &json) {
-    vts[0].DeSerilization(json["v1"]);
-    vts[1].DeSerilization(json["v2"]);
-    vts[2].DeSerilization(json["v3"]);
 }

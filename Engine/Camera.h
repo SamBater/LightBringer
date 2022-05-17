@@ -39,7 +39,7 @@ public:
     }
 
     virtual void DeSerilization(const json11::Json &json) override {
-        position_world = DeSerilizationVec3(json["Transform"]["position"]);
+        transform.SetPosition( DeSerilizationVec3(json["Transform"]["position"]) );
         look_at = DeSerilizationVec3(json["lookat"]);
         fov_Y = json["fov"].number_value();
         aspect_ratio = json["aspect_ratio"].number_value();

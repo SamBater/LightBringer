@@ -10,15 +10,16 @@ namespace ylb
 {
 
     struct VertexShaderContext {
-        glm::mat4* model;
-        glm::mat4* view;
-        glm::mat4* project;
-        glm::vec3* camPos;
+        const glm::mat4* model;
+        const glm::mat4* view;
+        const glm::mat4* project;
+        const glm::vec3* camPos;
     };
 
     struct FragmentShaderContext {
-        glm::vec3* camPos;
+        const glm::vec3* camPos;
         Light* l;
+        FragmentShaderContext(const glm::vec3* camPos,Light* l) : camPos(camPos),l(l){}
     };
 
     class Shader

@@ -6,12 +6,13 @@ namespace ylb
 {
     class Transformer;
     class Triangle;
-    class Vertex : public Actor , public YLBSerializable
+    class Vertex
     {
     public:
         glm::vec3 position; //局部坐标
+        glm::vec3 world_position;
         glm::vec3 sv_pos;   //屏幕空间坐标
-        glm::vec3 tex_coord;       //纹理坐标
+        glm::vec3 tex_coord;//纹理坐标
         glm::vec3 normal;   //法线
         glm::vec3 color;
         glm::vec4 ccv;
@@ -34,7 +35,5 @@ namespace ylb
         inline const float &u() { return tex_coord.x; }
         inline const float &v() { return tex_coord.y; }
 
-        // 通过 YLBSerializable 继承
-        virtual void DeSerilization(const json11::Json &json) override;
     };
     }
