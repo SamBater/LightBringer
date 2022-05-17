@@ -19,7 +19,6 @@
 #include "PhongShader.h"
 #include "PointLight.h"
 #include "FrameBuffer.h"
-#include "ModelLoader.h"
 #include "glm/glm.hpp"
 #include "CubeMap.h"
 #include <iostream>

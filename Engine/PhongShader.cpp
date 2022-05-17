@@ -44,7 +44,6 @@ glm::vec3 PhongShader::FragmentShading(Triangle &t, const FragmentShaderContext&
     float p = 2048;
     glm::vec3 ks = {1.f, 1.f, 1.f};
     glm::vec3 L_specular = ks * (float)std::pow(std::max(0.0, nxh), p);
-    glm::vec3 ambient = {0.22f, 0.27f, 0.32f};
-    glm::vec3 L = L_diffuse  + L_specular + ambient;
+    glm::vec3 L = L_diffuse  + L_specular;
     return L;
 }

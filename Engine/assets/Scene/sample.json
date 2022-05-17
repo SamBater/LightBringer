@@ -14,7 +14,7 @@
     {
       "path": "cube.obj",
       "Transform": {
-        "position": [ -8, 4, -5 ],
+        "position": [ -15, 3, -5 ],
         "scale" : [4,4,4]
       }
     },
@@ -22,15 +22,16 @@
     {
       "path": "sphere.obj",
       "Transform": {
-        "position": [ 8, 4, -5 ],
-        "scale" :  [4,4,4]
+        "position": [ 15, 3, -5 ],
+        "scale" :  [2,2,2]
       }
     },
 
     {
       "path": "teapot.obj",
       "Transform": {
-        "position": [ 0, 11, 10 ]
+        "position": [ 0, 3, -5 ],
+        "scale" : [0.5,0.5,0.5]
       }
     },
 
@@ -38,7 +39,7 @@
       "path": "quad.obj",
       "Transform": {
         "position": [ 0, -1, 1 ],
-        "scale" :  [25,0,25]
+        "scale" :  [30,0,30]
       }
     }
   ],
@@ -46,7 +47,7 @@
   "Lights": [
     {
       "type": "Point",
-      "intensity": [ 12.0, 12.0, 12.0 ],
+      "intensity": [ 24.0, 24.0, 24.0 ],
       "Transform": {
         "position" :  [5,6,-3]
       }
