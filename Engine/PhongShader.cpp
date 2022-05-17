@@ -1,19 +1,21 @@
 #include "PhongShader.h"
 using namespace ylb;
 
-glm::vec4 PhongShader::VertexShading(Vertex &v, Light *l)
+glm::vec4 PhongShader::VertexShading(Vertex &v, const VertexShaderContext& contex)
 {
     glm::vec4 pos_h(v.position,1);
 
-    //MVP变换 model->view->projection
-    glm::mat4 mvp = model * view * projection;
-    glm::vec4 ccv_pos = pos_h * mvp;
+    //MVP变换
+    glm::mat4 MVP = (*contex.model) * (*contex.view) * (*contex.project);
+    glm::vec4 ccv_pos = pos_h * MVP;
 
     return ccv_pos;
 }
 
-glm::vec3 PhongShader::FragmentShading(Triangle &t, Light *l)
+glm::vec3 PhongShader::FragmentShading(Triangle &t, const FragmentShaderContext& contex)
 {
+    auto* l = contex.l;
+    auto* camPos = contex.camPos;
     auto normal = t.interpolated_world_normal();
     auto position_world = t.interpolated_world_position();
     //纹理采样

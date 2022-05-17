@@ -65,8 +65,8 @@ namespace ylb
         void SetMVPMatrix(Camera* cam,PROJECTION_MODE mode);
         void ProcessInput(double &&delta_time);
         static void Framebuffer_Size_Callback(GLFWwindow *window, int width, int height);
-        void ProcessGeometry(ylb::Triangle &t, Shader*& shader, Light*& light);
-        void Rasterization(ylb::Triangle &t, ylb::Shader*& shader, Light*& light);
+        void ProcessGeometry(ylb::Triangle &t, Shader*& shader, const VertexShaderContext& vertexShaderContext);
+        void Rasterization(ylb::Triangle &t, ylb::Shader* shader, Light* light);
         void Render(std::vector<ylb::Mesh> &ts);
 
         //返回值:true->剔除

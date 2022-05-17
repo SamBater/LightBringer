@@ -11,8 +11,8 @@ namespace ylb{
     public:
         SkyBoxShader(CubeMap* cubeMap) : cube_map(cubeMap) { }
         CubeMap* cube_map;
-        virtual glm::vec4 VertexShading(Vertex &v, Light *l) override;
-        virtual glm::vec3 FragmentShading(Triangle &t, Light *l) override;
+        virtual glm::vec4 VertexShading(Vertex &v, const VertexShaderContext& contex) override;
+        virtual glm::vec3 FragmentShading(Triangle &t, const FragmentShaderContext& contex) override;
     };
 }
 

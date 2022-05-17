@@ -8,18 +8,26 @@
 #include <algorithm>
 namespace ylb
 {
+
+    struct VertexShaderContext {
+        glm::mat4* model;
+        glm::mat4* view;
+        glm::mat4* project;
+        glm::vec3* camPos;
+    };
+
+    struct FragmentShaderContext {
+        glm::vec3* camPos;
+        Light* l;
+    };
+
     class Shader
     {
     public:
         Texture *texture;
-        glm::mat4 model;
-        glm::mat4 view;
-        glm::mat4 projection;
-        static glm::vec3* camPos;
-        Shader() { texture = nullptr; }
-        Shader(Texture *t) : texture(t) {}
-        virtual glm::vec4 VertexShading(Vertex &v, Light *l) {return glm::vec4{1, 1, 1,1};}
-        virtual glm::vec3 FragmentShading(Triangle &t, Light *l) {return glm::vec3{1, 1, 1};}
+        Shader(Texture *t = nullptr) : texture(t) {}
+        virtual glm::vec4 VertexShading(Vertex &v, const VertexShaderContext& context) {return glm::vec4{1, 1, 1,1};}
+        virtual glm::vec3 FragmentShading(Triangle &t, const FragmentShaderContext& context) {return glm::vec3{1, 1, 1};}
         virtual ~Shader()
         {
             delete texture;

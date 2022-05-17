@@ -29,7 +29,7 @@ void Renderer::Framebuffer_Size_Callback(GLFWwindow *window, int width, int heig
     instance.w = width;
     instance.h = height;
     instance.frame_buffer = new FrameBuffer(width, height);
-    instance.cam->aspect_ratio = width / height;
+    instance.cam->aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
     instance.cam->UpdateProjectionInfo();
     instance.SetMVPMatrix(instance.cam, PROJECTION_MODE::PERSPECTIVE);
     std::cerr << "callback" << '\n';
@@ -37,26 +37,29 @@ void Renderer::Framebuffer_Size_Callback(GLFWwindow *window, int width, int heig
 
 void Renderer::Render(std::vector<ylb::Mesh> &meshs) {
     statistic.InitTriangleCnt();
-    for (auto &light : lights) {
-        for (auto &mesh : meshs) {
-            auto world_pos = mesh.getPos();
-            auto triangles = mesh.Triangles();
+    for (int i = 0 ; i < world.size() ; i++) {
+        auto& mesh = world[i];
+        auto world_pos = mesh.getPos();
+        auto triangles = mesh.Triangles();
 
-            //默认固定mvp
-            mesh.shader->model      = transformer->calc_matrix_world(mesh.position_world);
-            mesh.shader->view       = transformer->view;
-            mesh.shader->projection = transformer->projection;
-            for (auto &t : *triangles) {
-                ProcessGeometry(t, mesh.shader, light);
-            }
+        for (auto& t : *triangles) {
+            VertexShaderContext vertexShaderContext;
+            vertexShaderContext.model = &transformer->calc_matrix_world(world_pos);
+            vertexShaderContext.view = &transformer->view;
+            vertexShaderContext.project = &transformer->projection;
+            vertexShaderContext.camPos = &cam->position_world;
+            ProcessGeometry(t, mesh.shader, vertexShaderContext);
         }
     }
 }
 
-void Renderer::Rasterization(ylb::Triangle &t, Shader *&shader, Light *&light) {
+void Renderer::Rasterization(ylb::Triangle &t, Shader *shader, Light *light) {
     statistic.IncreaseTriangleCnt();
     const ylb::BoundingBox *bb = t.bounding_box();
     glm::vec3 color = {0.5, 0.5, 0.5};
+    FragmentShaderContext fragmentShaderContext;
+    fragmentShaderContext.camPos = &cam->position_world;
+    fragmentShaderContext.l = lights[0];
     int min_left = static_cast<int>(ylb::max(bb->bot, 0.f));
     for (int y = min_left; y < bb->top; y++)
         for (int x = bb->left; x < bb->right; x++) {
@@ -77,7 +80,7 @@ void Renderer::Rasterization(ylb::Triangle &t, Shader *&shader, Light *&light) {
                     }
                     //帧缓存写入
                     if (renderTargetSetting->open_frame_buffer_write) {
-                        color = shader->FragmentShading(t, light);
+                        color = shader->FragmentShading(t,fragmentShaderContext );
                         frame_buffer->set_color(x, y, color);
                     }
                 }
@@ -152,7 +155,6 @@ void Renderer::LoadScene(const char* scene_file_path)
     cam->aspect_ratio = static_cast<float>(w) / static_cast<float>(h);
     cam->UpdateProjectionInfo();
     SetMVPMatrix(cam, PROJECTION_MODE::PERSPECTIVE);
-    Shader::camPos = &cam->position_world;
     for (auto& obj : *scene->meshs) {
         world.push_back(*obj);
     }
@@ -219,10 +221,10 @@ bool Renderer::Backface_culling(Vertex &vt) {
     return false;
 }
 
-void Renderer::ProcessGeometry(Triangle &t, Shader *&shader, Light *&light) {
+void Renderer::ProcessGeometry(Triangle &t, Shader *&shader, const VertexShaderContext& vertexShaderContext) {
     for (int i = 0; i < 3; i++) {
         auto &vt = t.vts[i];
-        vt.ccv = shader->VertexShading(vt, light);
+        vt.ccv = shader->VertexShading(vt, vertexShaderContext);
     }
 
     //裁剪
@@ -263,7 +265,7 @@ void Renderer::ProcessGeometry(Triangle &t, Shader *&shader, Light *&light) {
                    clipped_vt[(i + 2) % clipped_vt.size()]);
         //设置三角形,准备光栅化
         t.ready_rasterization();
-        Rasterization(t, shader, light);
+        Rasterization(t, shader, nullptr);
     }
 }
 
