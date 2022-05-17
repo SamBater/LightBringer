@@ -61,6 +61,7 @@ namespace ylb
         std::vector<Light *> lights;
         Statistic statistic;
         void InitOpenGL();
+        void LoadScene(const char* scene_file_path);
         void SetMVPMatrix(Camera* cam,PROJECTION_MODE mode);
         void ProcessInput(double &&delta_time);
         static void Framebuffer_Size_Callback(GLFWwindow *window, int width, int height);

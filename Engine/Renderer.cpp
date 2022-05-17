@@ -145,6 +145,23 @@ void Renderer::InitOpenGL() {
     // Enable Gamepad Controls
 }
 
+void Renderer::LoadScene(const char* scene_file_path)
+{
+    auto scene = SceneLoader::Instance().LoadScene(scene_file_path);
+    cam = std::move(scene->cam);
+    cam->aspect_ratio = static_cast<float>(w) / static_cast<float>(h);
+    cam->UpdateProjectionInfo();
+    SetMVPMatrix(cam, PROJECTION_MODE::PERSPECTIVE);
+    Shader::camPos = &cam->position_world;
+    for (auto& obj : *scene->meshs) {
+        world.push_back(*obj);
+    }
+
+    for (auto& lite : *scene->lights) {
+        lights.push_back(lite);
+    }
+}
+
 void Renderer::SetMVPMatrix(Camera *cam, PROJECTION_MODE mode) {
     transformer->set_world_to_view(cam);
     transformer->set_view_to_project(cam, mode);
@@ -157,19 +174,7 @@ void Renderer::Start() {
 
     InitOpenGL();
 
-    auto scene = LoadScene("Scene/sample.json");
-    cam = std::move(scene->cam);
-    cam->aspect_ratio = static_cast<float>(w) / static_cast<float>(h);
-    cam->UpdateProjectionInfo();
-    SetMVPMatrix(cam,PROJECTION_MODE::PERSPECTIVE);
-    Shader::camPos = &cam->position_world;
-    for (auto& obj : *scene->meshs) {
-        world.push_back(*obj);
-    }
-
-    for (auto& lite : *scene->lights) {
-        lights.push_back(lite);
-    }
+    LoadScene("Scene/sample.json");
     
 
     while (!glfwWindowShouldClose(window)) {
