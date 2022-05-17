@@ -1,8 +1,8 @@
 #pragma once
-
-namespace ylb {
 #include "Predefined.h"
 #include <string>
+namespace ylb {
+
 class YLBFileSystem {
 public:
     static YLBFileSystem &GetInstance() {
