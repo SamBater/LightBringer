@@ -2,10 +2,6 @@
 
 using namespace ylb;
 
-Triangle::Triangle(Vertex &vt1, Vertex &vt2, Vertex &vt3) :
-    vts{vt1, vt2, vt3} {
-}
-
 void Triangle::ready_rasterization() {
     float i = 1.f;
     area = det(vts[0].sx(), vts[1].sx(), vts[2].sx(),

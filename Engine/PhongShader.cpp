@@ -8,7 +8,6 @@ glm::vec4 PhongShader::VertexShading(Vertex &v, const VertexShaderContext& conte
     //MVP变换
     glm::mat4 MVP = (*contex.model) * (*contex.view) * (*contex.project);
     glm::vec4 ccv_pos = pos_h * MVP;
-
     return ccv_pos;
 }
 
@@ -18,6 +17,18 @@ glm::vec3 PhongShader::FragmentShading(Triangle &t, const FragmentShaderContext&
     auto* camPos = contex.camPos;
     auto normal = t.interpolated_world_normal();
     auto position_world = t.interpolated_world_position();
+
+    //DEBUG ONLY DRAW NORMAL
+    auto normal_color = glm::normalize(normal);
+    normal_color += glm::vec3(1, 1, 1);
+    normal_color *= 0.5;
+    return normal_color;
+
+    //DEBUG DEPTH
+    //auto depth = std::abs(t.vts[0].inv);
+    //std::cout << depth << '\n';
+    //return glm::vec3(depth, depth, depth);
+
     //纹理采样
     float u, v;
     t.interpolated_uv(u, v);
@@ -41,7 +52,7 @@ glm::vec3 PhongShader::FragmentShading(Triangle &t, const FragmentShaderContext&
     glm::vec3 h = (viewDir + l_dir);
     h = glm::normalize(h);
     double nxh = glm::dot(normal, h);
-    float p = 2048;
+    float p = 256;
     glm::vec3 ks = {1.f, 1.f, 1.f};
     glm::vec3 L_specular = ks * (float)std::pow(std::max(0.0, nxh), p);
     glm::vec3 L = L_diffuse  + L_specular;

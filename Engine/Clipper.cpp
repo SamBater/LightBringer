@@ -41,7 +41,7 @@ ylb::Vertex ylb::Clipper::Intersect(ylb::Vertex &previousVertex, ylb::Vertex &cu
     Vertex vt = Vertex(position,normal,tex_coord);
 
     vt.ccv = ylb::lerp(previousVertex.ccv,currentVertex.ccv,intersectionFactor);
-    vt.l_pos = ylb::lerp(previousVertex.l_pos,currentVertex.l_pos,intersectionFactor);
+    //vt.l_pos = ylb::lerp(previousVertex.l_pos,currentVertex.l_pos,intersectionFactor);
     return vt;
 }
 

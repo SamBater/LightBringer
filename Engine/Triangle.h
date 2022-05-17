@@ -24,8 +24,7 @@ namespace ylb
         ylb::Vertex vts[3];
         Triangle() = default;
         
-        Triangle(Vertex &vt1, Vertex &vt2, Vertex &vt3);
-        Triangle(Vertex &&vt1, Vertex &&vt2, Vertex &&vt3) : vts{vt1,vt2,vt3}{}
+        Triangle(const Vertex &vt1, const Vertex &vt2, const Vertex &vt3) : vts{ vt1,vt2,vt3 } {}
         inline const BoundingBox *bounding_box()
         {
             return &bb;
@@ -35,11 +34,6 @@ namespace ylb
         void interpolated_uv(float &u, float &v);
         glm::vec3 interpolated_world_position();
         glm::vec3 interpolated_world_normal();
-
-        float interpolate_attribute1D(float attribute);
-        glm::vec2 interpolate_attribute2D(const glm::vec2 attribute);
-        glm::vec3 interpolate_attribute3D(const glm::vec3& vet);
-
 
         inline static bool inside(float x, float y, ylb::Triangle &t)
         {

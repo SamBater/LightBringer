@@ -21,7 +21,7 @@ std::unique_ptr<Scene> SceneLoader::LoadScene(const char* scene_path)
 
 
 	//TODO:Load Shader From JSON
-	Texture* texture = new Texture("uv.jpg");
+	Texture* texture = new Texture("cb.jpg");
 	Shader* phong = new PhongShader(texture);
 	for (auto& model_json : json["Models"].array_items()) {
 		Mesh* mesh = new Mesh();
@@ -30,12 +30,14 @@ std::unique_ptr<Scene> SceneLoader::LoadScene(const char* scene_path)
 		scene->meshs->push_back(mesh);
 	}
 
+	const std::string paralle = "Paralle";
+	const std::string point = "Point";
 	for (auto& light_json : json["Lights"].array_items()) {
 		Light* lite = nullptr;
 		auto lite_type = light_json["type"].string_value();
-		if (lite_type._Equal("Paralle"))
+		if (lite_type == paralle)
 			lite = new ParalleLight();
-		else if (lite_type._Equal("Point"))
+		else if (lite_type == point)
 			lite = new PointLight();
 		lite->DeSerilization(light_json);
 		scene->lights->push_back(lite);

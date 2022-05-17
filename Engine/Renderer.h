@@ -12,13 +12,13 @@
 #include "Mesh.h"
 #include <vector>
 #include <chrono>
-#include "Transformer.h"
 #include "Texture.h"
 #include "Vertex.h"
 #include "ParallelLight.h"
 #include "PhongShader.h"
 #include "PointLight.h"
 #include "FrameBuffer.h"
+#include "glm/fwd.hpp"
 #include "glm/glm.hpp"
 #include "CubeMap.h"
 #include <iostream>
@@ -41,35 +41,32 @@ namespace ylb
     {
     public:
         static Renderer& Instance() {
-            static Renderer instance(1024, 768);
+            static Renderer instance(800,600);
             return instance;
         }
         void Start();
     
     private:
-        Renderer(int _w = 1024, int _h = 768);
+        Renderer(int _w = 800, int _h = 600);
         int w;
         int h;
         const char *title = "Light Bringer - Made By YBT";
-        GLFWwindow *window;
-        Camera *cam;
-        Transformer *transformer;
-        FrameBuffer *frame_buffer;
-        RenderTargetSetting* renderTargetSetting;
+        GLFWwindow *window = nullptr;
+        Camera *cam = nullptr;
+        glm::mat4 view_port;
+        FrameBuffer *frame_buffer = nullptr;
+        RenderTargetSetting* renderTargetSetting = new RenderTargetSetting();
         std::vector<Mesh> world;
         std::vector<Light *> lights;
         Statistic statistic;
         void InitOpenGL();
         void LoadScene(const char* scene_file_path);
-        void SetMVPMatrix(Camera* cam,PROJECTION_MODE mode);
+        void SetViewPort(int width,int height);
         void ProcessInput(double &&delta_time);
         static void Framebuffer_Size_Callback(GLFWwindow *window, int width, int height);
         void ProcessGeometry(ylb::Triangle &t, Shader*& shader, const VertexShaderContext& vertexShaderContext);
         void Rasterization(ylb::Triangle &t, ylb::Shader* shader, Light* light);
         void Render(std::vector<ylb::Mesh> &ts);
-
-        //返回值:true->剔除
-        bool Backface_culling(Vertex& vt);
     };
 }
 #endif

@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "Camera.h"
+#include "glm/fwd.hpp"
 namespace ylb {
 void Renderer::ProcessInput(double &&delta_time) {
     double move_speed = 10.0 * delta_time;
@@ -20,23 +21,19 @@ void Renderer::ProcessInput(double &&delta_time) {
         glm::vec3 vy = glm::vec3{0, 1, 0} * static_cast<float>(dy * move_speed);
         glm::vec3 newPos = cam->transform.WorldPosition() + vx + vz + vy;
         cam->transform.SetPosition(newPos);
-        transformer->set_world_to_view(cam);
     }
 }
 
 void Renderer::Framebuffer_Size_Callback(GLFWwindow *window, int width, int height) {
     auto &instance = Instance();
-    delete instance.frame_buffer;
-    instance.w = width;
-    instance.h = height;
-    instance.frame_buffer = new FrameBuffer(width, height);
-    instance.cam->aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
-    instance.cam->UpdateProjectionInfo();
-    instance.SetMVPMatrix(instance.cam, PROJECTION_MODE::PERSPECTIVE);
+    instance.SetViewPort(width, height);
 }
 
 void Renderer::Render(std::vector<ylb::Mesh> &meshs) {
     statistic.InitTriangleCnt();
+
+    auto const view = std::make_shared<glm::mat4>(cam->GetViewMatrix());
+    auto const project = std::make_shared<glm::mat4>(cam->GetProjectMatrix());
     for (int i = 0 ; i < world.size() ; i++) {
         auto& mesh = world[i];
         auto triangles = mesh.Triangles();
@@ -44,8 +41,8 @@ void Renderer::Render(std::vector<ylb::Mesh> &meshs) {
         for (auto& t : *triangles) {
             VertexShaderContext vertexShaderContext;
             vertexShaderContext.model = &mesh.transform.ModelMatrix();
-            vertexShaderContext.view = &transformer->view;
-            vertexShaderContext.project = &transformer->projection;
+            vertexShaderContext.view = view.get();
+            vertexShaderContext.project = project.get();
             vertexShaderContext.camPos = &cam->transform.WorldPosition();
             ProcessGeometry(t, mesh.shader, vertexShaderContext);
         }
@@ -134,8 +131,8 @@ void Renderer::InitOpenGL() {
     ImGuiIO &io = ImGui::GetIO();
     (void)io;
     // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    // ImGui::StyleColorsClassic();
+    //ImGui::StyleColorsDark();
+     ImGui::StyleColorsClassic();
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -149,9 +146,7 @@ void Renderer::LoadScene(const char* scene_file_path)
 {
     auto scene = SceneLoader::Instance().LoadScene(scene_file_path);
     cam = std::move(scene->cam);
-    cam->aspect_ratio = static_cast<float>(w) / static_cast<float>(h);
-    cam->UpdateProjectionInfo();
-    SetMVPMatrix(cam, PROJECTION_MODE::PERSPECTIVE);
+    SetViewPort(w, h);
     for (auto& obj : *scene->meshs) {
         world.push_back(*obj);
     }
@@ -161,10 +156,16 @@ void Renderer::LoadScene(const char* scene_file_path)
     }
 }
 
-void Renderer::SetMVPMatrix(Camera *cam, PROJECTION_MODE mode) {
-    transformer->set_world_to_view(cam);
-    transformer->set_view_to_project(cam, mode);
-    transformer->set_projection_to_screen(w, h);
+void Renderer::SetViewPort(int width, int height) {
+    delete frame_buffer;
+    w = width;
+    h = height;
+    frame_buffer = new FrameBuffer(width, height);
+    cam->aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
+    cam->UpdateProjectionInfo();
+    view_port = glm::mat4 (1);
+    view_port[0][0] = static_cast<double>(w) / 2.0;view_port[0][3] = static_cast<double>(w-1) / 2.0;
+    view_port[1][1] = static_cast<double>(h) / 2.0;view_port[1][3] = static_cast<double>(h-1) / 2.0;
 }
 
 void Renderer::Start() {
@@ -175,24 +176,26 @@ void Renderer::Start() {
 
     LoadScene("Scene/sample.json");
     
-
     while (!glfwWindowShouldClose(window)) {
         ProcessInput(ImGui::GetIO().Framerate / 1000);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
         frame_buffer->clear();
 
         // renderTargetSetting->open_z_buffer_write = false;
         // render(world_only_sky);
         renderTargetSetting->open_depth_buffer_write = true;
         Render(world);
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         statistic.Render();
+
         glDrawPixels(w, h, GL_RGB, GL_UNSIGNED_BYTE, frame_buffer->pixels);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -209,13 +212,6 @@ void Renderer::Start() {
 
 Renderer::Renderer(int _w, int _h) :
     w(_w), h(_h) {
-    frame_buffer = new FrameBuffer(w, h);
-    transformer = new Transformer();
-    renderTargetSetting = new RenderTargetSetting();
-}
-
-bool Renderer::Backface_culling(Vertex &vt) {
-    return false;
 }
 
 void Renderer::ProcessGeometry(Triangle &t, Shader *&shader, const VertexShaderContext& vertexShaderContext) {
@@ -252,7 +248,7 @@ void Renderer::ProcessGeometry(Triangle &t, Shader *&shader, const VertexShaderC
             vt.position = vt.world_position * vt.inv;
         }
 
-        vt.sv_pos = ccv_pos * transformer->view_port;
+        vt.sv_pos = ccv_pos * view_port;
     }
 
     int step = clipped_vt.size() > 3 ? 1 : 3;

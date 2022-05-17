@@ -27,8 +27,18 @@ public:
     Camera() = default;
     Camera(const glm::vec3 &origin, const glm::vec3 &lookat, float fov_v,
            float _aspect_ratio, float _n, float _f);
-    void set_perspective_matrix(glm::mat4 &mat);
-    void set_orthogonal_matrix(glm::mat4 &mat);
+    
+    glm::mat4 GetPerspectiveMatrix();
+    glm::mat4 GetOrthogonalMatrix();
+    glm::mat4 GetViewMatrix();
+
+    glm::mat4 GetProjectMatrix() {
+        if (mode == PROJECTION_MODE::PERSPECTIVE)
+            return GetPerspectiveMatrix();
+        else if (mode == PROJECTION_MODE::ORTHOGONAL)
+          return GetOrthogonalMatrix();
+        return glm::mat4();
+    }
 
     void UpdateProjectionInfo() {
         t = std::tan(fov_Y / 2) * n;

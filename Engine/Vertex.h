@@ -16,7 +16,6 @@ namespace ylb
         glm::vec3 normal;   //法线
         glm::vec3 color;
         glm::vec4 ccv;
-        glm::vec4 l_pos;    //光源空间坐标
         friend class Transformer;
         friend class Triangle;
         float inv;
