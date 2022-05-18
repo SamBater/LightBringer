@@ -10,3 +10,4 @@ build/*
 bin
 CMakeSettings.json
 Engine/Predefined.h
+TODO.md

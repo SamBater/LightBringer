@@ -2,6 +2,7 @@
 #include "Camera.h"
 #include "GLFW/glfw3.h"
 #include "glm/fwd.hpp"
+#include <cstdlib>
 namespace ylb {
 void Renderer::ProcessInput(double &&delta_time) {
     int dx = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS ? -1 : glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ? 1 :
@@ -37,8 +38,6 @@ void Renderer::Mouse_Move_Callback(GLFWwindow *window, double xposIn,
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
     if (firstMouse) {
-        xpos = instance.w / 2.0f;
-        ypos = instance.h / 2.0f;
         lastX = xpos;
         lastY = ypos;
         firstMouse = false;
@@ -84,12 +83,7 @@ void Renderer::Rasterization(ylb::Triangle &t, Shader *shader, Light *light) {
             int pixel = y * w + x;
             //三角形测试
             if (ylb::Triangle::inside(x + 0.5f, y + 0.5f, t)) {
-                float depth = 0;
-
-                if (cam->mode == PROJECTION_MODE::PERSPECTIVE)
-                    depth = t.interpolated_depth();
-                else
-                    depth = t.vts[0].sz() * t.cof.x + t.vts[1].sz() * t.cof.y + t.vts[2].sz() * t.cof.z;
+                float depth = t.vts[0].sz() * t.cof.x + t.vts[1].sz() * t.cof.y + t.vts[2].sz() * t.cof.z;
                 //深度测试
                 if (depth - frame_buffer->depth[pixel] >= ylb::eps) {
                     //深度写入
@@ -250,31 +244,41 @@ void Renderer::ProcessGeometry(Triangle &t, Shader *&shader, const VertexShaderC
 
     std::vector<Vertex> vts{t.vts[0], t.vts[1], t.vts[2]};
 
-    auto clipped_x = Clipper::ClipPolygon(Plane::POSITIVE_X, vts);
-    auto clipped_nx = Clipper::ClipPolygon(Plane::NEGATIVE_X, clipped_x);
-    auto clipped_y = Clipper::ClipPolygon(Plane::POSITIVE_Y, clipped_nx);
-    auto clipped_ny = Clipper::ClipPolygon(Plane::NEGATIVE_Y, clipped_y);
-    auto clipped_z = Clipper::ClipPolygon(Plane::POSITIVE_Z, clipped_ny);
-    auto clipped_nz = Clipper::ClipPolygon(Plane::NEGATIVE_Z, clipped_z);
-    auto clipped_vt = Clipper::ClipPolygon(Plane::POSITIVE_W, clipped_nz);
+    //auto clipped_x = Clipper::ClipPolygon(Plane::POSITIVE_X, vts);
+    //auto clipped_nx = Clipper::ClipPolygon(Plane::NEGATIVE_X, clipped_x);
+    //auto clipped_y = Clipper::ClipPolygon(Plane::POSITIVE_Y, clipped_nx);
+    //auto clipped_ny = Clipper::ClipPolygon(Plane::NEGATIVE_Y, clipped_y);
+    //auto clipped_z = Clipper::ClipPolygon(Plane::POSITIVE_Z, clipped_ny);
+    //auto clipped_nz = Clipper::ClipPolygon(Plane::NEGATIVE_Z, clipped_z);
+    //auto clipped_vt = Clipper::ClipPolygon(Plane::POSITIVE_W, clipped_nz);
 
-    if (clipped_vt.size() < 3)
-        return;
+    auto clipped_vt = vts;
 
     for (int i = 0; i < clipped_vt.size(); i++) {
         auto &vt = clipped_vt[i];
         auto &ccv_pos = vt.ccv;
         //透视除法
-        vt.inv = 1.0f / ccv_pos.w;
+        vt.inv = 1.0f / ccv_pos.z;
         ccv_pos *= vt.inv;
 
-        if (cam->mode == PROJECTION_MODE::PERSPECTIVE) {
-            vt.tex_coord *= vt.inv;
-            vt.normal = vt.normal * vt.inv;
-            vt.position = vt.world_position * vt.inv;
-        }
+        //裁剪
+        if (ccv_pos.x >= ccv_pos.w)
+            return;
+        if (ccv_pos.x <= -ccv_pos.w)
+            return;
+        if (ccv_pos.y >= ccv_pos.w)
+            return;
+        if (ccv_pos.y <= -ccv_pos.w)
+            return;
+
+        //if (cam->mode == PROJECTION_MODE::PERSPECTIVE) {
+        //    vt.tex_coord *= vt.inv;
+        //    vt.normal = vt.normal * vt.inv;
+        //    vt.position = vt.world_position * vt.inv;
+        //}
 
         vt.sv_pos = ccv_pos * view_port;
+        vt.sz() *= vt.inv;
     }
 
     int step = clipped_vt.size() > 3 ? 1 : 3;

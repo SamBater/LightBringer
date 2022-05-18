@@ -18,16 +18,16 @@ glm::vec3 PhongShader::FragmentShading(Triangle &t, const FragmentShaderContext&
     auto normal = t.interpolated_world_normal();
     auto position_world = t.interpolated_world_position();
 
+    
     //DEBUG ONLY DRAW NORMAL
-    auto normal_color = glm::normalize(normal);
-    normal_color += glm::vec3(1, 1, 1);
-    normal_color *= 0.5;
-    return normal_color;
+    //auto normal_color = glm::normalize(normal);
+    //normal_color += glm::vec3(1, 1, 1);
+    //normal_color *= 0.5;
+    //return normal_color;
 
     //DEBUG DEPTH
-    //auto depth = std::abs(t.vts[0].inv);
-    //std::cout << depth << '\n';
-    //return glm::vec3(depth, depth, depth);
+    auto depth = std::abs(t.vts[0].inv);
+    return glm::vec3(depth, depth, depth);
 
     //纹理采样
     float u, v;
