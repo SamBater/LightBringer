@@ -64,6 +64,7 @@ namespace ylb
         void SetViewPort(int width,int height);
         void ProcessInput(double &&delta_time);
         static void Framebuffer_Size_Callback(GLFWwindow *window, int width, int height);
+        static void Mouse_Move_Callback(GLFWwindow* window, double xposIn, double yposIn);
         void ProcessGeometry(ylb::Triangle &t, Shader*& shader, const VertexShaderContext& vertexShaderContext);
         void Rasterization(ylb::Triangle &t, ylb::Shader* shader, Light* light);
         void Render(std::vector<ylb::Mesh> &ts);

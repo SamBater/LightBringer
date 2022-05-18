@@ -1,7 +1,7 @@
 {
   "Camera": {
     "Transform": {
-      "position": [ 0, 2, -80 ]
+      "position": [ 0, 10, -80 ]
     },
     "lookat": [ 0, 0.33, -1 ],
     "fov": 0.8,
@@ -14,7 +14,7 @@
     {
       "path": "cube.obj",
       "Transform": {
-        "position": [ -15, 3, -5 ],
+        "position": [ -15, 3, 15 ],
         "scale" : [4,4,4]
       }
     },

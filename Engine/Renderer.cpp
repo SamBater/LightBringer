@@ -1,10 +1,9 @@
 #include "Renderer.h"
 #include "Camera.h"
+#include "GLFW/glfw3.h"
 #include "glm/fwd.hpp"
 namespace ylb {
 void Renderer::ProcessInput(double &&delta_time) {
-    double move_speed = 10.0 * delta_time;
-    double rot_speed = ylb::PI / 3 * delta_time;
     int dx = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS ? -1 : glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ? 1 :
                                                                                                                 0;
     int dz = glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ? 1 : glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS ? -1 :
@@ -12,21 +11,46 @@ void Renderer::ProcessInput(double &&delta_time) {
     int dy = glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS ? 1 : 0;
     dy = glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS ? -1 : dy;
 
-    int ty = glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS ? 1 : 0;
-    ty = glfwGetKey(window, GLFW_KEY_RIGHT) ? -1 : ty;
-
-    if (dx || dz || dy) {
-        glm::vec3 vx = glm::vec3{1, 0, 0} * static_cast<float>(dx * move_speed);
-        glm::vec3 vz = glm::vec3{0, 0, 1} * static_cast<float>(dz * move_speed);
-        glm::vec3 vy = glm::vec3{0, 1, 0} * static_cast<float>(dy * move_speed);
-        glm::vec3 newPos = cam->transform.WorldPosition() + vx + vz + vy;
-        cam->transform.SetPosition(newPos);
-    }
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+      std::exit(0);
+    
+    if (dz == 1)
+      cam->ProcessKeyboard(Camera_Movement::FORWARD, delta_time);
+    if (dz == -1)
+        cam->ProcessKeyboard(Camera_Movement::BACKWARD, delta_time);
+    if (dx == 1)
+        cam->ProcessKeyboard(Camera_Movement::RIGHT, delta_time);
+    if (dx == -1)
+      cam->ProcessKeyboard(Camera_Movement::LEFT, delta_time);
 }
 
 void Renderer::Framebuffer_Size_Callback(GLFWwindow *window, int width, int height) {
     auto &instance = Instance();
     instance.SetViewPort(width, height);
+}
+
+void Renderer::Mouse_Move_Callback(GLFWwindow *window, double xposIn,
+                                   double yposIn) {
+    static bool firstMouse = true;
+    static float lastX,lastY;
+    auto instance = Instance();
+    float xpos = static_cast<float>(xposIn);
+    float ypos = static_cast<float>(yposIn);
+    if (firstMouse) {
+        xpos = instance.w / 2.0f;
+        ypos = instance.h / 2.0f;
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+    instance.cam->ProcessMouseMovement(xoffset, yoffset);
 }
 
 void Renderer::Render(std::vector<ylb::Mesh> &meshs) {
@@ -123,6 +147,8 @@ void Renderer::InitOpenGL() {
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, &Renderer::Framebuffer_Size_Callback);
+    glfwSetCursorPosCallback(window, &Renderer::Mouse_Move_Callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glfwSwapInterval(1); // Enable vsync
                          // Setup Dear ImGui context

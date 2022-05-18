@@ -2,6 +2,8 @@
 #include "glm/vec3.hpp"
 #include "glm/mat4x4.hpp"
 #include "YLBSerializable.h"
+#include "glm/ext/matrix_clip_space.hpp"
+#include "glm/ext/matrix_transform.hpp"
 namespace ylb {
 	class Actor;
 	class Transform : public YLBSerializable {
