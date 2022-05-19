@@ -19,13 +19,24 @@ std::unique_ptr<Scene> SceneLoader::LoadScene(const char* scene_path)
 	auto scene = make_unique<Scene>();
 	scene->cam->DeSerilization(json["Camera"]);
 
-
-	//TODO:Load Shader From JSON
-	Texture* texture = new Texture("cb.jpg");
-	Shader* phong = new PhongShader(texture);
 	for (auto& model_json : json["Models"].array_items()) {
-		Mesh* mesh = new Mesh();
-		mesh->SetShader(phong);
+		Mesh *mesh = new Mesh();
+		Shader *shader = nullptr;
+		auto shader_string = model_json["Shader"]["type"].string_value();
+		auto diffuse_map = model_json["Shader"]["diffuse"].string_value();
+		auto normal_map = model_json["Shader"]["normal"].string_value();
+		Texture* diffuse = nullptr;
+		Texture* normal = nullptr;
+		if(diffuse_map.size())
+			diffuse = new Texture(diffuse_map.c_str());
+		if (normal_map.size())
+			normal = new Texture(normal_map.c_str());
+
+		if (shader_string == "Groud")
+			shader = new GroudShader(diffuse,normal);
+		else
+			shader = new PhongShader(diffuse,normal);
+		mesh->SetShader(shader);
 		mesh->DeSerilization(model_json);
 		scene->meshs->push_back(mesh);
 	}

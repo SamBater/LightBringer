@@ -14,9 +14,10 @@ glm::vec4 ylb::SkyBoxShader::VertexShading(ylb::Vertex &v, const VertexShaderCon
 
 glm::vec3 ylb::SkyBoxShader::FragmentShading(ylb::Triangle &t, const FragmentShaderContext& context) {
 
-    glm::vec3 dir = (t.vts[0].tex_coord * t.cof.x +
-                     t.vts[1].tex_coord * t.cof.y +
-                        t.vts[2].tex_coord * t.cof.z);
-    dir *= t.s;
-    return cube_map->tex3d(dir);
+    //glm::vec3 dir = (t.vts[0].tex_coord * t.cof.x +
+    //                 t.vts[1].tex_coord * t.cof.y +
+    //                    t.vts[2].tex_coord * t.cof.z);
+    //dir *= t.s;
+    //return cube_map->tex3d(dir);
+    return glm::vec3(1, 1, 1);
 }

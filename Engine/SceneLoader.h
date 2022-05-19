@@ -14,6 +14,7 @@
 #include "ParallelLight.h"
 #include "Mesh.h"
 #include "PointLight.h"
+#include "GroudShader.h"
 namespace ylb {
 
 	struct Scene {

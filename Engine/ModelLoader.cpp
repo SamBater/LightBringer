@@ -70,7 +70,6 @@ std::vector<ylb::Triangle>* ylb::LoadObj(const char* modelPath)
             }
 
             Triangle triangle(vts[0], vts[1], vts[2]);
-            
             ts->push_back(triangle);
 
             index_offset += fv;

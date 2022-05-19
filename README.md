@@ -2,6 +2,12 @@
 
 LightBringer是基于OpenGL（使用其创建窗口和画像素的功能）的软光栅渲染器。
 
+
+
+tiny renderer
+
+
+
 # 环境
 
 - OS:win10

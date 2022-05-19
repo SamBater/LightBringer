@@ -33,8 +33,8 @@ void Renderer::Framebuffer_Size_Callback(GLFWwindow *window, int width, int heig
 void Renderer::Mouse_Move_Callback(GLFWwindow *window, double xposIn,
                                    double yposIn) {
     static bool firstMouse = true;
-    static float lastX,lastY;
     auto instance = Instance();
+    static float lastX = instance.w / 2.0 , lastY = instance.h / 2.0;
     float xpos = static_cast<float>(xposIn);
     float ypos = static_cast<float>(yposIn);
     if (firstMouse) {
@@ -57,6 +57,7 @@ void Renderer::Render(std::vector<ylb::Mesh> &meshs) {
 
     auto const view = std::make_shared<glm::mat4>(cam->GetViewMatrix());
     auto const project = std::make_shared<glm::mat4>(cam->GetProjectMatrix());
+    glm::vec3 world_pos[3];
     for (int i = 0 ; i < world.size() ; i++) {
         auto& mesh = world[i];
         auto triangles = mesh.Triangles();
@@ -64,9 +65,15 @@ void Renderer::Render(std::vector<ylb::Mesh> &meshs) {
         for (auto& t : *triangles) {
             VertexShaderContext vertexShaderContext;
             vertexShaderContext.model = &mesh.transform.ModelMatrix();
+            for (int i = 0; i < 3; i++)
+              world_pos[i] = glm::vec4(t.vts[i].position,0) * *vertexShaderContext.model;
+            if (renderTargetSetting->back_face_culling && BackFaceCulling(world_pos))
+              continue;
+
             vertexShaderContext.view = view.get();
             vertexShaderContext.project = project.get();
             vertexShaderContext.camPos = &cam->transform.WorldPosition();
+            vertexShaderContext.l = lights[0];
             ProcessGeometry(t, mesh.shader, vertexShaderContext);
         }
     }
@@ -84,6 +91,7 @@ void Renderer::Rasterization(ylb::Triangle &t, Shader *shader, Light *light) {
             //三角形测试
             if (ylb::Triangle::inside(x + 0.5f, y + 0.5f, t)) {
                 float depth = t.vts[0].sz() * t.cof.x + t.vts[1].sz() * t.cof.y + t.vts[2].sz() * t.cof.z;
+                //float depth = t.interpolated_depth();
                 //深度测试
                 if (depth - frame_buffer->depth[pixel] >= ylb::eps) {
                     //深度写入
@@ -188,14 +196,26 @@ void Renderer::SetViewPort(int width, int height) {
     view_port[1][1] = static_cast<double>(h) / 2.0;view_port[1][3] = static_cast<double>(h-1) / 2.0;
 }
 
+bool Renderer::BackFaceCulling(const glm::vec3 world_pos[]) {
+    auto e0 = world_pos[1] - world_pos[0];
+    auto e1 = world_pos[2] - world_pos[0];
+    auto n = glm::cross(e0, e1);
+    auto angle = glm::dot(n, cam->Front);
+    return angle > 0;
+}
+
 void Renderer::Start() {
     using ylb::Triangle;
     using ylb::Vertex;
 
     InitOpenGL();
 
-    LoadScene("Scene/sample.json");
+     LoadScene("Scene/sample.json");
+    // LoadScene("Scene/tinyrenderer.json");
     
+
+     Texture* texture = new Texture("african_head/african_head_nm_tangent.tga");
+    //Texture* texture = new Texture("normal.png");
     while (!glfwWindowShouldClose(window)) {
         ProcessInput(ImGui::GetIO().Framerate / 1000);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -205,6 +225,16 @@ void Renderer::Start() {
         // render(world_only_sky);
         renderTargetSetting->open_depth_buffer_write = true;
         Render(world);
+
+        //for(int y = 0 ; y < h ; y++)
+        //    for (int x = 0;  x < w; x++)
+        //    {
+        //        float v = y * 1.0f / h;
+        //        float u = x * 1.0f / w;
+        //        //auto rgb = texture->tex2d(u, v) * 2.0f - glm::vec3(1,1,1);
+        //        auto rgb = texture->tex2d(u, v);
+        //        frame_buffer->set_color(x, y, rgb);
+        //    }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -234,9 +264,10 @@ Renderer::Renderer(int _w, int _h) :
     w(_w), h(_h) {
 }
 
-void Renderer::ProcessGeometry(Triangle &t, Shader *&shader, const VertexShaderContext& vertexShaderContext) {
+void Renderer::ProcessGeometry(Triangle &t, Shader *&shader, VertexShaderContext& vertexShaderContext) {
     for (int i = 0; i < 3; i++) {
         auto &vt = t.vts[i];
+        vertexShaderContext.nthVertex = i;
         vt.ccv = shader->VertexShading(vt, vertexShaderContext);
     }
 
@@ -244,13 +275,16 @@ void Renderer::ProcessGeometry(Triangle &t, Shader *&shader, const VertexShaderC
 
     std::vector<Vertex> vts{t.vts[0], t.vts[1], t.vts[2]};
 
-    //auto clipped_x = Clipper::ClipPolygon(Plane::POSITIVE_X, vts);
-    //auto clipped_nx = Clipper::ClipPolygon(Plane::NEGATIVE_X, clipped_x);
-    //auto clipped_y = Clipper::ClipPolygon(Plane::POSITIVE_Y, clipped_nx);
-    //auto clipped_ny = Clipper::ClipPolygon(Plane::NEGATIVE_Y, clipped_y);
-    //auto clipped_z = Clipper::ClipPolygon(Plane::POSITIVE_Z, clipped_ny);
-    //auto clipped_nz = Clipper::ClipPolygon(Plane::NEGATIVE_Z, clipped_z);
-    //auto clipped_vt = Clipper::ClipPolygon(Plane::POSITIVE_W, clipped_nz);
+    // auto clipped_x = Clipper::ClipPolygon(Plane::POSITIVE_X, vts);
+    // auto clipped_nx = Clipper::ClipPolygon(Plane::NEGATIVE_X, clipped_x);
+    // auto clipped_y = Clipper::ClipPolygon(Plane::POSITIVE_Y, clipped_nx);
+    // auto clipped_ny = Clipper::ClipPolygon(Plane::NEGATIVE_Y, clipped_y);
+    // auto clipped_z = Clipper::ClipPolygon(Plane::POSITIVE_Z, clipped_ny);
+    // auto clipped_nz = Clipper::ClipPolygon(Plane::NEGATIVE_Z, clipped_z);
+    // auto clipped_vt = Clipper::ClipPolygon(Plane::POSITIVE_W, clipped_nz);
+
+    // if (clipped_vt.size() < 3)
+    //    return;
 
     auto clipped_vt = vts;
 
@@ -258,7 +292,7 @@ void Renderer::ProcessGeometry(Triangle &t, Shader *&shader, const VertexShaderC
         auto &vt = clipped_vt[i];
         auto &ccv_pos = vt.ccv;
         //透视除法
-        vt.inv = 1.0f / ccv_pos.z;
+        vt.inv = 1.0f / ccv_pos.w;
         ccv_pos *= vt.inv;
 
         //裁剪
@@ -271,11 +305,11 @@ void Renderer::ProcessGeometry(Triangle &t, Shader *&shader, const VertexShaderC
         if (ccv_pos.y <= -ccv_pos.w)
             return;
 
-        //if (cam->mode == PROJECTION_MODE::PERSPECTIVE) {
-        //    vt.tex_coord *= vt.inv;
-        //    vt.normal = vt.normal * vt.inv;
-        //    vt.position = vt.world_position * vt.inv;
-        //}
+        if (cam->mode == PROJECTION_MODE::PERSPECTIVE) {
+            vt.tex_coord = vt.tex_coord * vt.inv;
+            vt.normal = vt.normal * vt.inv;
+            vt.world_position = glm::vec4(vt.position,0) * (*vertexShaderContext.model) * vt.inv;
+        }
 
         vt.sv_pos = ccv_pos * view_port;
         vt.sz() *= vt.inv;

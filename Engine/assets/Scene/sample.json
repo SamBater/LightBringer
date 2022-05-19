@@ -1,9 +1,9 @@
 {
   "Camera": {
     "Transform": {
-      "position": [ 0, 10, 20 ]
+      "position": [ 1, 9, 10 ]
     },
-    "lookat": [ 0, 0, -1 ],
+    "lookat": [ 0, -0.33, -1 ],
     "fov": 1.0,
     "aspect_ratio": 1.0,
     "n": 0.1,
@@ -14,32 +14,25 @@
     {
       "path": "cube.obj",
       "Transform": {
-        "position": [ -15, 3, 5 ],
-        "scale" : [4,4,4]
+        "position": [ 0, 2, 0 ],
+        "scale": [ 2, 2, 2 ]
+      },
+      "Shader": {
+        "type": "Groud",
+        "diffuse": "uv.jpg",
+        "normal": "normal.png"
       }
     },
-
-    {
-      "path": "sphere.obj",
-      "Transform": {
-        "position": [ 15, 3, -5 ],
-        "scale" :  [2,2,2]
-      }
-    },
-
-    {
-      "path": "teapot.obj",
-      "Transform": {
-        "position": [ 0, 3, -5 ],
-        "scale" : [0.5,0.5,0.5]
-      }
-    },
-
     {
       "path": "quad.obj",
       "Transform": {
-        "position": [ 0, -1, 1 ],
-        "scale" :  [30,0,30]
+        "position": [ 0, -1, 0 ],
+        "scale": [ 10, 1, 10 ]
+      },
+      "Shader": {
+        
+        "diffuse": "brickwall.jpg",
+        "normal": "normal.png"
       }
     }
   ],
@@ -47,10 +40,8 @@
   "Lights": [
     {
       "type": "Paralle",
-      "intensity": [ 24.0, 24.0, 24.0 ],
-      "Transform": {
-        "dir" :  [0.33,0.66,0.33]
-      }
+      "intensity": [ 1, 1, 1 ],
+      "dir" :  [-1,-0.8,-1]
     }
   ]
 }

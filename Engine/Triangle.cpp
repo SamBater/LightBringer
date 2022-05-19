@@ -19,8 +19,8 @@ float Triangle::interpolated_depth() {
 }
 
 void Triangle::interpolated_uv(float &u, float &v) {
-    u = s * (cof.x * vts[0].u() + cof.y * vts[1].u() + cof.z * vts[2].u());
-    v = s * (cof.x * vts[0].v() + cof.y * vts[1].v() + cof.z * vts[2].v());
+    u =  s * (cof.x * vts[0].u() + cof.y * vts[1].u() + cof.z * vts[2].u());
+    v =  s * (cof.x * vts[0].v() + cof.y * vts[1].v() + cof.z * vts[2].v());
 }
 
 glm::vec3 Triangle::interpolated_world_position() {

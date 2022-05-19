@@ -13,7 +13,9 @@ namespace ylb
         const glm::mat4* model;
         const glm::mat4* view;
         const glm::mat4* project;
-        const glm::vec3* camPos;
+        const glm::vec3 *camPos;
+        const Light *l;
+        uint8_t nthVertex;
     };
 
     struct FragmentShaderContext {

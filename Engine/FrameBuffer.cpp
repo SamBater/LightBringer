@@ -11,11 +11,11 @@ void FrameBuffer::clear()
         for (int x = 0; x < w; x++)
         {
             //ºÚ°×½¥±ä
-            //unsigned char color = (y * w + x) * 255.f / length;
+            unsigned char color = (y * w + x) * 255.f / length;
             
-            unsigned char color = 0;
+            //unsigned char color = 0;
             set_depth(x, y, -1000);
-            set_color(x, y, color, color, color);
+            set_color(x, y, color, color, 255);
         }
     }
 }

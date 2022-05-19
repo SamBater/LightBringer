@@ -4,14 +4,20 @@
 #include "stb_image.h"
 #include <iostream>
 #include "YLBFileSystem.h"
+#include <cmath>
 
 using namespace ylb;
 
 Texture::Texture(char const* file_name)
 {
-	stbi__vertically_flip_on_load = 1;
-	const char* path = YLBFileSystem::GetInstance().GetAssetsPath(file_name).c_str();
-	sprite = stbi_load(path, &w, &h, &comp, 0);
+	auto path = YLBFileSystem::GetInstance().GetAssetsPath(file_name);
+	std::cout << path << '\n';
+	sprite = stbi_load(path.c_str(), &w, &h, &comp, 0);
+	if (!sprite) {
+		std::cerr << "ERROR: Could not load texture image file '"
+			<< path << "'.\n";
+		w = h = 0;
+	}
 }
 
 Texture::Texture(unsigned char* data, int w, int h) :w(w), h(h), comp(3) {
@@ -28,18 +34,32 @@ glm::vec3 uchar3_to_vec3(unsigned char r, unsigned char g, unsigned char b)
 
 glm::vec3 Texture::tex2d(const float& tex_cord_x, const float& tex_cord_y)
 {
-	//        nearest
-	//        int x = tex_cord_x * w;
-	//        int y = tex_cord_y * h;
-	//        int pixel = y * 3 * w + x * 3;
-	//        return uchar3_to_vec3(sprite[pixel], sprite[pixel+1], sprite[pixel+2]);
-
-			//Bilinear Interpolation
-
 	if (sprite == nullptr) return glm::vec3{ 1,1,1 };
 
+	//nearest
+	// Clamp input texture coordinates to [0,1] x [1,0]
+	// float u = clamp(tex_cord_x, 0.0f, 1.0f);
+	// float v = 1 - clamp(tex_cord_y, 0.0f, 1.0f); // Flip V to image coordinates
+
+	// auto i = static_cast<int>(u * w + 0.5f);
+	// auto j = static_cast<int>(v * h + 0.5f);
+
+	// // Clamp integer mapping, since actual coordinates should be less than 1.0
+	// if (i >= w)
+	// 	i = w - 1;
+	// if (j >= h)
+	// 	j = h - 1;
+
+	// const auto color_scale = 1.0 / 255.0;
+	// auto pixel = sprite + j * (w * 3) + i * 3;
+
+	// return glm::vec3(color_scale * pixel[0], color_scale * pixel[1],
+	// 	color_scale * pixel[2]);
+
+
+	//Bilinear Interpolation
 	float x = clamp(tex_cord_x, 0.f, 0.99f);
-	float y = clamp(tex_cord_y, 0.f, 0.99f);
+	float y = 1 - clamp(tex_cord_y, 0.f, 0.99f);
 
 	float cx = x * w;
 	float cy = y * h;

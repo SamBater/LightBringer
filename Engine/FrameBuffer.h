@@ -16,7 +16,7 @@ namespace ylb{
             depth = new float[length];
         }
 
-        inline void set_color(int &x, int &y, unsigned char &r, unsigned char &g, unsigned char &b)
+        inline void set_color(int x, int y, unsigned char r, unsigned char g, unsigned char b)
         {
             int pixel = w * y * 3 + x * 3;
             pixels[pixel] = r;
