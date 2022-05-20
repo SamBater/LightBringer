@@ -18,10 +18,13 @@ struct Model : public Actor , public YLBSerializable {
     Model() = default;
 
     Vertex Vert(int vid,int nid,int uid) {
-        auto vert = verties->at(vid);
+        auto coord = verties->at(vid);
         auto normal = normals->at(nid);
         auto uv = uvs->at(uid);
-        return Vertex(vert, normal, uv);
+        Vertex v(coord, normal, uv);
+        v.tangent = tangents->at(vid);
+        //v.bitangent = bitangents->at(vid);
+        return v;
     }
 
     Triangle Triangle(int fid) {
@@ -44,6 +47,7 @@ struct Model : public Actor , public YLBSerializable {
     std::vector<glm::vec3>* verties = new std::vector<glm::vec3>();
     std::vector<glm::vec3>* normals = new std::vector<glm::vec3>();
     std::vector<glm::vec2>* uvs = new std::vector<glm::vec2>();
+    std::vector<glm::vec3>* tangents = new std::vector<glm::vec3>();
     std::vector<Face>* faces = new std::vector<Face>();
     ylb::Shader *shader = new Shader();
 };

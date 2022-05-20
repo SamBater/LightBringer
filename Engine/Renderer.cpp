@@ -202,7 +202,7 @@ namespace ylb {
 		auto e1 = world_pos[2] - world_pos[0];
 		auto n = glm::cross(e0, e1);
 		auto angle = glm::dot(n, cam->Front);
-		return angle > 0.2;
+		return angle > 0.0;
 	}
 
 	void Renderer::Start() {
@@ -211,12 +211,9 @@ namespace ylb {
 
 		InitOpenGL();
 
-		LoadScene("Scene/sample.json");
-		// LoadScene("Scene/tinyrenderer.json");
+		//LoadScene("Scene/sample.json");
+		LoadScene("Scene/tinyrenderer.json");
 
-
-		Texture* texture = new Texture("african_head/african_head_nm_tangent.tga");
-		//Texture* texture = new Texture("normal.png");
 		while (!glfwWindowShouldClose(window)) {
 			ProcessInput(ImGui::GetIO().Framerate / 1000);
 			glClear(GL_COLOR_BUFFER_BIT);
@@ -226,17 +223,6 @@ namespace ylb {
 			// render(world_only_sky);
 			renderTargetSetting->open_depth_buffer_write = true;
 			Render(models);
-
-			//for(int y = 0 ; y < h ; y++)
-			//    for (int x = 0;  x < w; x++)
-			//    {
-			//        float v = y * 1.0f / h;
-			//        float u = x * 1.0f / w;
-			//        //auto rgb = texture->tex2d(u, v) * 2.0f - glm::vec3(1,1,1);
-			//        auto rgb = texture->tex2d(u, v);
-			//        frame_buffer->set_color(x, y, rgb);
-			//    }
-
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();

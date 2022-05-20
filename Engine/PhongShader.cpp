@@ -1,13 +1,20 @@
 #include "PhongShader.h"
 using namespace ylb;
 
-glm::vec4 PhongShader::VertexShading(Vertex &v, const VertexShaderContext& contex)
+glm::vec4 PhongShader::VertexShading(Vertex &vt, const VertexShaderContext& contex)
 {
-    glm::vec4 pos_h(v.position,1);
-
-    //MVP变换
+    glm::vec4 pos_h(vt.position,1);
     glm::mat4 MVP = (*contex.model) * (*contex.view) * (*contex.project);
     glm::vec4 ccv_pos = pos_h * MVP;
+
+    const auto& model = (glm::mat3(*contex.model));
+    glm::vec3 T = glm::normalize(glm::vec3(model * glm::vec4(vt.tangent, 0.0)));
+    //glm::vec3 B = glm::normalize(glm::vec3(model * glm::vec4(vt.bitangent, 0.0)));
+    glm::vec3 N = glm::normalize(glm::vec3(model * glm::vec4(vt.normal, 0.0)));
+    auto B = glm::normalize(glm::cross(T, N));
+    TBN = glm::mat3(T, B, N);
+    TBN = glm::transpose(TBN);
+
     return ccv_pos;
 }
 
@@ -15,42 +22,23 @@ glm::vec3 PhongShader::FragmentShading(Triangle &t, const FragmentShaderContext&
 {
     auto* l = contex.l;
     auto* camPos = contex.camPos;
-    auto normal = t.interpolated_world_normal();
     auto position_world = t.interpolated_world_position();
-
-    
-    //DEBUG ONLY DRAW NORMAL
-    //auto normal_color = glm::normalize(normal);
-    //normal_color += glm::vec3(1, 1, 1);
-    //normal_color *= 0.5;
-    //return normal_color;
-
-    //DEBUG DEPTH
-    //auto depth = t.interpolated_depth();
-    //return glm::vec3(depth, depth, depth);
-
-
-
-    //纹理采样
     float u, v;
     t.interpolated_uv(u, v);
+    auto normal = normal_map ? normal_map->tex2d(u, v) * 2.0f - glm::vec3(1, 1, 1) * TBN : t.interpolated_world_normal();
+    
     auto kd = texture ? texture->tex2d(u,v) : glm::vec3{ 1,1,1 };
-
-    //if (normal_map) {
-    //    normal = normal_map->tex2d(u, v) * 2.0f - glm::vec3(1,1,1);
-    //}
-
     //计算光照方向及衰减
     float attenuation = l->attenuation(position_world);
-    glm::vec3 l_dir = l->LightDir(position_world);
+    glm::vec3 l_dir = l->LightDir(position_world) * TBN;
     //归一化方向
     l_dir = glm::normalize(l_dir);
     normal = glm::normalize(normal);
 
 
     //Lambert term
-    float nxl = glm::dot(l_dir, normal);
-    glm::vec3 L_diffuse = kd * (float)std::max(0.f, nxl) * l->LightIntensity() * attenuation;
+    float angle = std::max(0.0f, glm::dot(l_dir, normal));
+    glm::vec3 L_diffuse = kd * angle * l->LightIntensity() * attenuation;
 
     //Specular term
     glm::vec3 viewDir = *camPos - position_world;

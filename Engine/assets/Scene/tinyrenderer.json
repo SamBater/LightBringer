@@ -1,9 +1,9 @@
 {
   "Camera": {
     "Transform": {
-      "position": [ 0.2, 0.5, 2 ]
+      "position": [ 1, 0.5, 2 ]
     },
-    "lookat": [ 0, 0, 1 ],
+    "lookat": [ -1, -0.5, -2 ],
     "fov": 1.0,
     "aspect_ratio": 1.0,
     "n": 0.1,
@@ -19,7 +19,7 @@
       "Shader": {
         "type": "Groud",
         "diffuse": "african_head/african_head_diffuse.tga",
-        "normal": "african_head/african_head_nm_tangent.tag"
+        "normal": "african_head/african_head_nm_tangent.tga"
       }
     }
   ],

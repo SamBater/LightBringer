@@ -14,5 +14,6 @@ public:
     glm::vec3 FragmentShading(Triangle &t, const FragmentShaderContext& contex) override;
 private:
     Texture* normal_map;
+    glm::mat3 TBN;
 };
 } // namespace ylb

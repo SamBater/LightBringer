@@ -25,13 +25,25 @@
     },
 
     {
+      "path": "cube.obj",
+      "Transform": {
+        "position": [ -15, 4, 0 ],
+        "scale": [ 4, 4, 4 ]
+      },
+      "Shader": {
+        "type": "Phong",
+        "diffuse": "cb.jpg"
+      }
+    },
+
+    {
       "path": "quad.obj",
       "Transform": {
         "position": [ 0, -1, 0 ],
         "scale": [ 20, 1, 20 ]
       },
       "Shader": {
-        
+
         "diffuse": "brickwall.jpg",
         "normal": "normal.png"
       }
@@ -41,8 +53,8 @@
   "Lights": [
     {
       "type": "Paralle",
-      "intensity": [ 1, 1, 1 ],
-      "dir" :  [-1,-1,-1]
+      "intensity": [ 1.1, 1.1, 1.1 ],
+      "dir" :  [-1,-0.7,-1]
     }
   ]
 }
