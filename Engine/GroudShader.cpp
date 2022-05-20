@@ -25,17 +25,17 @@ ylb::GroudShader::FragmentShading(Triangle &t,
     float u,v;
     t.interpolated_uv(u,v);
     auto normal = t.interpolated_world_normal();
+    //return normal * 0.5f + glm::vec3(0.5, 0.5, 0.5);
     float light_intensity = 0;
     //for(int i = 0 ; i < 3 ; i++)
     //  light_intensity+= varying_color[i] * t.cof[i];
     
     auto diffuse = diffuse_map->tex2d(u, v);
-    if (normal_map)
-    {
-        normal = normal_map->tex2d(u, v) * 2.0f - glm::vec3(1,1,1);
-        normal = glm::normalize(normal *TBN);
-        // return normal * 0.5f + glm::vec3(0.5,0.5,0.5);
-    }
+    //if (normal_map)
+    //{
+    //    normal = normal_map->tex2d(u, v) * 2.0f - glm::vec3(1,1,1);
+    //    normal = glm::normalize(normal *TBN);
+    //}
 
     glm::vec3 l = glm::vec4(context.l->LightDir(normal), 0);
     l = glm::normalize(l);

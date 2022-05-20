@@ -13,7 +13,6 @@ namespace ylb
 
         }
 
-    protected:
         Transform transform;
     };
 

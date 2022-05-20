@@ -1,4 +1,5 @@
 #include "SceneLoader.h"
+#include "ModelLoader.h"
 using namespace ylb;
 std::unique_ptr<Scene> SceneLoader::LoadScene(const char* scene_path)
 {
@@ -20,7 +21,7 @@ std::unique_ptr<Scene> SceneLoader::LoadScene(const char* scene_path)
 	scene->cam->DeSerilization(json["Camera"]);
 
 	for (auto& model_json : json["Models"].array_items()) {
-		Mesh *mesh = new Mesh();
+		Mesh* mesh = LoadModel(model_json["path"].string_value().c_str());
 		Shader *shader = nullptr;
 		auto shader_string = model_json["Shader"]["type"].string_value();
 		auto diffuse_map = model_json["Shader"]["diffuse"].string_value();

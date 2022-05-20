@@ -13,13 +13,13 @@ glm::mat4 Camera::GetViewMatrix() {
 }
 
 glm::mat4 Camera::GetPerspectiveMatrix() {
-    glm::mat4 mat = glm::mat4(0);
-    mat[0][0] = 1;
-    mat[1][1] = 1;
-    mat[2][2] = 1.0 * (f + n) / (n - f);
-    mat[2][3] = 2.0 * f * n / (n - f);
-    mat[3][2] = -1;
-    return mat;
+    //glm::mat4 mat = glm::mat4(0);
+    //mat[0][0] = 1;
+    //mat[1][1] = 1;
+    //mat[2][2] = 1.0 * (f + n) / (n - f);
+    //mat[2][3] = 2.0 * f * n / (n - f);
+    //mat[3][2] = -1;
+    //return mat;
 
     auto perspectiveMatrix = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
     perspectiveMatrix = glm::transpose(perspectiveMatrix);

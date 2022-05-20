@@ -1,9 +1,9 @@
 {
   "Camera": {
     "Transform": {
-      "position": [ 1, 9, 10 ]
+      "position": [ 1, 29, 20 ]
     },
-    "lookat": [ 0, -0.33, -1 ],
+    "lookat": [ 0, -0.5, -0.33 ],
     "fov": 1.0,
     "aspect_ratio": 1.0,
     "n": 0.1,
@@ -14,8 +14,8 @@
     {
       "path": "cube.obj",
       "Transform": {
-        "position": [ 0, 2, 0 ],
-        "scale": [ 2, 2, 2 ]
+        "position": [ 15, 4, 0 ],
+        "scale": [ 4, 4, 4 ]
       },
       "Shader": {
         "type": "Groud",
@@ -23,11 +23,12 @@
         "normal": "normal.png"
       }
     },
+
     {
       "path": "quad.obj",
       "Transform": {
         "position": [ 0, -1, 0 ],
-        "scale": [ 10, 1, 10 ]
+        "scale": [ 20, 1, 20 ]
       },
       "Shader": {
         
@@ -41,7 +42,7 @@
     {
       "type": "Paralle",
       "intensity": [ 1, 1, 1 ],
-      "dir" :  [-1,-0.8,-1]
+      "dir" :  [-1,-1,-1]
     }
   ]
 }

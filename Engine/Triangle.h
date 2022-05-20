@@ -42,7 +42,6 @@ public:
 
   Triangle(const Vertex &vt1, const Vertex &vt2, const Vertex &vt3)
       : vts{vt1, vt2, vt3} {
-        CalcTangent();
       }
   inline const BoundingBox *bounding_box() { return &bb; }
   void ready_rasterization();
@@ -60,33 +59,7 @@ public:
     return t.cof.x >= 0 && t.cof.y >= 0 && t.cof.z >= 0.0f;
   }
 
-  void CalcTangent(){
-    auto& pos2 = vts[1].position;
-    auto& pos1 = vts[0].position;
-    auto& pos3 = vts[2].position;
-    auto& uv1 = vts[0].tex_coord;
-    auto& uv2 = vts[1].tex_coord;
-    auto& uv3 = vts[2].tex_coord;
-    glm::vec3 edge1 = pos2 - pos1;
-    glm::vec3 edge2 = pos3 - pos1;
-    glm::vec2 deltaUV1 = uv2 - uv1;
-    glm::vec2 deltaUV2 = uv3 - uv1;  
-    
-    float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-    glm::vec3 tangent,bitangent;
-    tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-    tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-    tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-
-    bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-    bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-    bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
-    for(int i = 0 ; i < 3 ; i++)
-    {
-        vts[i].tangent = tangent;
-        vts[i].bitangent = bitangent;
-    }
-  }
+  
 };
 } // namespace ylb
 

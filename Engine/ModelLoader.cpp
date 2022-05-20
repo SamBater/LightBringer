@@ -3,12 +3,13 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 // #define TINYOBJLOADER_USE_MAPBOX_EARCUT
 #include "tiny_obj_loader.h"
-std::vector<ylb::Triangle>* ylb::LoadObj(const char* modelPath)
+
+ylb::Mesh* ylb::LoadModel(const char* modelPath)
 {
-    std::vector<ylb::Triangle>* ts = new std::vector<ylb::Triangle>();
-    std::string inputfile = YLBFileSystem::GetInstance().GetAssetsPath(modelPath);
+    ylb::Mesh* mesh = new ylb::Mesh();
+    std::string inputfile = ylb::YLBFileSystem::GetInstance().GetAssetsPath(modelPath);
     tinyobj::ObjReaderConfig reader_config;
-    reader_config.mtl_search_path = "./"; // Path to material files
+    reader_config.mtl_search_path = ylb::YLBFileSystem::GetInstance().GetAssetsPath(""); // Path to material files
 
     tinyobj::ObjReader reader;
 
@@ -29,55 +30,38 @@ std::vector<ylb::Triangle>* ylb::LoadObj(const char* modelPath)
 
     // Loop over shapes
     for (size_t s = 0; s < shapes.size(); s++) {
-        // Loop over faces(polygon)
-        size_t index_offset = 0;
-        
-        for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
-            size_t fv = size_t(shapes[s].mesh.num_face_vertices[f]);
+        for (size_t v = 0; v < attrib.vertices.size(); v += 3)
+        {
+            auto vx = attrib.vertices[v];
+            auto vy = attrib.vertices[v + 1];
+            auto vz = attrib.vertices[v + 2];
+            mesh->verties->push_back(glm::vec3(vx, vy, vz));
+        }
 
-            Vertex vts[3];
-            // Loop over vertices in the face.
-            for (size_t v = 0; v < fv; v++) {
-                // access to vertex
-                tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
-                tinyobj::real_t vx = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
-                tinyobj::real_t vy = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
-                tinyobj::real_t vz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
-                glm::vec3 pos(vx, vy, vz);
-                
-                glm::vec3 normal;
-                // Check if `normal_index` is zero or positive. negative = no normal data
-                if (idx.normal_index >= 0) {
-                    tinyobj::real_t nx = attrib.normals[3 * size_t(idx.normal_index) + 0];
-                    tinyobj::real_t ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
-                    tinyobj::real_t nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
-                    normal = glm::vec3(nx, ny, nz);
-                }
+        for (size_t n = 0; n < attrib.normals.size(); n += 3)
+        {
+            auto nx = attrib.normals[n];
+            auto ny = attrib.normals[n + 1];
+            auto nz = attrib.normals[n + 2];
+            mesh->normals->push_back(glm::vec3(nx, ny, nz));
+        }
 
-                glm::vec2 uv;
-                // Check if `texcoord_index` is zero or positive. negative = no texcoord data
-                if (idx.texcoord_index >= 0) {
-                    tinyobj::real_t tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
-                    tinyobj::real_t ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
-                    uv = glm::vec2(tx, ty);
-                }
+        for (size_t uv = 0; uv < attrib.texcoords.size(); uv += 2) {
+            auto u = attrib.texcoords[uv];
+            auto v = attrib.texcoords[uv + 1];
+            mesh->uvs->push_back(glm::vec2(u, v));
+        }
 
-                // Optional: vertex colors
-                // tinyobj::real_t red   = attrib.colors[3*size_t(idx.vertex_index)+0];
-                // tinyobj::real_t green = attrib.colors[3*size_t(idx.vertex_index)+1];
-                // tinyobj::real_t blue  = attrib.colors[3*size_t(idx.vertex_index)+2];
-                vts[v] = Vertex(pos, normal, uv);
+
+        for (int i = 0; i < shapes[s].mesh.indices.size() / 3; i++) {
+            Face face;
+            for (int j = 0; j < 3; j++) {
+                face.vid[j] = shapes[s].mesh.indices[i * 3 + j].vertex_index;
+                face.uid[j] = shapes[s].mesh.indices[i * 3 + j].texcoord_index;
+                face.nid[j] = shapes[s].mesh.indices[i * 3 + j].normal_index;
             }
-
-            Triangle triangle(vts[0], vts[1], vts[2]);
-            ts->push_back(triangle);
-
-            index_offset += fv;
-
-            // per-face material
-            auto material_ids = shapes[s].mesh.material_ids[f];
+            mesh->faces->push_back(face);
         }
     }
-    return ts;
-
+    return mesh;
 }
