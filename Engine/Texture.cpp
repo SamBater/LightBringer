@@ -11,7 +11,6 @@ using namespace ylb;
 Texture::Texture(char const* file_name)
 {
 	auto path = YLBFileSystem::GetInstance().GetAssetsPath(file_name);
-	std::cout << path << '\n';
 	sprite = stbi_load(path.c_str(), &w, &h, &comp, 0);
 	if (!sprite) {
 		std::cerr << "ERROR: Could not load texture image file '"

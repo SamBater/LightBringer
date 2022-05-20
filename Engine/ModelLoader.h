@@ -1,7 +1,7 @@
 #include "Triangle.h"
 #include <vector>
 #include "YLBFileSystem.h"
-#include "Mesh.h"
+#include "Model.h"
 namespace ylb {
-	Mesh* LoadModel(const char* modelPath);
+	Model* LoadModel(const char* modelPath);
 }

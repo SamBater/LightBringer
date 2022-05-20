@@ -52,20 +52,20 @@ namespace ylb {
 		instance.cam->ProcessMouseMovement(xoffset, yoffset);
 	}
 
-	void Renderer::Render(std::vector<ylb::Mesh>& meshs) {
+	void Renderer::Render(std::vector<ylb::Model>& models) {
 		statistic.InitTriangleCnt();
 
 		auto const view = std::make_shared<glm::mat4>(cam->GetViewMatrix());
 		auto const project = std::make_shared<glm::mat4>(cam->GetProjectMatrix());
 		glm::vec3 world_pos[3];
-		for (int i = 0; i < world.size(); i++) {
-			auto& mesh = world[i];
-			for (int i = 0; i < mesh.faces->size(); i++) {
+		for (int i = 0; i < models.size(); i++) {
+			auto& model = models[i];
+			for (int i = 0; i < model.faces->size(); i++) {
 
-				auto t = mesh.Triangle(i);
+				auto t = model.Triangle(i);
 
 				VertexShaderContext vertexShaderContext;
-				vertexShaderContext.model = &mesh.transform.ModelMatrix();
+				vertexShaderContext.model = &model.transform.ModelMatrix();
 				for (int i = 0; i < 3; i++)
 					world_pos[i] = glm::vec4(t.vts[i].position, 0) * *vertexShaderContext.model;
 				if (renderTargetSetting->back_face_culling && BackFaceCulling(world_pos))
@@ -75,7 +75,7 @@ namespace ylb {
 				vertexShaderContext.project = project.get();
 				vertexShaderContext.camPos = &cam->transform.WorldPosition();
 				vertexShaderContext.l = lights[0];
-				ProcessGeometry(t, mesh.shader, vertexShaderContext);
+				ProcessGeometry(t, model.shader, vertexShaderContext);
 			}
 		}
 	}
@@ -176,8 +176,8 @@ namespace ylb {
 		auto scene = SceneLoader::Instance().LoadScene(scene_file_path);
 		cam = std::move(scene->cam);
 		SetViewPort(w, h);
-		for (auto& obj : *scene->meshs) {
-			world.push_back(*obj);
+		for (auto& obj : *scene->models) {
+			models.push_back(*obj);
 		}
 
 		for (auto& lite : *scene->lights) {
@@ -225,7 +225,7 @@ namespace ylb {
 			// renderTargetSetting->open_z_buffer_write = false;
 			// render(world_only_sky);
 			renderTargetSetting->open_depth_buffer_write = true;
-			Render(world);
+			Render(models);
 
 			//for(int y = 0 ; y < h ; y++)
 			//    for (int x = 0;  x < w; x++)

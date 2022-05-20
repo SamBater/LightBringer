@@ -9,7 +9,7 @@
 #include "Common.h"
 #include "Actor.h"
 #include "Camera.h"
-#include "Mesh.h"
+#include "Model.h"
 #include <vector>
 #include <chrono>
 #include "Texture.h"
@@ -57,7 +57,7 @@ namespace ylb
         glm::mat4 view_port;
         FrameBuffer *frame_buffer = nullptr;
         RenderTargetSetting* renderTargetSetting = new RenderTargetSetting();
-        std::vector<Mesh> world;
+        std::vector<Model> models;
         std::vector<Light *> lights;
         Statistic statistic;
         
@@ -71,7 +71,7 @@ namespace ylb
         bool BackFaceCulling(const glm::vec3 world_pos[]);
         void ProcessGeometry(ylb::Triangle &t, Shader*& shader, VertexShaderContext& vertexShaderContext);
         void Rasterization(ylb::Triangle &t, ylb::Shader* shader, Light* light);
-        void Render(std::vector<ylb::Mesh> &ts);
+        void Render(std::vector<ylb::Model> &ts);
     };
 }
 #endif

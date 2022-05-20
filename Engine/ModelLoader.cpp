@@ -4,9 +4,9 @@
 // #define TINYOBJLOADER_USE_MAPBOX_EARCUT
 #include "tiny_obj_loader.h"
 
-ylb::Mesh* ylb::LoadModel(const char* modelPath)
+ylb::Model* ylb::LoadModel(const char* modelPath)
 {
-    ylb::Mesh* mesh = new ylb::Mesh();
+    ylb::Model* model = new ylb::Model();
     std::string inputfile = ylb::YLBFileSystem::GetInstance().GetAssetsPath(modelPath);
     tinyobj::ObjReaderConfig reader_config;
     reader_config.mtl_search_path = ylb::YLBFileSystem::GetInstance().GetAssetsPath(""); // Path to material files
@@ -35,7 +35,7 @@ ylb::Mesh* ylb::LoadModel(const char* modelPath)
             auto vx = attrib.vertices[v];
             auto vy = attrib.vertices[v + 1];
             auto vz = attrib.vertices[v + 2];
-            mesh->verties->push_back(glm::vec3(vx, vy, vz));
+            model->verties->push_back(glm::vec3(vx, vy, vz));
         }
 
         for (size_t n = 0; n < attrib.normals.size(); n += 3)
@@ -43,13 +43,13 @@ ylb::Mesh* ylb::LoadModel(const char* modelPath)
             auto nx = attrib.normals[n];
             auto ny = attrib.normals[n + 1];
             auto nz = attrib.normals[n + 2];
-            mesh->normals->push_back(glm::vec3(nx, ny, nz));
+            model->normals->push_back(glm::vec3(nx, ny, nz));
         }
 
         for (size_t uv = 0; uv < attrib.texcoords.size(); uv += 2) {
             auto u = attrib.texcoords[uv];
             auto v = attrib.texcoords[uv + 1];
-            mesh->uvs->push_back(glm::vec2(u, v));
+            model->uvs->push_back(glm::vec2(u, v));
         }
 
 
@@ -60,8 +60,8 @@ ylb::Mesh* ylb::LoadModel(const char* modelPath)
                 face.uid[j] = shapes[s].mesh.indices[i * 3 + j].texcoord_index;
                 face.nid[j] = shapes[s].mesh.indices[i * 3 + j].normal_index;
             }
-            mesh->faces->push_back(face);
+            model->faces->push_back(face);
         }
     }
-    return mesh;
+    return model;
 }

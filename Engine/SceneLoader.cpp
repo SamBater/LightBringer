@@ -21,7 +21,7 @@ std::unique_ptr<Scene> SceneLoader::LoadScene(const char* scene_path)
 	scene->cam->DeSerilization(json["Camera"]);
 
 	for (auto& model_json : json["Models"].array_items()) {
-		Mesh* mesh = LoadModel(model_json["path"].string_value().c_str());
+		Model* model = LoadModel(model_json["path"].string_value().c_str());
 		Shader *shader = nullptr;
 		auto shader_string = model_json["Shader"]["type"].string_value();
 		auto diffuse_map = model_json["Shader"]["diffuse"].string_value();
@@ -37,9 +37,9 @@ std::unique_ptr<Scene> SceneLoader::LoadScene(const char* scene_path)
 			shader = new GroudShader(diffuse,normal);
 		else
 			shader = new PhongShader(diffuse,normal);
-		mesh->SetShader(shader);
-		mesh->DeSerilization(model_json);
-		scene->meshs->push_back(mesh);
+		model->SetShader(shader);
+		model->DeSerilization(model_json);
+		scene->models->push_back(model);
 	}
 
 	const std::string paralle = "Paralle";

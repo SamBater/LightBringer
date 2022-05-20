@@ -12,14 +12,14 @@
 #include "YLBFileSystem.h"
 #include "PhongShader.h"
 #include "ParallelLight.h"
-#include "Mesh.h"
+#include "Model.h"
 #include "PointLight.h"
 #include "GroudShader.h"
 namespace ylb {
 
 	struct Scene {
 		Camera* cam = new Camera();
-		std::vector<Mesh*>* meshs = new std::vector<Mesh*>();
+		std::vector<Model*>* models = new std::vector<Model*>();
 		std::vector<Light*>* lights = new std::vector<Light*>();
 	};
 
