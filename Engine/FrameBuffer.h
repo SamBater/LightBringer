@@ -3,6 +3,7 @@
 
 #include <glm/vec3.hpp>
 #include "Common.h"
+#include <algorithm>
 namespace ylb{
     struct FrameBuffer
     {

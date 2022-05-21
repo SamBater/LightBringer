@@ -25,9 +25,9 @@ const float ZOOM        =  45.0f;
 
 class Camera : public Actor, public YLBSerializable {
 private:
-    double fov_Y;
-    double aspect_ratio;
-    double l, r, t, b, n, f;
+    float fov_Y;
+    float aspect_ratio;
+    float l, r, t, b, n, f;
     friend class ylb::Transformer;
     friend class Renderer;
 
@@ -45,22 +45,11 @@ public:
     float MovementSpeed = SPEED;
     float MouseSensitivity = SENSITIVITY;
     float Zoom;
-    Camera() = default;
-    Camera(const glm::vec3 &origin, const glm::vec3 &lookat, float fov_v,
-           float _aspect_ratio, float _n, float _f);
-    
+    Camera() = default;    
     glm::mat4 GetPerspectiveMatrix();
     glm::mat4 GetOrthogonalMatrix();
     glm::mat4 GetViewMatrix();
-
-    glm::mat4 GetProjectMatrix() {
-        if (mode == PROJECTION_MODE::PERSPECTIVE)
-            return GetPerspectiveMatrix();
-        else if (mode == PROJECTION_MODE::ORTHOGONAL)
-          return GetOrthogonalMatrix();
-        return glm::mat4();
-    }
-
+    glm::mat4 GetProjectionMatrix();
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
     void ProcessKeyboard(Camera_Movement direction, float deltaTime) {
         auto Position = transform.WorldPosition();

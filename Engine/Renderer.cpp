@@ -56,7 +56,7 @@ namespace ylb {
 		statistic.InitTriangleCnt();
 
 		auto const view = std::make_shared<glm::mat4>(cam->GetViewMatrix());
-		auto const project = std::make_shared<glm::mat4>(cam->GetProjectMatrix());
+		auto const project = std::make_shared<glm::mat4>(cam->GetProjectionMatrix());
 		glm::vec3 world_pos[3];
 		for (int i = 0; i < models.size(); i++) {
 			auto& model = models[i];
@@ -66,10 +66,10 @@ namespace ylb {
 
 				VertexShaderContext vertexShaderContext;
 				vertexShaderContext.model = &model.transform.ModelMatrix();
-				for (int i = 0; i < 3; i++)
-					world_pos[i] = glm::vec4(t.vts[i].position, 0) * *vertexShaderContext.model;
-				if (renderTargetSetting->back_face_culling && BackFaceCulling(world_pos))
-					continue;
+				//for (int i = 0; i < 3; i++)
+				//	world_pos[i] = glm::vec4(t.vts[i].position, 0) * *vertexShaderContext.model;
+				//if (renderTargetSetting->back_face_culling && BackFaceCulling(world_pos))
+				//	continue;
 
 				vertexShaderContext.view = view.get();
 				vertexShaderContext.project = project.get();
@@ -91,10 +91,8 @@ namespace ylb {
 				int pixel = y * w + x;
 				//三角形测试
 				if (ylb::Triangle::inside(x + 0.5f, y + 0.5f, t)) {
-					float depth = t.vts[0].sz() * t.cof.x + t.vts[1].sz() * t.cof.y + t.vts[2].sz() * t.cof.z;
-					//float depth = t.interpolated_depth();
-					//深度测试
-					if (depth - frame_buffer->depth[pixel] >= ylb::eps) {
+                    float depth = t.interpolated_depth();
+					if (depth + ylb::eps < frame_buffer->depth[pixel]) {
 						//深度写入
 						if (renderTargetSetting->open_depth_buffer_write) {
 							frame_buffer->set_depth(x, y, depth);
@@ -193,8 +191,8 @@ namespace ylb {
 		cam->aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
 		cam->UpdateProjectionInfo();
 		view_port = glm::mat4(1);
-		view_port[0][0] = static_cast<double>(w) / 2.0; view_port[0][3] = static_cast<double>(w - 1) / 2.0;
-		view_port[1][1] = static_cast<double>(h) / 2.0; view_port[1][3] = static_cast<double>(h - 1) / 2.0;
+		view_port[0][0] = static_cast<double>(w) / 2.0; view_port[3][0] = static_cast<double>(w - 1) / 2.0;
+		view_port[1][1] = static_cast<double>(h) / 2.0; view_port[3][1] = static_cast<double>(h - 1) / 2.0;
 	}
 
 	bool Renderer::BackFaceCulling(const glm::vec3 world_pos[]) {
@@ -202,7 +200,7 @@ namespace ylb {
 		auto e1 = world_pos[2] - world_pos[0];
 		auto n = glm::cross(e0, e1);
 		auto angle = glm::dot(n, cam->Front);
-		return angle > 0.0;
+		return angle > 0;
 	}
 
 	void Renderer::Start() {
@@ -219,14 +217,18 @@ namespace ylb {
 			glClear(GL_COLOR_BUFFER_BIT);
 			frame_buffer->clear();
 
-			// renderTargetSetting->open_z_buffer_write = false;
-			// render(world_only_sky);
+			//cam->mode = PROJECTION_MODE::ORTHOGONAL;
 			renderTargetSetting->open_depth_buffer_write = true;
 			Render(models);
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
 			statistic.Render();
+
+			ImGui::Begin("LightSetting");
+            if (ImGui::Button("SaveDepthBuffer") || glfwGetKey(window,GLFW_KEY_F) == GLFW_PRESS)
+                frame_buffer->save_zbuffer("depth.bmp",true);
+            ImGui::End();
 
 			glDrawPixels(w, h, GL_RGB, GL_UNSIGNED_BYTE, frame_buffer->pixels);
 
@@ -278,28 +280,33 @@ namespace ylb {
 		for (int i = 0; i < clipped_vt.size(); i++) {
 			auto& vt = clipped_vt[i];
 			auto& ccv_pos = vt.ccv;
-			//透视除法
-			vt.inv = 1.0f / ccv_pos.w;
-			ccv_pos *= vt.inv;
-
-			//裁剪
-			if (ccv_pos.x >= ccv_pos.w)
-				return;
-			if (ccv_pos.x <= -ccv_pos.w)
-				return;
-			if (ccv_pos.y >= ccv_pos.w)
-				return;
-			if (ccv_pos.y <= -ccv_pos.w)
-				return;
 
 			if (cam->mode == PROJECTION_MODE::PERSPECTIVE) {
+                //透视除法
+                vt.inv = 1.0f / ccv_pos.w;
+                ccv_pos *= vt.inv;
+                //裁剪
+                if (ccv_pos.x > 1.0)
+                    return;
+                if (ccv_pos.x < -1.0)
+                    return;
+                if (ccv_pos.y > 1.0)
+                    return;
+                if (ccv_pos.y < -1.0)
+                    return;
+                if (ccv_pos.z > ccv_pos.w)
+                    return;
+                if (ccv_pos.z < -ccv_pos.w)
+                    return;
 				vt.tex_coord = vt.tex_coord * vt.inv;
 				vt.normal = vt.normal * vt.inv;
 				vt.world_position = glm::vec4(vt.position, 0) * (*vertexShaderContext.model) * vt.inv;
-			}
+            } else
+                ccv_pos /= ccv_pos.z;
 
-			vt.sv_pos = ccv_pos * view_port;
-			vt.sz() *= vt.inv;
+			
+			vt.sv_pos = view_port * ccv_pos;
+            int x = 0;
 		}
 
 		int step = clipped_vt.size() > 3 ? 1 : 3;

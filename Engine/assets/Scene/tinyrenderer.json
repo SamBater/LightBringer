@@ -1,10 +1,10 @@
 {
   "Camera": {
     "Transform": {
-      "position": [ 1, 0.5, 2 ]
+      "position": [ 1, 0.5, 4 ]
     },
-    "lookat": [ -1, -0.5, -2 ],
-    "fov": 1.0,
+    "lookat": [ -0.5, -0.5, -1 ],
+    "fov": 100,
     "aspect_ratio": 1.0,
     "n": 0.1,
     "f": 1000

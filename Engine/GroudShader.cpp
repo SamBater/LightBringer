@@ -7,8 +7,8 @@ glm::vec4 ylb::GroudShader::VertexShading(Vertex& vt,
 	glm::vec4 pos_h(vt.position, 1);
 
 	// MVP
-	auto MVP = (*context.model) * (*context.view) * (*context.project);
-	glm::vec4 ccv_pos = pos_h * MVP;
+    auto MVP = (*context.project) * (*context.view) * (*context.model);
+    glm::vec4 ccv_pos = MVP * pos_h;
 
 	const auto& model = (glm::mat3(*context.model));
 	glm::vec3 T = glm::normalize(glm::vec3(model * glm::vec4(vt.tangent, 0.0)));

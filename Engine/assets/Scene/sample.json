@@ -1,13 +1,13 @@
 {
   "Camera": {
     "Transform": {
-      "position": [ 1, 29, 20 ]
+      "position": [ 1, 15, 25 ]
     },
-    "lookat": [ 0, -0.5, -0.33 ],
-    "fov": 1.0,
+    "lookat": [ 0, 0, -1 ],
+    "fov": 45,
     "aspect_ratio": 1.0,
     "n": 0.1,
-    "f": 1000
+    "f": 100
   },
 
   "Models": [
@@ -40,7 +40,7 @@
       "path": "quad.obj",
       "Transform": {
         "position": [ 0, -1, 0 ],
-        "scale": [ 20, 1, 20 ]
+        "scale": [ 30, 1, 30 ]
       },
       "Shader": {
 

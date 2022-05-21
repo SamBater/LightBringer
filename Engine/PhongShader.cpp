@@ -4,8 +4,8 @@ using namespace ylb;
 glm::vec4 PhongShader::VertexShading(Vertex &vt, const VertexShaderContext& contex)
 {
     glm::vec4 pos_h(vt.position,1);
-    glm::mat4 MVP = (*contex.model) * (*contex.view) * (*contex.project);
-    glm::vec4 ccv_pos = pos_h * MVP;
+    glm::mat4 MVP = (*contex.project) * (*contex.view) * (*contex.model);
+    glm::vec4 ccv_pos = MVP * pos_h;
 
     const auto& model = (glm::mat3(*contex.model));
     glm::vec3 T = glm::normalize(glm::vec3(model * glm::vec4(vt.tangent, 0.0)));
