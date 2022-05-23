@@ -27,7 +27,8 @@ void FrameBuffer::save_zbuffer(const char *fileName , bool perspective) {
         for(int x = 0 ; x < w ; x++)
         {
             int i = y*w+x;
-            unsigned char color = perspective ? depth[i] * 255 : depth[i] * 255 ;
+            float d = depth->tex2d(x*1.0 / w,y * 1.0 / h).r;
+            unsigned char color = (perspective ?  d : (d * 0.5f) + 0.5f) * 255.0;
             int pi = y*w*3 + x *3;
             pixel[pi] = color;
             pixel[pi+1]=color;
@@ -36,6 +37,7 @@ void FrameBuffer::save_zbuffer(const char *fileName , bool perspective) {
     }
     stbi_flip_vertically_on_write(1);
     stbi_write_bmp(fileName,w,h,3,pixel);
+    delete [] pixel;
 }
 
 void FrameBuffer::save_frame(const char *fileName) {

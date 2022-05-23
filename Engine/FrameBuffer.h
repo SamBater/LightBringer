@@ -4,17 +4,19 @@
 #include <glm/vec3.hpp>
 #include "Common.h"
 #include <algorithm>
+#include "Texture.h"
+#include "glm/fwd.hpp"
 namespace ylb{
     struct FrameBuffer
     {
-        float *depth;
+        Texture* depth;
         unsigned char *pixels;
         int w, h;
         FrameBuffer(size_t _w, size_t _h) : w(_w), h(_h)
         {
             size_t length = _h * _w;
             pixels = new unsigned char[length * 3];
-            depth = new float[length];
+            depth = new Texture(w,h);
         }
 
         inline void set_color(int x, int y, unsigned char r, unsigned char g, unsigned char b)
@@ -45,7 +47,14 @@ namespace ylb{
 
         inline void set_depth(int &x, int &y, const float &d)
         {
-            depth[y * w + x] = d;
+            depth->Fill(x,y,glm::vec3(d,d,d));
+        }
+
+        bool DepthTest(const int x,const int y,const float d){
+            float u = x*1.0f / w;
+            float v = y*1.0f / h;
+            auto stored_depth = depth->tex2d(u,v).z;
+            return d + ylb::eps < stored_depth;
         }
 
         void save_zbuffer(const char *fileName, bool perspective = true);

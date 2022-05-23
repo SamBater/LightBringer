@@ -47,6 +47,7 @@ ylb::GroudShader::FragmentShading(Triangle& t,
 	light_coord *= t.s;
 
     float visibility = context.l->VisibleInLightSpace(light_coord);
+	// float visibility = 1.0;
 
 	auto l_dir = context.l->LightDir(normal);
 	l_dir = glm::normalize(l_dir);

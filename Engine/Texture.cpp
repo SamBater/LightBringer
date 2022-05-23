@@ -31,10 +31,8 @@ Texture::Texture(char const* file_name,int maxComp)
 
 }
 
-Texture::Texture(float* data, int w, int h , int comp , float maxComp) :w(w), h(h), comp(comp) {
-	// fsprite = new float[w * h * comp];
-	// for (int i = 0; i < w * h * comp; i++)
-	// 	fsprite[i] = data[i];
+Texture::Texture(int w, int h) :w(w), h(h), comp(3) {
+	sprite = new glm::vec3[w*h];
 }
 
 glm::vec3 Texture::tex2d(const float& tex_cord_x, const float& tex_cord_y)
@@ -44,7 +42,7 @@ glm::vec3 Texture::tex2d(const float& tex_cord_x, const float& tex_cord_y)
 	//nearest
 	// Clamp input texture coordinates to [0,1] x [1,0]
 	float u = clamp(tex_cord_x, 0.0f, 1.0f);
-	float v = 1 - clamp(tex_cord_y, 0.0f, 1.0f); // Flip V to image coordinates
+	float v = clamp(tex_cord_y, 0.0f, 1.0f); // Flip V to image coordinates
 
 	auto i = static_cast<int>(u * w + 0.5f);
 	auto j = static_cast<int>(v * h + 0.5f);

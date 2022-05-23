@@ -100,11 +100,15 @@ static float maxZ = -10000;
         cam->Front = -glm::normalize(lights[0]->LightDir(dir));
 
 		//对于平行光,使用正交投影渲染场景
-        auto vp = view_port * cam->GetProjectionMatrix() * cam->GetViewMatrix();
+        auto vp = cam->GetProjectionMatrix() * cam->GetViewMatrix();
         frame_buffer->clear();
 		Render(models);
+		//将shadowMap保存
+		lights[0]->SetShadowMap(vp, frame_buffer->depth, w, h);
+
+		//DEBUG DEPTH BUFFER
         frame_buffer->save_zbuffer("depth.bmp",cam->mode == PROJECTION_MODE::PERSPECTIVE);
-        lights[0]->SetShadowMap(vp, frame_buffer->depth, w, h);
+    
 		
 		//恢复原来的状态
 		cam->transform.SetPosition(origin);
@@ -127,7 +131,8 @@ static float maxZ = -10000;
                     float depth = t.interpolated_depth();
 					if(cam->mode == PROJECTION_MODE::ORTHOGONAL)
 						depth = t.cof.x * t.vts[0].sz() + t.cof.y * t.vts[1].sz() + t.cof.z * t.vts[2].sz();
-					if (depth + ylb::eps < frame_buffer->depth[pixel]) {
+					//深度测试
+					if (frame_buffer->DepthTest(x, y, depth)) {
 						//深度写入
 						if (renderTargetSetting->open_depth_buffer_write) {
 							frame_buffer->set_depth(x, y, depth);

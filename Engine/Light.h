@@ -20,15 +20,8 @@ public:
 
     virtual float attenuation(const glm::vec3 &pos) const = 0;
 
-    void SetShadowMap(const glm::mat4& light_matrix,float *depth_buffer , int w , int h) {
-        shadow_depth = new float[w*h];
-        for(int i = 0 ; i < w * h ;i++)
-            // shadow_depth[i] = depth_buffer[i];
-            shadow_depth[i] = (depth_buffer[i] * 0.5f) +0.5f;
-        shadow_map = new Texture(shadow_depth,w,h,1,1.0f);
-        this->w = w;
-        this->h = h;
-
+    void SetShadowMap(const glm::mat4& light_matrix,Texture* depth_buffer, int w , int h) {
+        shadow_map = new Texture(*depth_buffer);
         this->view_project_matrix = light_matrix;
     }
 
@@ -38,9 +31,7 @@ public:
         shadowCoord /= shadowCoord.w;
         int x = shadowCoord.x;
         int y = shadowCoord.y;
-        int idx = y * w + x;
-        // float map_depth = shadow_map->tex2d(x,y).x;
-        float map_depth = shadow_depth[idx];
+        float map_depth = shadow_map->tex2d(x,y).x;
         return map_depth + shadow_bias < (shadowCoord.z * 0.5f + 0.5f)  ? 0.5f : 1.0f;
         // float shadow = .3+.7*(shadow_depth[idx] + shadow_bias < (shadowCoord[2])); 
         // return shadow;
@@ -64,8 +55,6 @@ protected:
     glm::vec3 light_color = {1.f, 1.f, 1.f};
     friend class Shader;
     friend class Renderer;
-    float* shadow_depth;
-    int w,h;
     Texture* shadow_map;
     float shadow_bias = 0.005f;
 
