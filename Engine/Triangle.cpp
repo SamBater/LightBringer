@@ -14,7 +14,7 @@ void Triangle::ready_rasterization() {
 }
 
 float Triangle::interpolated_depth() {
-    float depth = (cof.x * vts[0].sz() + cof.y * vts[1].sz() + cof.z * vts[2].sz()) ;
+    float depth = (cof.x * vts[0].sz() + cof.y * vts[1].sz() + cof.z * vts[2].sz()) * s;
     return depth;
 }
 

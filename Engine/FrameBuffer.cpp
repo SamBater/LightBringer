@@ -11,17 +11,15 @@ void FrameBuffer::clear()
     {
         for (int x = 0; x < w; x++)
         {
-            //ºÚ°×½¥±ä
-            unsigned char color = (y * w + x) * 255.f / length;
-            
-            //unsigned char color = 0;
+            //unsigned char color = (y * w + x) * 255.f / length;
+            unsigned char color = 0;
             set_depth(x, y, 1);
-            set_color(x, y, color, color, 255);
+            set_color(x, y, color, color, color);
         }
     }
 }
 
-void FrameBuffer::save_zbuffer(const char *fileName, bool perspective) {
+void FrameBuffer::save_zbuffer(const char *fileName , bool perspective) {
     unsigned char *pixel = new unsigned char[w*h*3];
     
     for(int y = 0 ; y < h ; y++)
@@ -29,9 +27,11 @@ void FrameBuffer::save_zbuffer(const char *fileName, bool perspective) {
         for(int x = 0 ; x < w ; x++)
         {
             int i = y*w+x;
-            unsigned char color = depth[i] * 255;
+            unsigned char color = perspective ? depth[i] * 255 : depth[i] * 255 ;
             int pi = y*w*3 + x *3;
-            pixel[pi] = color;pixel[pi+1]=color;pixel[pi+2]=color;
+            pixel[pi] = color;
+            pixel[pi+1]=color;
+            pixel[pi+2]=color;
         }
     }
     stbi_flip_vertically_on_write(1);

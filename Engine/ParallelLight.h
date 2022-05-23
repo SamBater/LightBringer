@@ -10,7 +10,8 @@ namespace ylb
             Light() {
         }
         
-        ParalleLight(const glm::vec3& color, const glm::vec3& dir) : Light(color), dir(dir) {}
+        ParalleLight(const glm::vec3& color, const glm::vec3& dir) : Light(color), dir(dir) {
+        }
         
         virtual float attenuation(const glm::vec3 &pos) const override {
             return 1;
@@ -29,8 +30,8 @@ namespace ylb
             this->SetDir(DeSerilizationVec3(json["dir"]));
             this->SetLightIntensity(DeSerilizationVec3(json["intensity"]));
         }
-
+        glm::vec3 dir = glm::vec3(0.33, 0.33, -0.33);
     protected:
-        glm::vec3 dir = glm::vec3(0.33,0.33,-0.33);
+
     };
 }

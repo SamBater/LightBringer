@@ -1,21 +1,21 @@
 {
   "Camera": {
     "Transform": {
-      "position": [ 1, 15, 25 ]
+      "position": [ 0, 4, 30 ]
     },
     "lookat": [ 0, 0, -1 ],
     "fov": 45,
     "aspect_ratio": 1.0,
     "n": 0.1,
-    "f": 100
+    "f": 10000
   },
 
   "Models": [
     {
       "path": "cube.obj",
       "Transform": {
-        "position": [ 15, 4, 0 ],
-        "scale": [ 4, 4, 4 ]
+        "position": [ 3, 0, 1 ],
+        "scale": [ 2, 2, 2 ]
       },
       "Shader": {
         "type": "Groud",
@@ -27,25 +27,33 @@
     {
       "path": "cube.obj",
       "Transform": {
-        "position": [ -15, 4, 0 ],
-        "scale": [ 4, 4, 4 ]
+        "position": [ -2, -0.9, 3 ],
+        "scale": [ 1, 1, 1 ]
       },
       "Shader": {
-        "type": "Phong",
-        "diffuse": "cb.jpg"
+        "type": "Groud",
+        "diffuse": "uv.jpg"
       }
     },
 
     {
       "path": "quad.obj",
       "Transform": {
-        "position": [ 0, -1, 0 ],
-        "scale": [ 30, 1, 30 ]
+        "position": [ 0, -2.1, 0 ],
+        "scale": [ 7, 1, 8 ]
       },
       "Shader": {
-
-        "diffuse": "brickwall.jpg",
-        "normal": "normal.png"
+        "type": "Groud"
+      }
+    },
+    {
+      "path": "wall.obj",
+      "Transform": {
+        "position": [ 0, 0, -6 ],
+        "scale": [ 8, 4.5, 1 ]
+      },
+      "Shader": {
+        "type": "Groud"
       }
     }
   ],
@@ -53,8 +61,8 @@
   "Lights": [
     {
       "type": "Paralle",
-      "intensity": [ 1.1, 1.1, 1.1 ],
-      "dir" :  [-1,-0.7,-1]
+      "intensity": [ 1, 1, 1 ],
+      "dir" :  [-0.5,-2,-1]
     }
   ]
 }

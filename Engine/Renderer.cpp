@@ -4,6 +4,7 @@
 #include "glm/fwd.hpp"
 #include <cstdlib>
 namespace ylb {
+static float maxZ = -10000;
 	void Renderer::ProcessInput(double&& delta_time) {
 		int dx = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS ? -1 : glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ? 1 :
 			0;
@@ -15,6 +16,11 @@ namespace ylb {
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 			std::exit(0);
 
+		if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+            //GenerateShadowMap();
+            frame_buffer->save_zbuffer("depth.bmp");
+
+
 		if (dz == 1)
 			cam->ProcessKeyboard(Camera_Movement::FORWARD, delta_time);
 		if (dz == -1)
@@ -23,6 +29,10 @@ namespace ylb {
 			cam->ProcessKeyboard(Camera_Movement::RIGHT, delta_time);
 		if (dx == -1)
 			cam->ProcessKeyboard(Camera_Movement::LEFT, delta_time);
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+			cam->ProcessKeyboard(Camera_Movement::Up, delta_time);
+		if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+			cam->ProcessKeyboard(Camera_Movement::Down, delta_time);
 	}
 
 	void Renderer::Framebuffer_Size_Callback(GLFWwindow* window, int width, int height) {
@@ -66,10 +76,10 @@ namespace ylb {
 
 				VertexShaderContext vertexShaderContext;
 				vertexShaderContext.model = &model.transform.ModelMatrix();
-				//for (int i = 0; i < 3; i++)
-				//	world_pos[i] = glm::vec4(t.vts[i].position, 0) * *vertexShaderContext.model;
-				//if (renderTargetSetting->back_face_culling && BackFaceCulling(world_pos))
-				//	continue;
+				// for (int i = 0; i < 3; i++)
+				// 	world_pos[i] = *vertexShaderContext.model * glm::vec4(t.vts[i].position, 0);
+				// if (renderTargetSetting->back_face_culling && BackFaceCulling(world_pos))
+				// 	continue;
 
 				vertexShaderContext.view = view.get();
 				vertexShaderContext.project = project.get();
@@ -78,7 +88,30 @@ namespace ylb {
 				ProcessGeometry(t, model.shader, vertexShaderContext);
 			}
 		}
-	}
+    }
+
+    void Renderer::GenerateShadowMap() {
+        renderTargetSetting->open_frame_buffer_write = false;
+        auto mode = cam->mode;
+        auto origin = cam->transform.WorldPosition();
+        auto dir = cam->Front;
+        cam->mode = PROJECTION_MODE::ORTHOGONAL;
+        cam->transform.SetPosition(lights[0]->transform.WorldPosition());
+        cam->Front = -glm::normalize(lights[0]->LightDir(dir));
+
+		//对于平行光,使用正交投影渲染场景
+        auto vp = view_port * cam->GetProjectionMatrix() * cam->GetViewMatrix();
+        frame_buffer->clear();
+		Render(models);
+        frame_buffer->save_zbuffer("depth.bmp",cam->mode == PROJECTION_MODE::PERSPECTIVE);
+        lights[0]->SetShadowMap(vp, frame_buffer->depth, w, h);
+		
+		//恢复原来的状态
+		cam->transform.SetPosition(origin);
+       	cam->Front = dir;
+       	cam->mode = mode;
+        renderTargetSetting->open_frame_buffer_write = true;
+    }
 
 	void Renderer::Rasterization(ylb::Triangle& t, Shader* shader, Light* light) {
 		statistic.IncreaseTriangleCnt();
@@ -90,8 +123,10 @@ namespace ylb {
 			for (int x = bb->left; x < bb->right; x++) {
 				int pixel = y * w + x;
 				//三角形测试
-				if (ylb::Triangle::inside(x + 0.5f, y + 0.5f, t)) {
+				if (ylb::Triangle::inside(x + 0.5f, y + 0.5f, t,cam->mode == PROJECTION_MODE::PERSPECTIVE)) {
                     float depth = t.interpolated_depth();
+					if(cam->mode == PROJECTION_MODE::ORTHOGONAL)
+						depth = t.cof.x * t.vts[0].sz() + t.cof.y * t.vts[1].sz() + t.cof.z * t.vts[2].sz();
 					if (depth + ylb::eps < frame_buffer->depth[pixel]) {
 						//深度写入
 						if (renderTargetSetting->open_depth_buffer_write) {
@@ -148,8 +183,8 @@ namespace ylb {
 		}
 		glfwMakeContextCurrent(window);
 		glfwSetFramebufferSizeCallback(window, &Renderer::Framebuffer_Size_Callback);
-		glfwSetCursorPosCallback(window, &Renderer::Mouse_Move_Callback);
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		//glfwSetCursorPosCallback(window, &Renderer::Mouse_Move_Callback);
+		//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 		glfwSwapInterval(1); // Enable vsync
 							 // Setup Dear ImGui context
@@ -200,7 +235,7 @@ namespace ylb {
 		auto e1 = world_pos[2] - world_pos[0];
 		auto n = glm::cross(e0, e1);
 		auto angle = glm::dot(n, cam->Front);
-		return angle > 0;
+		return angle > 0.01f;
 	}
 
 	void Renderer::Start() {
@@ -209,15 +244,15 @@ namespace ylb {
 
 		InitOpenGL();
 
-		//LoadScene("Scene/sample.json");
-		LoadScene("Scene/tinyrenderer.json");
-
+		LoadScene("Scene/sample.json");
+		//LoadScene("Scene/tinyrenderer.json");
+        GenerateShadowMap();
 		while (!glfwWindowShouldClose(window)) {
 			ProcessInput(ImGui::GetIO().Framerate / 1000);
 			glClear(GL_COLOR_BUFFER_BIT);
+
 			frame_buffer->clear();
 
-			//cam->mode = PROJECTION_MODE::ORTHOGONAL;
 			renderTargetSetting->open_depth_buffer_write = true;
 			Render(models);
 			ImGui_ImplOpenGL3_NewFrame();
@@ -226,8 +261,33 @@ namespace ylb {
 			statistic.Render();
 
 			ImGui::Begin("LightSetting");
-            if (ImGui::Button("SaveDepthBuffer") || glfwGetKey(window,GLFW_KEY_F) == GLFW_PRESS)
-                frame_buffer->save_zbuffer("depth.bmp",true);
+            ImGui::SliderFloat("shadow_bias", &lights[0]->shadow_bias, 0.0f, 0.2f, "%.5f");
+            auto sun = static_cast<ParalleLight *>(lights[0]);
+            float dir[3];
+            for (int i = 0; i < 3; i++)
+                dir[i] = sun->dir[i];
+            ImGui::SliderFloat3("light_dir", dir, -1.0f, 1.0f);
+            for (int i = 0; i < 3; i++)
+                sun->dir[i] = dir[i];
+
+			float light_pos[3];
+            auto p = lights[0]->transform.WorldPosition();
+            for (int i = 0; i < 3; i++)
+                light_pos[i] = p[i];
+            ImGui::SliderFloat3("light_pos", light_pos, -400.0f, 400.0f);
+            p = glm::vec3(light_pos[0], light_pos[1], light_pos[2]);
+            for (int i = 0; i < 3; i++)
+                lights[0]->transform.SetPosition(p);
+
+            glm::normalize(sun->dir);
+            if (ImGui::Button("CreateShdowMap"))
+            {
+				GenerateShadowMap();
+			}
+            if (ImGui::Button("Switch Projection Mode"))
+                cam->mode = cam->mode == PROJECTION_MODE::ORTHOGONAL ?
+                                PROJECTION_MODE::PERSPECTIVE :
+                                PROJECTION_MODE::ORTHOGONAL;
             ImGui::End();
 
 			glDrawPixels(w, h, GL_RGB, GL_UNSIGNED_BYTE, frame_buffer->pixels);
@@ -253,6 +313,7 @@ namespace ylb {
 		w(_w), h(_h) {
 	}
 
+	
 	void Renderer::ProcessGeometry(Triangle& t, Shader*& shader, VertexShaderContext& vertexShaderContext) {
 		for (int i = 0; i < 3; i++) {
 			auto& vt = t.vts[i];
@@ -279,34 +340,39 @@ namespace ylb {
 
 		for (int i = 0; i < clipped_vt.size(); i++) {
 			auto& vt = clipped_vt[i];
-			auto& ccv_pos = vt.ccv;
-
+			auto inv_w = 1.0f / vt.ccv.w;
 			if (cam->mode == PROJECTION_MODE::PERSPECTIVE) {
                 //透视除法
-                vt.inv = 1.0f / ccv_pos.w;
-                ccv_pos *= vt.inv;
-                //裁剪
-                if (ccv_pos.x > 1.0)
-                    return;
-                if (ccv_pos.x < -1.0)
-                    return;
-                if (ccv_pos.y > 1.0)
-                    return;
-                if (ccv_pos.y < -1.0)
-                    return;
-                if (ccv_pos.z > ccv_pos.w)
-                    return;
-                if (ccv_pos.z < -ccv_pos.w)
-                    return;
-				vt.tex_coord = vt.tex_coord * vt.inv;
-				vt.normal = vt.normal * vt.inv;
-				vt.world_position = glm::vec4(vt.position, 0) * (*vertexShaderContext.model) * vt.inv;
-            } else
-                ccv_pos /= ccv_pos.z;
+                vt.ccv *= inv_w;
+            }
 
-			
-			vt.sv_pos = view_port * ccv_pos;
-            int x = 0;
+			//裁剪
+            if (vt.ccv.x >= vt.ccv.w)
+                return;
+            if (vt.ccv.x <= -vt.ccv.w)
+                return;
+            if (vt.ccv.y >= vt.ccv.w)
+                return;
+            if (vt.ccv.y <= -vt.ccv.w)
+                return;
+            if (vt.ccv.z <= -vt.ccv.w)
+                return;
+            if (vt.ccv.z >= vt.ccv.w)
+                return;
+
+
+			if (cam->mode == PROJECTION_MODE::PERSPECTIVE) {
+                vt.tex_coord = vt.tex_coord * inv_w;
+                vt.normal = vt.normal * inv_w;
+			}
+
+			vt.sv_pos = view_port * vt.ccv;
+			if(cam->mode == PROJECTION_MODE::PERSPECTIVE)
+			{
+				vt.inv = inv_w;
+				vt.sz() *= inv_w;
+			}
+            maxZ = std::max(vt.sv_pos.z, maxZ);
 		}
 
 		int step = clipped_vt.size() > 3 ? 1 : 3;

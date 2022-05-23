@@ -11,7 +11,8 @@ namespace ylb
         glm::vec3 sv_pos;   //屏幕空间坐标
         glm::vec2 tex_coord;//纹理坐标
         glm::vec3 normal;   //法线
-        glm::vec3 tangent,bitangent;
+        glm::vec3 tangent;
+        glm::vec4 light_coord;
         glm::vec4 ccv;
         float inv;
         Vertex() = default;

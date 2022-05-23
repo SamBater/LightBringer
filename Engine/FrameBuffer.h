@@ -48,7 +48,7 @@ namespace ylb{
             depth[y * w + x] = d;
         }
 
-        void save_zbuffer(const char* fileName, bool perspective);
+        void save_zbuffer(const char *fileName, bool perspective = true);
 
         void save_frame(const char*fileName);
 

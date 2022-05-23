@@ -72,6 +72,7 @@ namespace ylb
         void ProcessGeometry(ylb::Triangle &t, Shader*& shader, VertexShaderContext& vertexShaderContext);
         void Rasterization(ylb::Triangle &t, ylb::Shader* shader, Light* light);
         void Render(std::vector<ylb::Model> &ts);
+        void GenerateShadowMap();
     };
 }
 #endif

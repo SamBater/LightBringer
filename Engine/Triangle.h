@@ -37,6 +37,7 @@ private:
 public:
   glm::vec3 cof;
   float s;
+  float ls;
   ylb::Vertex vts[3];
   Triangle() = default;
 
@@ -50,12 +51,19 @@ public:
   glm::vec3 interpolated_world_position();
   glm::vec3 interpolated_world_normal();
 
-  inline static bool inside(float x, float y, ylb::Triangle &t) {
+  inline static bool inside(float x, float y, ylb::Triangle &t , bool perspective = true) {
     t.cof = t.barycentric(t.vts[0].sv_pos, t.vts[1].sv_pos, t.vts[2].sv_pos, glm::vec3(x,y,0.0));
     t.s = 0;
     for(int i = 0 ; i < 3 ; i++)
         t.s += t.vts[i].inv * t.cof[i];
-    t.s = 1 / t.s;
+    t.s =  perspective ? 1.0 / t.s : 1.0;
+
+    if(perspective){
+          t.ls = 0;
+    for(int i = 0 ; i < 3 ; i++)
+      t.ls += t.vts[i].light_coord.w * t.cof[i];
+    t.ls = 1.0 / t.ls;
+    }
     return t.cof.x >= 0 && t.cof.y >= 0 && t.cof.z >= 0.0f;
   }
 

@@ -10,6 +10,7 @@ public:
     }
 
     virtual float attenuation(const glm::vec3 &pos) const override {
+        return 1;
         float r = glm::distance(pos, transform.WorldPosition());
         float result = light_color.length() / (r * r);
         return result;
