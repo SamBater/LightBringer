@@ -28,12 +28,14 @@ public:
     float VisibleInLightSpace(glm::vec4& shadowCoord) {
         if (!shadow_map)
             return 1.0f;
+        
         shadowCoord /= shadowCoord.w;
-        int x = shadowCoord.x;
-        int y = shadowCoord.y;
-        float map_depth = shadow_map->tex2d(x,y).x;
-        return map_depth + shadow_bias < (shadowCoord.z * 0.5f + 0.5f)  ? 0.5f : 1.0f;
-        // float shadow = .3+.7*(shadow_depth[idx] + shadow_bias < (shadowCoord[2])); 
+        shadowCoord = (shadowCoord + glm::vec4(1, 1, 1, 0)) * 0.5f;
+        float x = shadowCoord.x + offset.x;
+        float y = shadowCoord.y + offset.y;
+        float map_depth = (shadow_map->tex2d(x, y).x * 0.5f) + 0.5f;
+        return map_depth + shadow_bias < (shadowCoord.z)  ? 0.5f : 1.0f;
+         //float shadow = .3+.7*(map_depth + shadow_bias < (shadowCoord.z)); 
         // return shadow;
     }
 
@@ -48,9 +50,17 @@ public:
     }
 
     glm::mat4& GetLightMatrix(){
+		
         return view_project_matrix;
     }
+
+    //static void SetOffSet();
+
+
     glm::mat4 view_project_matrix;
+
+    glm::vec3 offset;
+
 protected:
     glm::vec3 light_color = {1.f, 1.f, 1.f};
     friend class Shader;

@@ -2,6 +2,7 @@
 #include "Camera.h"
 #include "GLFW/glfw3.h"
 #include "glm/fwd.hpp"
+#include "imgui.h"
 #include <cstdlib>
 namespace ylb {
 static float maxZ = -10000;
@@ -96,7 +97,8 @@ static float maxZ = -10000;
         auto origin = cam->transform.WorldPosition();
         auto dir = cam->Front;
         cam->mode = PROJECTION_MODE::ORTHOGONAL;
-        cam->transform.SetPosition(lights[0]->transform.WorldPosition());
+        //cam->transform.SetPosition(lights[0]->transform.WorldPosition());
+        cam->transform.SetPosition(glm::vec3(0, 0, 0));
         cam->Front = -glm::normalize(lights[0]->LightDir(dir));
 
 		//对于平行光,使用正交投影渲染场景
@@ -211,6 +213,8 @@ static float maxZ = -10000;
 
 	void Renderer::LoadScene(const char* scene_file_path)
 	{
+		delete cam;
+		models.clear();
 		auto scene = SceneLoader::Instance().LoadScene(scene_file_path);
 		cam = std::move(scene->cam);
 		SetViewPort(w, h);
@@ -248,9 +252,9 @@ static float maxZ = -10000;
 		using ylb::Vertex;
 
 		InitOpenGL();
-
-		LoadScene("Scene/sample.json");
-		//LoadScene("Scene/tinyrenderer.json");
+		bool my_tool_active = true;
+		//LoadScene("Scene/sample.json");
+		LoadScene("Scene/tinyrenderer.json");
         GenerateShadowMap();
 		while (!glfwWindowShouldClose(window)) {
 			ProcessInput(ImGui::GetIO().Framerate / 1000);
@@ -263,37 +267,38 @@ static float maxZ = -10000;
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
+			
 			statistic.Render();
+			{
+				ImGui::Begin("LightSetting");
+				ImGui::SliderFloat("shadow_bias", &lights[0]->shadow_bias, 0.0f, 0.2f, "%.5f");
+				auto sun = static_cast<ParalleLight *>(lights[0]);
+				float dir[3];
+				for (int i = 0; i < 3; i++)
+					dir[i] = sun->dir[i];
+				ImGui::SliderFloat3("light_dir", dir, -1.0f, 1.0f);
+				for (int i = 0; i < 3; i++)
+					sun->dir[i] = dir[i];
 
-			ImGui::Begin("LightSetting");
-            ImGui::SliderFloat("shadow_bias", &lights[0]->shadow_bias, 0.0f, 0.2f, "%.5f");
-            auto sun = static_cast<ParalleLight *>(lights[0]);
-            float dir[3];
-            for (int i = 0; i < 3; i++)
-                dir[i] = sun->dir[i];
-            ImGui::SliderFloat3("light_dir", dir, -1.0f, 1.0f);
-            for (int i = 0; i < 3; i++)
-                sun->dir[i] = dir[i];
+				float offset[3];
+				for (int i = 0; i < 3; i++)
+					offset[i] = sun->offset[i];
+				ImGui::SliderFloat3("shadow_offset", offset, -1.0f, 1.0f);
+				for (int i = 0; i < 3; i++)
+					sun->offset[i] = offset[i];
 
-			float light_pos[3];
-            auto p = lights[0]->transform.WorldPosition();
-            for (int i = 0; i < 3; i++)
-                light_pos[i] = p[i];
-            ImGui::SliderFloat3("light_pos", light_pos, -400.0f, 400.0f);
-            p = glm::vec3(light_pos[0], light_pos[1], light_pos[2]);
-            for (int i = 0; i < 3; i++)
-                lights[0]->transform.SetPosition(p);
-
-            glm::normalize(sun->dir);
-            if (ImGui::Button("CreateShdowMap"))
-            {
-				GenerateShadowMap();
+				glm::normalize(sun->dir);
+				if (ImGui::Button("CreateShdowMap"))
+				{
+					GenerateShadowMap();
+				}
+				if (ImGui::Button("Switch Projection Mode"))
+					cam->mode = cam->mode == PROJECTION_MODE::ORTHOGONAL ?
+									PROJECTION_MODE::PERSPECTIVE :
+									PROJECTION_MODE::ORTHOGONAL;
+				ImGui::End();
 			}
-            if (ImGui::Button("Switch Projection Mode"))
-                cam->mode = cam->mode == PROJECTION_MODE::ORTHOGONAL ?
-                                PROJECTION_MODE::PERSPECTIVE :
-                                PROJECTION_MODE::ORTHOGONAL;
-            ImGui::End();
+			
 
 			glDrawPixels(w, h, GL_RGB, GL_UNSIGNED_BYTE, frame_buffer->pixels);
 
@@ -369,6 +374,7 @@ static float maxZ = -10000;
 			if (cam->mode == PROJECTION_MODE::PERSPECTIVE) {
                 vt.tex_coord = vt.tex_coord * inv_w;
                 vt.normal = vt.normal * inv_w;
+                vt.world_position = (*vertexShaderContext.model) * glm::vec4(vt.position,0) * inv_w;
 			}
 
 			vt.sv_pos = view_port * vt.ccv;

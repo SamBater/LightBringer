@@ -11,6 +11,7 @@ using namespace ylb;
 
 Texture::Texture(char const* file_name,int maxComp)
 {
+    stbi_set_flip_vertically_on_load(true);
 	auto path = YLBFileSystem::GetInstance().GetAssetsPath(file_name);
 	auto data = stbi_load(path.c_str(), &w, &h, &comp, 0);
 	if (!data) {

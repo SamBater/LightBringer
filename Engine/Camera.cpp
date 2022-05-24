@@ -18,12 +18,12 @@ glm::mat4 Camera::GetProjectionMatrix() {
 }
 
 glm::mat4 Camera::GetPerspectiveMatrix() {
-    auto perspectiveMatrix = glm::perspective(glm::radians(fov_Y), aspect_ratio, 0.1f, f);
+    auto perspectiveMatrix = glm::perspective(glm::radians(fov_Y), aspect_ratio, n, f);
     return perspectiveMatrix;
 }
 
 glm::mat4 Camera::GetOrthogonalMatrix() {
-    return glm::ortho<float>(-10, 10, -10, 10, -20, 100);
+    return glm::ortho<float>(-20, 20, -20, 20, -20, 100);
 }
 
 } // namespace ylb

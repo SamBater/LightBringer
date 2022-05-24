@@ -22,6 +22,8 @@ namespace ylb
             h = texture.h;
             comp = texture.comp;
             sprite = new glm::vec3[w*h];
+            for (int i = 0; i < w * h; i++)
+                sprite[i] = texture.sprite[i];
         }
         void Fill(int x,int y,const glm::vec3& val){
             sprite[y*w+x] = val;

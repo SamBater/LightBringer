@@ -8,7 +8,7 @@
     "aspect_ratio": 1.0,
     "n": 0.01,
     "f": 100,
-    "size" : 20
+    "size": 20
   },
 
   "Models": [
@@ -18,8 +18,9 @@
         "position": [ 0, 0, 0 ]
       },
       "Shader": {
-        "type": "Groud",
+        "type": "Phong",
         "diffuse": "african_head/african_head_diffuse.tga",
+        "specular":"african_head/african_head_spec.tga",
         "normal": "african_head/african_head_nm_tangent.tga"
       }
     }
@@ -27,11 +28,9 @@
 
   "Lights": [
     {
-      "type": "Point",
-      "intensity": [ 1, 1, 1 ],
-      "Transform": {
-        "position": [-1,1,1]
-      }
+      "type": "Paralle",
+      "intensity": [ 1.0, 1.0, 1.0 ],
+      "dir": [ -0.5, -1, -1 ]
     }
   ]
 }
