@@ -18,7 +18,7 @@ public:
         return light_color;
     }
 
-    virtual float attenuation(const glm::vec3 &pos) const = 0;
+    virtual float Attenuation(const glm::vec3 &pos) const = 0;
 
     void SetShadowMap(const glm::mat4& light_matrix,Texture* depth_buffer, int w , int h) {
         shadow_map = new Texture(*depth_buffer);

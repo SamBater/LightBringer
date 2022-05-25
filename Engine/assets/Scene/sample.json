@@ -1,9 +1,9 @@
 {
   "Camera": {
     "Transform": {
-      "position": [ -25, 10, 30 ]
+      "position": [ 0, 1, 12 ]
     },
-    "lookat": [ 1.0, -0.1, -1 ],
+    "lookat": [ 0.0, -0.1, -1 ],
     "fov": 45,
     "aspect_ratio": 1.0,
     "n": 0.1,
@@ -12,35 +12,56 @@
 
   "Models": [
     {
-      "path": "cube.obj",
+      "path": "Model/cube.obj",
       "Transform": {
-        "position": [ 1, 2, 4 ],
-        "scale": [ 2, 2, 2 ]
+        "position": [ 2.5, 0, 0 ],
+        "scale": [ 0.5, 0.5, 0.5 ]
       },
       "Shader": {
         "type": "Groud",
-        "diffuse": "uv.jpg",
-        "normal": "normal.png"
+        "diffuse": "Texture/cb.jpg",
+        "normal": "Texture/normal.png"
       }
     },
     {
-      "path": "quad.obj",
-      "Transform": {
-        "position": [ 0, -1, 0 ],
-        "scale": [ 6, 1, 15 ]
-      },
-      "Shader": {
-        "type": "Groud"
+      "path":"Model/teapot.obj",
+      "Transform":{
+        "position" :[0,0,-5],
+        "scale" : [0.25,0.25,0.25]
       }
     },
     {
-      "path": "wall.obj",
+      "path":"Model/sphere.obj",
+      "Transform":{
+        "position":[-2.5,0,0],
+        "scale":[0.5,0.5,0.5]
+      },
+      "Shader":{
+        "diffuse":"Texture/uv.jpg"
+      }
+    },
+    {
+      "path": "Model/african_head/african_head.obj",
       "Transform": {
-        "position": [ 0, 2, -8 ],
-        "scale": [ 6, 4, 1 ]
+        "position": [ 0, 0, 0 ]
       },
       "Shader": {
-        "type": "Groud"
+        "type": "Phong",
+        "diffuse":  "Model/african_head/african_head_diffuse.tga",
+        "specular": "Model/african_head/african_head_spec.tga",
+        "normal":   "Model/african_head/african_head_nm_tangent.tga"
+      }
+    },
+    {
+      "path": "Model/african_head/african_head_eye_inner.obj",
+      "Transform": {
+        "position": [ 0, 0, 0 ]
+      },
+      "Shader": {
+        "type": "Phong",
+        "diffuse":  "Model/african_head/african_head_eye_inner_diffuse.tga",
+        "specular": "african_head/african_head_eye_inner_spec.tga",
+        "normal":   "african_head/african_head_eye_inner_nm_tangent.tga"
       }
     }
   ],
@@ -48,8 +69,8 @@
   "Lights": [
     {
       "type": "Paralle",
-      "intensity": [ 1.5, 1.5, 1.5 ],
-      "dir" :  [-0.5,-1,-1]
+      "intensity": [ 1, 1, 1 ],
+      "dir" :  [-0.5,-0.33,-1]
     }
   ]
 }

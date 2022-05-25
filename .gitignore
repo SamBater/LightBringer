@@ -11,3 +11,5 @@ bin
 CMakeSettings.json
 Engine/Predefined.h
 TODO.md
+/vsbuild
+/.clang-format

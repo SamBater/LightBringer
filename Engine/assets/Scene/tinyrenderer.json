@@ -1,27 +1,38 @@
 {
   "Camera": {
     "Transform": {
-      "position": [ 1, 0.5, 4 ]
+      "position": [ 0, 0, 4 ]
     },
-    "lookat": [ 0, 0, -1 ],
+    "lookat": [ 1, 0, -1 ],
     "fov": 45,
     "aspect_ratio": 1.0,
     "n": 0.01,
-    "f": 100,
-    "size": 20
+    "f": 100
   },
 
   "Models": [
     {
-      "path": "african_head/african_head.obj",
+      "path": "Model/african_head/african_head.obj",
       "Transform": {
         "position": [ 0, 0, 0 ]
       },
       "Shader": {
         "type": "Phong",
-        "diffuse": "african_head/african_head_diffuse.tga",
-        "specular":"african_head/african_head_spec.tga",
-        "normal": "african_head/african_head_nm_tangent.tga"
+        "diffuse":  "Model/african_head/african_head_diffuse.tga",
+        "specular": "Model/african_head/african_head_spec.tga",
+        "normal":   "Model/african_head/african_head_nm_tangent.tga"
+      }
+    },
+    {
+      "path": "Model/african_head/african_head_eye_inner.obj",
+      "Transform": {
+        "position": [ 0, 0, 0 ]
+      },
+      "Shader": {
+        "type": "Phong",
+        "diffuse":  "Model/african_head/african_head_eye_inner_diffuse.tga",
+        "specular": "african_head/african_head_eye_inner_spec.tga",
+        "normal":   "african_head/african_head_eye_inner_nm_tangent.tga"
       }
     }
   ],
@@ -30,7 +41,7 @@
     {
       "type": "Paralle",
       "intensity": [ 1.0, 1.0, 1.0 ],
-      "dir": [ -0.5, -1, -1 ]
+      "dir": [ -0.4, -0.5, -1 ]
     }
   ]
 }

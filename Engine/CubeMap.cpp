@@ -1,7 +1,3 @@
-//
-// Created by a on 2021/12/9.
-//
-
 #include "CubeMap.h"
 
 

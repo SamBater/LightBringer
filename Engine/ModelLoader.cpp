@@ -29,7 +29,7 @@ ylb::Model* ylb::LoadModel(const char* modelPath)
     auto& materials = reader.GetMaterials();
 
     // Loop over shapes
-    for (size_t s = 0; s < shapes.size(); s++) {
+    for (size_t inv_w = 0; inv_w < shapes.size(); inv_w++) {
         for (size_t v = 0; v < attrib.vertices.size(); v += 3)
         {
             auto vx = attrib.vertices[v];
@@ -54,12 +54,12 @@ ylb::Model* ylb::LoadModel(const char* modelPath)
         }
 
 
-        for (int i = 0; i < shapes[s].mesh.indices.size() / 3; i++) {
+        for (int i = 0; i < shapes[inv_w].mesh.indices.size() / 3; i++) {
             Face face;
             for (int j = 0; j < 3; j++) {
-                face.vid[j] = shapes[s].mesh.indices[i * 3 + j].vertex_index;
-                face.uid[j] = shapes[s].mesh.indices[i * 3 + j].texcoord_index;
-                face.nid[j] = shapes[s].mesh.indices[i * 3 + j].normal_index;
+                face.vid[j] = shapes[inv_w].mesh.indices[i * 3 + j].vertex_index;
+                face.uid[j] = shapes[inv_w].mesh.indices[i * 3 + j].texcoord_index;
+                face.nid[j] = shapes[inv_w].mesh.indices[i * 3 + j].normal_index;
             }
             model->faces->push_back(face);
         }

@@ -35,14 +35,13 @@ std::vector<ylb::Vertex> ylb::Clipper::ClipPolygon(Plane plane,std::vector<Verte
 }
 
 ylb::Vertex ylb::Clipper::Intersect(ylb::Vertex &previousVertex, ylb::Vertex &currentVertex,float intersectionFactor) {
-    glm::vec3 position = ylb::lerp(previousVertex.position,currentVertex.position,intersectionFactor);
+    glm::vec3 model_coords = ylb::lerp(previousVertex.model_coords,currentVertex.model_coords,intersectionFactor);
     glm::vec3 normal = ylb::lerp(previousVertex.normal,currentVertex.normal,intersectionFactor);
-    //glm::vec3 tex_coord = ylb::lerp(previousVertex.tex_coord,currentVertex.tex_coord,intersectionFactor);
-    auto tex_coord = glm::vec2(1, 0);
-    Vertex vt = Vertex(position,normal,tex_coord);
-
+    glm::vec2 texture_coords = ylb::lerp(previousVertex.texture_coords,currentVertex.texture_coords,intersectionFactor);
+    glm::vec3 tangents = ylb::lerp(previousVertex.tangent, currentVertex.tangent, intersectionFactor);
+    Vertex vt = Vertex(model_coords,normal,texture_coords);
+    vt.tangent = tangents;
     vt.ccv = ylb::lerp(previousVertex.ccv,currentVertex.ccv,intersectionFactor);
-    //vt.l_pos = ylb::lerp(previousVertex.l_pos,currentVertex.l_pos,intersectionFactor);
     return vt;
 }
 

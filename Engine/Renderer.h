@@ -15,7 +15,6 @@
 #include "Texture.h"
 #include "Vertex.h"
 #include "ParallelLight.h"
-#include "PhongShader.h"
 #include "PointLight.h"
 #include "FrameBuffer.h"
 #include "glm/fwd.hpp"
@@ -31,7 +30,7 @@
 #include "SceneLoader.h"
 namespace ylb
 {
-    struct RenderTargetSetting
+    struct PipelineSetting
     {
         bool open_depth_buffer_write = true;
         bool open_frame_buffer_write = true;
@@ -56,8 +55,8 @@ namespace ylb
         Camera *cam = nullptr;
         glm::mat4 view_port;
         FrameBuffer *frame_buffer = nullptr;
-        RenderTargetSetting* renderTargetSetting = new RenderTargetSetting();
-        std::vector<Model> models;
+        PipelineSetting* pipelineSetting = new PipelineSetting();
+        std::vector<Model *> models;
         std::vector<Light *> lights;
         Statistic statistic;
         
@@ -71,8 +70,9 @@ namespace ylb
         bool BackFaceCulling(const glm::vec3 world_pos[]);
         void ProcessGeometry(ylb::Triangle &t, Shader*& shader, VertexShaderContext& vertexShaderContext);
         void Rasterization(ylb::Triangle &t, ylb::Shader* shader, Light* light);
-        void Render(std::vector<ylb::Model> &ts);
+        void Render(std::vector<ylb::Model*> &ts);
         void GenerateShadowMap();
+        Model* GenerateSkybox();
     };
 }
 #endif

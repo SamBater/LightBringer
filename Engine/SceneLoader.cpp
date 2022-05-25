@@ -42,7 +42,7 @@ std::unique_ptr<Scene> SceneLoader::LoadScene(const char* scene_path)
 			normal = new Texture(normal_map.c_str());
 
 		if (shader_string == "Groud")
-			shader = new GroudShader(diffuse,normal);
+			shader = new GouraudShader(diffuse,normal);
 		else
 			shader = new PhongShader(diffuse,specular,normal);
 		model->SetShader(shader);

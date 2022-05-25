@@ -6,27 +6,26 @@ namespace ylb
 {
     struct Vertex
     {
-        glm::vec3 position; //局部坐标
-        glm::vec3 world_position;
-        glm::vec3 sv_pos;   //屏幕空间坐标
-        glm::vec2 tex_coord;//纹理坐标
-        glm::vec3 normal;   //法线
+        glm::vec3 model_coords;
+        glm::vec3 world_coords;
+        glm::vec4 screen_coords;
+        glm::vec2 texture_coords;
+        glm::vec3 normal;
         glm::vec3 tangent;
-        glm::vec4 light_coord;
+        glm::vec4 light_coords;
         glm::vec4 ccv;
-        float inv;
         Vertex() = default;
-        Vertex(glm::vec3& position,glm::vec3 normal,glm::vec2 uv):
-            position(position),normal(normal),tex_coord(uv){}
+        Vertex(glm::vec3& model_coords,glm::vec3 normal,glm::vec2 uv):
+            model_coords(model_coords),normal(normal),texture_coords(uv){}
         
-        const float &x() { return position.x; }
-        const float &y() { return position.y; }
-        const float &z() { return position.z; }
-        float &sx() { return sv_pos.x; }
-        float &sy() { return sv_pos.y; }
-        float &sz() { return sv_pos.z; }
-        const float &u() { return tex_coord.x; }
-        const float &v() { return tex_coord.y; }
+        const float &x() { return model_coords.x; }
+        const float &y() { return model_coords.y; }
+        const float &z() { return model_coords.z; }
+        float &sx() { return screen_coords.x; }
+        float &sy() { return screen_coords.y; }
+        float &sz() { return screen_coords.z; }
+        const float &u() { return texture_coords.x; }
+        const float &v() { return texture_coords.y; }
 
     };
     }

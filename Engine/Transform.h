@@ -12,7 +12,7 @@ namespace ylb {
 			BuildModelMatrix();
 		}
 
-		Transform(const glm::vec3& position, const glm::vec3& scale) : position(position), scale(scale) {
+		Transform(const glm::vec3& model_coords, const glm::vec3& scale) : model_coords(model_coords), scale(scale) {
 			BuildModelMatrix();
 		}
 
@@ -21,15 +21,15 @@ namespace ylb {
 		}
 
 		const glm::vec3& WorldPosition() const {
-			return position;
+			return model_coords;
 		}
 
-		void SetPosition(const glm::vec3& position) {
-			this->position = position;
+		void SetPosition(const glm::vec3& model_coords) {
+			this->model_coords = model_coords;
 		}
 
 		virtual void DeSerilization(const json11::Json& json) override {
-			position = DeSerilizationVec3(json["position"]);
+			model_coords = DeSerilizationVec3(json["position"]);
 			scale = DeSerilizationVec3(json["scale"]);
 			BuildModelMatrix();
 		}
@@ -42,15 +42,15 @@ namespace ylb {
 		}
 
 		void ModifiedTranslateParms() {
-			modelMatrix[3][0] = position.x;
-			modelMatrix[3][1] = position.y;
-			modelMatrix[3][2] = position.z;
-            //modelMatrix = glm::translate(modelMatrix, position / scale);
+			modelMatrix[3][0] = model_coords.x;
+			modelMatrix[3][1] = model_coords.y;
+			modelMatrix[3][2] = model_coords.z;
+            //modelMatrix = glm::translate(modelMatrix, model_coords / scale);
 		}
 		void ModifiedScaleParms() {
             modelMatrix = glm::scale(modelMatrix, scale);
 		}
-		glm::vec3 position = glm::vec3(0, 0, 0);
+		glm::vec3 model_coords = glm::vec3(0, 0, 0);
 		glm::vec3 scale = glm::vec3(1, 1, 1);
 		glm::mat4 modelMatrix = glm::mat4(1);
 	};

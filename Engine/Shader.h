@@ -27,13 +27,12 @@ namespace ylb
     class Shader
     {
     public:
-        Texture *texture;
-        Shader(Texture *t = nullptr) : texture(t) {}
+        Shader() = default;
         virtual glm::vec4 VertexShading(Vertex &v, const VertexShaderContext& context) {return glm::vec4{1, 1, 1,1};}
         virtual glm::vec3 FragmentShading(Triangle &t, const FragmentShaderContext& context) {return glm::vec3{1, 1, 1};}
         virtual ~Shader()
         {
-            delete texture;
+
         }
     };
 }

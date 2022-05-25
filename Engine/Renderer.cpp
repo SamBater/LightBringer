@@ -1,11 +1,8 @@
 #include "Renderer.h"
-#include "Camera.h"
 #include "GLFW/glfw3.h"
-#include "glm/fwd.hpp"
 #include "imgui.h"
-#include <cstdlib>
+#include "ModelLoader.h"
 namespace ylb {
-static float maxZ = -10000;
 	void Renderer::ProcessInput(double&& delta_time) {
 		int dx = glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS ? -1 : glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ? 1 :
 			0;
@@ -16,11 +13,6 @@ static float maxZ = -10000;
 
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 			std::exit(0);
-
-		if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
-            //GenerateShadowMap();
-            frame_buffer->save_zbuffer("depth.bmp");
-
 
 		if (dz == 1)
 			cam->ProcessKeyboard(Camera_Movement::FORWARD, delta_time);
@@ -41,10 +33,11 @@ static float maxZ = -10000;
 		instance.SetViewPort(width, height);
 	}
 
-	static float lastX, lastY;
+	
 	void Renderer::Mouse_Move_Callback(GLFWwindow* window, double xposIn,
 		double yposIn) {
 		static bool firstMouse = true;
+        static float lastX, lastY;
 		auto instance = Instance();
 		float xpos = static_cast<float>(xposIn);
 		float ypos = static_cast<float>(yposIn);
@@ -63,7 +56,7 @@ static float maxZ = -10000;
 		instance.cam->ProcessMouseMovement(xoffset, yoffset);
 	}
 
-	void Renderer::Render(std::vector<ylb::Model>& models) {
+	void Renderer::Render(std::vector<ylb::Model*>& models) {
 		statistic.InitTriangleCnt();
 
 		auto const view = std::make_shared<glm::mat4>(cam->GetViewMatrix());
@@ -71,76 +64,87 @@ static float maxZ = -10000;
 		glm::vec3 world_pos[3];
 		for (int i = 0; i < models.size(); i++) {
 			auto& model = models[i];
-			for (int i = 0; i < model.faces->size(); i++) {
+			for (int i = 0; i < model->faces->size(); i++) {
 
-				auto t = model.Triangle(i);
+				auto t = model->Triangle(i);
 
 				VertexShaderContext vertexShaderContext;
-				vertexShaderContext.model = &model.transform.ModelMatrix();
-				// for (int i = 0; i < 3; i++)
-				// 	world_pos[i] = *vertexShaderContext.model * glm::vec4(t.vts[i].position, 0);
-				// if (renderTargetSetting->back_face_culling && BackFaceCulling(world_pos))
-				// 	continue;
+				vertexShaderContext.model = &model->transform.ModelMatrix();
+				 for (int i = 0; i < 3; i++)
+				 	world_pos[i] = *vertexShaderContext.model * glm::vec4(t.vts[i].model_coords, 0);
+				 if (pipelineSetting->back_face_culling && BackFaceCulling(world_pos))
+				 	continue;
 
 				vertexShaderContext.view = view.get();
 				vertexShaderContext.project = project.get();
 				vertexShaderContext.camPos = &cam->transform.WorldPosition();
 				vertexShaderContext.l = lights[0];
-				ProcessGeometry(t, model.shader, vertexShaderContext);
+				ProcessGeometry(t, model->shader, vertexShaderContext);
 			}
 		}
     }
 
     void Renderer::GenerateShadowMap() {
-        renderTargetSetting->open_frame_buffer_write = false;
+        pipelineSetting->open_frame_buffer_write = false;
         auto mode = cam->mode;
         auto origin = cam->transform.WorldPosition();
         auto dir = cam->Front;
         cam->mode = PROJECTION_MODE::ORTHOGONAL;
-        //cam->transform.SetPosition(lights[0]->transform.WorldPosition());
-        cam->transform.SetPosition(glm::vec3(0, 0, 0));
+        cam->transform.SetPosition(lights[0]->transform.WorldPosition());
         cam->Front = -glm::normalize(lights[0]->LightDir(dir));
 
 		//对于平行光,使用正交投影渲染场景
         auto vp = cam->GetProjectionMatrix() * cam->GetViewMatrix();
-        frame_buffer->clear();
+        frame_buffer->Clear();
 		Render(models);
 		//将shadowMap保存
-		lights[0]->SetShadowMap(vp, frame_buffer->depth, w, h);
+		lights[0]->SetShadowMap(vp, frame_buffer->depth_buffer, w, h);
 
 		//DEBUG DEPTH BUFFER
-        frame_buffer->save_zbuffer("depth.bmp",cam->mode == PROJECTION_MODE::PERSPECTIVE);
+        frame_buffer->SaveDepthMap("depth.bmp",cam->mode == PROJECTION_MODE::PERSPECTIVE);
     
 		
 		//恢复原来的状态
 		cam->transform.SetPosition(origin);
        	cam->Front = dir;
        	cam->mode = mode;
-        renderTargetSetting->open_frame_buffer_write = true;
+        pipelineSetting->open_frame_buffer_write = true;
+    }
+
+    Model* Renderer::GenerateSkybox() {
+        Model *cube = LoadModel("Model/cube.obj");
+        std::vector<std::string> faces_path{
+            "Texture/skybox/right.jpg",
+            "Texture/skybox/left.jpg",
+            "Texture/skybox/top.jpg",
+            "Texture/skybox/bottom.jpg",
+            "Texture/skybox/front.jpg",
+            "Texture/skybox/back.jpg",
+        };
+        CubeMap *cube_map = new CubeMap(faces_path);
+        cube->shader = new SkyBoxShader(cube_map);
+        return cube;
     }
 
 	void Renderer::Rasterization(ylb::Triangle& t, Shader* shader, Light* light) {
 		statistic.IncreaseTriangleCnt();
 		const ylb::BoundingBox* bb = t.bounding_box();
-		glm::vec3 color = { 0.5, 0.5, 0.5 };
+        glm::vec3 color;
 		FragmentShaderContext fragmentShaderContext(&cam->transform.WorldPosition(), lights[0]);
-		int min_left = static_cast<int>(ylb::max(bb->bot, 0.f));
-		for (int y = min_left; y < bb->top; y++)
-			for (int x = bb->left; x < bb->right; x++) {
+		for (int y = bb->bot; y < bb->top; y++)
+			for (int x = bb->left; x < bb->right ; x++) {
 				int pixel = y * w + x;
 				//三角形测试
-				if (ylb::Triangle::inside(x + 0.5f, y + 0.5f, t,cam->mode == PROJECTION_MODE::PERSPECTIVE)) {
-                    float depth = t.interpolated_depth();
-					if(cam->mode == PROJECTION_MODE::ORTHOGONAL)
-						depth = t.cof.x * t.vts[0].sz() + t.cof.y * t.vts[1].sz() + t.cof.z * t.vts[2].sz();
+				if (ylb::Triangle::Inside(x + 0.5f, y + 0.5f, t,cam->mode == PROJECTION_MODE::PERSPECTIVE)) {
+                    float depth_buffer = t.interpolated_depth();
 					//深度测试
-					if (frame_buffer->DepthTest(x, y, depth)) {
+					if (frame_buffer->DepthTest(x, y, depth_buffer)) {
 						//深度写入
-						if (renderTargetSetting->open_depth_buffer_write) {
-							frame_buffer->set_depth(x, y, depth);
+						if (pipelineSetting->open_depth_buffer_write) {
+							frame_buffer->SetDepth(x, y, depth_buffer);
 						}
 						//帧缓存写入
-						if (renderTargetSetting->open_frame_buffer_write) {
+						if (pipelineSetting->open_frame_buffer_write) {
 							color = shader->FragmentShading(t, fragmentShaderContext);
 							frame_buffer->set_color(x, y, color);
 						}
@@ -213,17 +217,15 @@ static float maxZ = -10000;
 
 	void Renderer::LoadScene(const char* scene_file_path)
 	{
-		delete cam;
-		models.clear();
 		auto scene = SceneLoader::Instance().LoadScene(scene_file_path);
 		cam = std::move(scene->cam);
 		SetViewPort(w, h);
 		for (auto& obj : *scene->models) {
-			models.push_back(*obj);
+			models.push_back(std::move(obj));
 		}
 
 		for (auto& lite : *scene->lights) {
-			lights.push_back(lite);
+			lights.push_back(std::move(lite));
 		}
 	}
 
@@ -232,8 +234,8 @@ static float maxZ = -10000;
 		w = width;
 		h = height;
 		frame_buffer = new FrameBuffer(width, height);
-		cam->aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
-		cam->UpdateProjectionInfo();
+        cam->aspect_ratio = w * 1.0f / h;
+        cam->UpdateCameraInfo();
 		view_port = glm::mat4(1);
 		view_port[0][0] = static_cast<double>(w) / 2.0; view_port[3][0] = static_cast<double>(w - 1) / 2.0;
 		view_port[1][1] = static_cast<double>(h) / 2.0; view_port[3][1] = static_cast<double>(h - 1) / 2.0;
@@ -252,23 +254,27 @@ static float maxZ = -10000;
 		using ylb::Vertex;
 
 		InitOpenGL();
-		bool my_tool_active = true;
-		//LoadScene("Scene/sample.json");
-		LoadScene("Scene/tinyrenderer.json");
+		LoadScene("Scene/sample.json");
+        Model *skybox = GenerateSkybox();
+        std::vector<Model *> skybox_world = {skybox};
         GenerateShadowMap();
 		while (!glfwWindowShouldClose(window)) {
 			ProcessInput(ImGui::GetIO().Framerate / 1000);
 			glClear(GL_COLOR_BUFFER_BIT);
 
-			frame_buffer->clear();
+			frame_buffer->Clear();
 
-			renderTargetSetting->open_depth_buffer_write = true;
+			pipelineSetting->open_depth_buffer_write = true;
 			Render(models);
+            //pipelineSetting->open_depth_buffer_write = false;
+            //Render(skybox_world);
+
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
 			
 			statistic.Render();
+			//Light Setting UI
 			{
 				ImGui::Begin("LightSetting");
 				ImGui::SliderFloat("shadow_bias", &lights[0]->shadow_bias, 0.0f, 0.2f, "%.5f");
@@ -300,7 +306,7 @@ static float maxZ = -10000;
 			}
 			
 
-			glDrawPixels(w, h, GL_RGB, GL_UNSIGNED_BYTE, frame_buffer->pixels);
+			glDrawPixels(w, h, GL_RGB, GL_UNSIGNED_BYTE, frame_buffer->color_buffer);
 
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -335,18 +341,18 @@ static float maxZ = -10000;
 
 		std::vector<Vertex> vts{ t.vts[0], t.vts[1], t.vts[2] };
 
-		// auto clipped_x = Clipper::ClipPolygon(Plane::POSITIVE_X, vts);
-		// auto clipped_nx = Clipper::ClipPolygon(Plane::NEGATIVE_X, clipped_x);
-		// auto clipped_y = Clipper::ClipPolygon(Plane::POSITIVE_Y, clipped_nx);
-		// auto clipped_ny = Clipper::ClipPolygon(Plane::NEGATIVE_Y, clipped_y);
-		// auto clipped_z = Clipper::ClipPolygon(Plane::POSITIVE_Z, clipped_ny);
-		// auto clipped_nz = Clipper::ClipPolygon(Plane::NEGATIVE_Z, clipped_z);
-		// auto clipped_vt = Clipper::ClipPolygon(Plane::POSITIVE_W, clipped_nz);
+		 auto clipped_x = Clipper::ClipPolygon(Plane::POSITIVE_X, vts);
+		 auto clipped_nx = Clipper::ClipPolygon(Plane::NEGATIVE_X, clipped_x);
+		 auto clipped_y = Clipper::ClipPolygon(Plane::POSITIVE_Y, clipped_nx);
+		 auto clipped_ny = Clipper::ClipPolygon(Plane::NEGATIVE_Y, clipped_y);
+		 auto clipped_z = Clipper::ClipPolygon(Plane::POSITIVE_Z, clipped_ny);
+		 auto clipped_nz = Clipper::ClipPolygon(Plane::NEGATIVE_Z, clipped_z);
+		 auto clipped_vt = Clipper::ClipPolygon(Plane::POSITIVE_W, clipped_nz);
 
-		// if (clipped_vt.size() < 3)
-		//    return;
+		 if (clipped_vt.size() < 3)
+		    return;
 
-		auto clipped_vt = vts;
+		//auto clipped_vt = vts;
 
 		for (int i = 0; i < clipped_vt.size(); i++) {
 			auto& vt = clipped_vt[i];
@@ -357,33 +363,32 @@ static float maxZ = -10000;
             }
 
 			//裁剪
-            if (vt.ccv.x >= vt.ccv.w)
-                return;
-            if (vt.ccv.x <= -vt.ccv.w)
-                return;
-            if (vt.ccv.y >= vt.ccv.w)
-                return;
-            if (vt.ccv.y <= -vt.ccv.w)
-                return;
-            if (vt.ccv.z <= -vt.ccv.w)
-                return;
-            if (vt.ccv.z >= vt.ccv.w)
-                return;
+            //if (vt.ccv.x >= vt.ccv.w)
+            //    return;
+            //if (vt.ccv.x <= -vt.ccv.w)
+            //    return;
+            //if (vt.ccv.y >= vt.ccv.w)
+            //    return;
+            //if (vt.ccv.y <= -vt.ccv.w)
+            //    return;
+            //if (vt.ccv.z <= -vt.ccv.w)
+            //    return;
+            //if (vt.ccv.z >= vt.ccv.w)
+            //    return;
 
 
 			if (cam->mode == PROJECTION_MODE::PERSPECTIVE) {
-                vt.tex_coord = vt.tex_coord * inv_w;
+                vt.texture_coords = vt.texture_coords * inv_w;
                 vt.normal = vt.normal * inv_w;
-                vt.world_position = (*vertexShaderContext.model) * glm::vec4(vt.position,0) * inv_w;
+                vt.world_coords = (*vertexShaderContext.model) * glm::vec4(vt.model_coords,0) * inv_w;
 			}
 
-			vt.sv_pos = view_port * vt.ccv;
+			vt.screen_coords = view_port * vt.ccv;
 			if(cam->mode == PROJECTION_MODE::PERSPECTIVE)
 			{
-				vt.inv = inv_w;
 				vt.sz() *= inv_w;
+                vt.screen_coords[3] = inv_w;
 			}
-            maxZ = std::max(vt.sv_pos.z, maxZ);
 		}
 
 		int step = clipped_vt.size() > 3 ? 1 : 3;
@@ -392,7 +397,7 @@ static float maxZ = -10000;
 			Triangle t(clipped_vt[i], clipped_vt[(i + 1) % clipped_vt.size()],
 				clipped_vt[(i + 2) % clipped_vt.size()]);
 			//设置三角形,准备光栅化
-			t.ready_rasterization();
+			t.ComputeBoundingBox();
 			Rasterization(t, shader, nullptr);
 		}
 	}

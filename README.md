@@ -1,26 +1,65 @@
-# 简介
+# Introduction
 
-LightBringer是基于OpenGL（使用其创建窗口和画像素的功能）的软光栅渲染器。
-
-
-
-tiny renderer
+LightBringer is a realtime software rasterizer.
 
 
 
-# 环境
+# Features
 
-- OS:win10
+* Fixed Function Pipeline：
 
-# 特性
+  * MVP + Viewport transform
 
-- 右手坐标系
-- MVP
-- 齐次裁剪
-- 深度缓存
-- 光栅化 - 填充三角形
-- 透视校正
-- 纹理采样 - 双线性插值
-- Blinn-Phong光照模型
-- 阴影贴图
-- 天空盒
+  * Homogeneous Clipping
+
+  * Back-face culling
+
+  * Depth-Buffer
+
+  * Rasterization
+
+  - Perspective correction
+  - Blinn–Phong reflection model
+
+
+- Texture：
+
+  - Diffuse、Specular、Normal
+  - Shadowmap
+  - Cubemap && Skybox
+  - Nearest、Bilinear interpolation
+
+
+
+
+# Build
+
+## Windows
+
+### Visual Studio
+
+Run the Windows.bat in the root directory directly, or use the following command to build in the console:
+
+```pseudocode
+cd LightBringer
+mkdir build
+cmake -B build
+```
+
+Open build/LightBringer.sln, set App/LightBringer as the startup item, build and run it.
+
+
+
+### MinGW
+
+For MinGW, you can use the following command:
+
+```pseudocode
+cd LightBringer
+mkdir build
+cmake -B build -G"MinGW Makefiles"
+cmake --build build
+```
+
+then run bin/LightBringer.exe.
+

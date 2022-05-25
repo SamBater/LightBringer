@@ -18,12 +18,11 @@ struct Model : public Actor , public YLBSerializable {
     Model() = default;
 
     Vertex Vert(int vid,int nid,int uid) {
-        auto coord = verties->at(vid);
-        auto normal = normals->at(nid);
-        auto uv = uvs->at(uid);
+        auto coord = vid >= 0 ? verties->at(vid) : glm::vec3(1,1,1);
+        auto normal = nid >= 0 ? normals->at(nid) : glm::vec3(1,1,1);
+        auto uv = uid >= 0 ? uvs->at(uid) : glm::vec2(0,0.5);
         Vertex v(coord, normal, uv);
-        v.tangent = tangents->at(vid);
-        //v.bitangent = bitangents->at(vid);
+        v.tangent = vid >= 0 ? tangents->at(vid) : glm::vec3(1,0,0);
         return v;
     }
 

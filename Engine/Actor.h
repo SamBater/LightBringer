@@ -9,7 +9,7 @@ namespace ylb
     {
     public:
         Actor(){}
-        Actor(const glm::vec3& position, const glm::vec3& scale = glm::vec3(1, 1, 1)) : transform(position,scale) {
+        Actor(const glm::vec3& model_coords, const glm::vec3& scale = glm::vec3(1, 1, 1)) : transform(model_coords,scale) {
 
         }
 

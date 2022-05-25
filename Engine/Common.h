@@ -51,7 +51,6 @@ namespace ylb
         return val;
     }
 
-
     template<typename T>
     T lerp(T& x, T& y,float t)
     {
@@ -63,28 +62,5 @@ namespace ylb
         return theta / 180 * PI;
     }
 
-    inline int calc_index(glm::vec<2,int>& vec,int w,int comp)
-    {
-        return static_cast<int>(vec[1] * w * 3 + vec[0] * comp);
-    };
-
-    inline float det(glm::mat4 &mat)
-    {
-        return 0;
-    }
-
-    inline float det(float &a11, float &a12, float &a13,
-                     float &a21, float &a22, float &a23,
-                     float &a31, float &a32, float &a33)
-    {
-        return a11 * a22 * a33 + a12 * a23 * a31 + a13 * a21 * a32 - a13 * a22 * a31 - a12 * a21 * a33 - a11 * a23 * a32;
-    }
-
-    inline float det(float &&a11, float &&a12, float &&a13,
-                     float &&a21, float &&a22, float &&a23,
-                     float &&a31, float &&a32, float &&a33)
-    {
-        return a11 * a22 * a33 + a12 * a23 * a31 + a13 * a21 * a32 - a13 * a22 * a31 - a12 * a21 * a33 - a11 * a23 * a32;
-    }
 }
 #endif

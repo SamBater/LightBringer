@@ -13,7 +13,7 @@ namespace ylb
         ParalleLight(const glm::vec3& color, const glm::vec3& dir) : Light(color), dir(dir) {
         }
         
-        virtual float attenuation(const glm::vec3 &pos) const override {
+        virtual float Attenuation(const glm::vec3 &pos) const override {
             return 1;
         }
         
