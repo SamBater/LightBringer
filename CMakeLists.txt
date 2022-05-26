@@ -19,7 +19,7 @@ else()
     set(CMAKE_CXX_FLAGS "-fopenmp")
 endif()
 
-add_subdirectory(ThirdParty)
+add_subdirectory(External)
 add_subdirectory(Engine)
 
 
